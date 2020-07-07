@@ -1,2 +1,6 @@
 # compile products
-*.o *.d
+**/*.o 
+**/*.d
+
+#executable
+test_separate_filters
