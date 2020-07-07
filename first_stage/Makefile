@@ -36,7 +36,7 @@ include $(wildcard $(DEPFILES))
 
 
 # Compile the main program
-OBJPROG = $(addprefix $(OBJDIR), $(PROGS))
+OBJPROG = $(addprefix $(OBJDIR)/, $(PROGS))
 
 all: $(OBJPROG)
 
