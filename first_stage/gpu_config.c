@@ -1,4 +1,4 @@
-#include "gpu_context.h"
+#include "gpu_config.h"
 
 #include "../clib/openclerrorcode.h"
 
@@ -21,8 +21,8 @@
  * @post
  * Each context would would two command queues
  */ 
-gpu_context_p gpu_context (
-    int qid, 
+gpu_config_p gpu_config (
+    int query_id, 
     cl_device_id device, 
     cl_context context, 
     cl_program program,
@@ -31,48 +31,49 @@ gpu_context_p gpu_context (
     int _outputs
 ) {
 
-	gpu_context_p q = (gpu_context_p) malloc (sizeof(gpu_context_t));
-	if (! q) {
+    /* Construct a gpu context */
+	gpu_config_p config = (gpu_config_p) malloc (sizeof(gpu_config_t));
+	if (! config) {
 		error_print("fatal error: out of memory\n", NULL);
 		exit(1);
 	}
 
-	q->qid = qid;
+	config->query_id = query_id;
 
-	q->device = device;
-	q->context = context;
-	q->program = program;
+	config->device = device;
+	config->context = context;
+	config->program = program;
 
-	q->kernel.count = _kernels;
-	q->kernelInput.count = _inputs;
-	q->kernelOutput.count = _outputs;
+	config->kernel.count = _kernels;
+	config->kernelInput.count = _inputs;
+	config->kernelOutput.count = _outputs;
 
 	/* Create command queues */
 	int error;
-	q->queue[0] = clCreateCommandQueue (
-		q->context, 
-		q->device, 
+	config->queue[0] = clCreateCommandQueue (
+		config->context, 
+		config->device, 
 		CL_QUEUE_PROFILING_ENABLE, 
 		&error);
-	if (! q->queue[0]) {
+	if (! config->queue[0]) {
 		error_print("opencl error (%d): %s (%s)\n", error, getErrorMessage(error), __FUNCTION__);
 		exit (1);
 	}
-	q->queue[1] = clCreateCommandQueue (
-		q->context, 
-		q->device, 
+	config->queue[1] = clCreateCommandQueue (
+		config->context, 
+		config->device, 
 		CL_QUEUE_PROFILING_ENABLE, 
 		&error);
-	if (! q->queue[1]) {
+	if (! config->queue[1]) {
 		error_print("opencl error (%d): %s (%s)\n", error, getErrorMessage(error), __FUNCTION__);
 		exit (1);
 	}
 
-	q->scheduled  = 0; /* No read or write events scheduled */
-	q->readCount  = 0;
-	q->writeCount = 0;
+	config->scheduled  = 0; /* No read or write events scheduled */
+	config->readCount  = 0;
+	config->writeCount = 0;
 
-	return q;
+	return config;
 }
 
 // void gpu_context_writeInput (gpuContextP q,

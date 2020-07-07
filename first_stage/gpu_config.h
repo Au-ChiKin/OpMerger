@@ -1,5 +1,5 @@
-#ifndef __GPU_CONTEXT_H_
-#define __GPU_CONTEXT_H_
+#ifndef __GPU_CONFIG_H_
+#define __GPU_CONFIG_H_
 
 #include "../clib/utils.h"
 
@@ -34,9 +34,9 @@ typedef struct gpu_kernel {
 	kernel_p kernels [MAX_KERNELS]; /* Every query has one or more kernels */
 } gpu_kernel_t;
 
-typedef struct gpu_context *gpu_context_p;
-typedef struct gpu_context {
-	int qid;
+typedef struct gpu_config *gpu_config_p;
+typedef struct gpu_config {
+	int query_id;
 	cl_device_id device;
 	cl_context context;
 	cl_program program;
@@ -52,10 +52,10 @@ typedef struct gpu_context {
 #endif
 	long long  readCount;
 	long long writeCount;
-} gpu_context_t;
+} gpu_config_t;
 
-gpu_context_p gpu_context(int qid, cl_device_id device, cl_context context, cl_program program, int _kernels, int _inputs, int _outputs);
+gpu_config_p gpu_config(int query_id, cl_device_id device, cl_context context, cl_program program, int _kernels, int _inputs, int _outputs);
 
 
 
-#endif /* __GPU_CONTEXT_H_ */
+#endif /* __GPU_CONFIG_H_ */

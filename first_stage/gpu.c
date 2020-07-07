@@ -131,7 +131,7 @@ void gpu_init () {
 
     // TODO: set a propert context variable and find out the program thing
     cl_program program;
-    gpu_context_p context_p = gpu_context(1, device, context, program, 1, 1, 1);
+    gpu_config_p context_p = gpu_config(1, device, context, program, 1, 1, 1);
 
 	// Q = _queries; /* Number of queries */
 	// freeIndex = 0;

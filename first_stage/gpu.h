@@ -1,7 +1,7 @@
 #ifndef __GPU_H_
 #define __GPU_H_
 
-#include "gpu_context.h"
+#include "gpu_config.h"
 // #include "openclerrorcode.h"
 
 // #include "outputbuffer.h"
