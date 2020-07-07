@@ -6,20 +6,23 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
+
+#define BUFFER_SIZE 32768
 
 void run_processing(tuple_t * buffer, int size) {
     gpu_init();
+
     gpu_free();
 }
 
-#define BUFFER_SIZE 32768
 int main() {
 
-    // TODO: Create a buffer of tuples
+    // TODO: Create a buffer of tuples with a circular buffer
     // 32768 x 32 = 1MB
     tuple_t buffer[BUFFER_SIZE];
 
-    // TODO: Fill the buffer
+    // TODO: Fill the buffer according to parameters
     int value = 0;
     bool flipper = false;
     int cur = 0;
@@ -46,6 +49,8 @@ int main() {
         buffer[cur].i4 = 1;
         buffer[cur].i5 = 1;
         buffer[cur].i6 = 1;
+
+        cur += 1;
     }   
 
     // TODO: Start processing

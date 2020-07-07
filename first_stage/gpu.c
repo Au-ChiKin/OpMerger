@@ -10,7 +10,7 @@
 #include <string.h>
 
 #ifdef __APPLE__
-#include <OpenCL/opencl.h> // whether Mac still support opencl?
+#include <OpenCL/opencl.h>
 #else
 #include <CL/cl.h>
 #endif
@@ -19,8 +19,8 @@ static cl_platform_id platform = NULL;
 static cl_device_id device = NULL;
 static cl_context context = NULL;
 
-static int query_number;
-static int free_index;
+// static int query_number;
+// static int free_index;
 // ... a bunch of varibales
 
 /* some callback_functions */
@@ -37,7 +37,7 @@ static void set_platform () {
 		fprintf(stderr, "opencl error (%d): %s\n", error, getErrorMessage(error));
 		exit (1);
 	}
-	dbg("[OpMerger] Obtained 1/%u platforms available\n", count);
+	dbg("[GPU] Obtained 1/%u platforms available\n", count);
 	return;
 }
 
@@ -54,7 +54,7 @@ static void set_device () {
 		fprintf(stderr, "opencl error (%d): %s\n", error, getErrorMessage(error));
 		exit (1);
 	}
-	dbg("[OpMerger] Obtained 1/%u devices available\n", count);
+	dbg("[GPU] Obtained 1/%u devices available\n", count);
 	return;
 }
 
@@ -68,7 +68,7 @@ static void set_context () {
 		NULL,     // data to pass as a param to the callback function
 		&error);  // on return, points to a result code
 	if (! context) {
-		fprintf(stderr, "opencl error (%d): %s\n", error, getErrorMessage(error));
+		fprintf(stderr, "[GPU] opencl error (%d): %s\n", error, getErrorMessage(error));
 		exit (1);
 	}
 	return ;
@@ -91,9 +91,9 @@ static void get_deviceInfo () {
 		fprintf(stderr, "opencl error (%d): %s\n", error, getErrorMessage(error));
 		exit (1);
 	}
-	fprintf(stdout, "GPU name: %s\n", name);
-	fprintf(stdout, "GPU supported extensions are: %s\n", extensions);
-	fprintf(stdout, "GPU memory addresses are %u bits aligned\n", value);
+	fprintf(stdout, "[GPU] GPU name: %s\n", name);
+	fprintf(stdout, "[GPU] GPU supported extensions are: %s\n", extensions);
+	fprintf(stdout, "[GPU] GPU memory addresses are %u bits aligned\n", value);
 
 	return ;
 }
@@ -129,6 +129,10 @@ void gpu_init () {
 	set_context ();
 	get_deviceInfo ();
 
+    // TODO: set a propert context variable and find out the program thing
+    cl_program program;
+    gpu_context_p context_p = gpu_context(1, device, context, program, 1, 1, 1);
+
 	// Q = _queries; /* Number of queries */
 	// freeIndex = 0;
 	// for (i = 0; i < MAX_QUERIES; i++)
@@ -149,7 +153,7 @@ void gpu_init () {
 }
 
 void gpu_free () {
-	int i;
+	// int i;
 	int error = 0;
 	// for (i = 0; i < MAX_QUERIES; i++)
 	// 	if (queries[i])
@@ -162,72 +166,72 @@ void gpu_free () {
 	return;
 }
 
-int gpu_query_exec (
-    gpuQueryP q, 
-    size_t *threads, 
-    size_t *threadsPerGroup, 
-    queryOperatorP operator, 
-    JNIEnv *env, 
-    jobject obj) {
+// int gpu_query_exec (
+//     gpuQueryP q, 
+//     size_t *threads, 
+//     size_t *threadsPerGroup, 
+//     queryOperatorP operator, 
+//     JNIEnv *env, 
+//     jobject obj) {
 	
-	if (! q)
-		return -1;
+// 	if (! q)
+// 		return -1;
 
-	if (NCONTEXTS == 1) { // NCONTEXTS defined in utils.h
-		return gpu_query_exec_1 (q, threads, threadsPerGroup, operator, env, obj);
-	} 
-    // else {
-	// 	return gpu_query_exec_2 (q, threads, threadsPerGroup, operator, env, obj);
-	// }
-}
+// 	if (NCONTEXTS == 1) { // NCONTEXTS defined in utils.h
+// 		return gpu_query_exec_1 (q, threads, threadsPerGroup, operator, env, obj);
+// 	} 
+//     // else {
+// 	// 	return gpu_query_exec_2 (q, threads, threadsPerGroup, operator, env, obj);
+// 	// }
+// }
 
-/*
- * Only one pipeline
- */
-static int gpu_query_exec_1 (
-    gpuQueryP query, 
-    size_t *threads, 
-    size_t *threadsPerGroup, 
-    queryOperatorP operator, 
-    JNIEnv *env, 
-    jobject obj) {
+// /*
+//  * Only one pipeline
+//  */
+// static int gpu_query_exec_1 (
+//     gpuQueryP query, 
+//     size_t *threads, 
+//     size_t *threadsPerGroup, 
+//     queryOperatorP operator, 
+//     JNIEnv *env, 
+//     jobject obj) {
 	
-	gpuContextP context = gpu_context_switch (query);
+// 	gpuContextP context = gpu_context_switch (query);
 	
-	/* Write input */
-	gpu_context_writeInput (context, operator->writeInput, env, obj, query->qid);
+// 	/* Write input */
+// 	gpu_context_writeInput (context, operator->writeInput, env, obj, query->qid);
 
-	gpu_context_moveInputBuffers (context);
+// 	gpu_context_moveInputBuffers (context);
 	
-	if (operator->configure != NULL) {
-		gpu_context_configureKernel (context, operator->configure, operator->args1, operator->args2);
-	}
+// 	if (operator->configure != NULL) {
+// 		gpu_context_configureKernel (context, operator->configure, operator->args1, operator->args2);
+// 	}
 
-	gpu_context_submitKernel (context, threads, threadsPerGroup);
+// 	gpu_context_submitKernel (context, threads, threadsPerGroup);
 
-	gpu_context_moveOutputBuffers (context);
+// 	gpu_context_moveOutputBuffers (context);
 
-	gpu_context_flush (context);
+// 	gpu_context_flush (context);
 	
-	gpu_context_finish(context);
+// 	gpu_context_finish(context);
 	
-	gpu_context_readOutput (context, operator->readOutput, env, obj, query->qid);
+// 	gpu_context_readOutput (context, operator->readOutput, env, obj, query->qid);
 
-	return 0;
-}
+// 	return 0;
+// }
 
 
-int gpu_exec (int qid,
-	size_t *threads, 
-    size_t *threadsPerGroup,
-	queryOperatorP operator,
-	JNIEnv *env, 
-    jobject obj) {
+// int gpu_exec (int qid,
+// 	size_t *threads, 
+//     size_t *threadsPerGroup,
+// 	queryOperatorP operator,
+// 	JNIEnv *env, 
+//     jobject obj) {
 
-	if (qid < 0 || qid >= Q) {
-		fprintf(stderr, "error: query index [%d] out of bounds\n", qid);
-		exit (1);
-	}
-	gpuQueryP p = queries[qid];
-	return gpu_query_exec (p, threads, threadsPerGroup, operator, env, obj);
-}
+// 	if (qid < 0 || qid >= Q) {
+// 		fprintf(stderr, "error: query index [%d] out of bounds\n", qid);
+// 		exit (1);
+// 	}
+// 	gpuQueryP p = queries[qid];
+// 	return gpu_query_exec (p, threads, threadsPerGroup, operator, env, obj);
+// }
