@@ -1,10 +1,10 @@
 # Compiler Configurations
-CC      =gcc
-CFLAGS  =-Wall -g
-LDLIBS  =-framework OpenCL
-DEPFLAGS = -MT $@ -MMD -MP -MF $(DEPDIR)/$*.d
+CC        = gcc
+CFLAGS    = -Wall -g
+LDLIBS    = -framework OpenCL
+DEPFLAGS  = -MT $@ -MMD -MP -MF $(DEPDIR)/$*.d
 COMPILE.c = $(CC) $(DEPFLAGS) $(CFLAGS) $(CPPFLAGS) $(TARGET_ARCH) -c
-LINK.o = $(CC) $(CFLAGS)
+LINK.o    = $(CC) $(CFLAGS)
 
 # Environmrnt
 OBJDIR  := obj
