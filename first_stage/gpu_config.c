@@ -48,7 +48,7 @@ gpu_config_p gpu_config (
 	config->kernelInput.count = _inputs;
 	config->kernelOutput.count = _outputs;
 
-	/* Create command queues */
+	/* Create two command queues */
 	int error;
 	config->queue[0] = clCreateCommandQueue (
 		config->context, 

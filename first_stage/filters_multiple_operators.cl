@@ -41,7 +41,6 @@ typedef struct {
         int _5;
         int _6;
 } input_tuple_t __attribute__((aligned(1)));
-
 // input (unit) batch - default to be 2 tuples per kernel
 typedef union {
         input_tuple_t tuple;

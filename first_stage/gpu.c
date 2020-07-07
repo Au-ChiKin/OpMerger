@@ -15,9 +15,12 @@
 #include <CL/cl.h>
 #endif
 
+#define MAX_SOURCE_SIZE (0x100000)
+
 static cl_platform_id platform = NULL;
 static cl_device_id device = NULL;
 static cl_context context = NULL;
+static cl_program program = NULL;
 
 // static int query_number;
 // static int free_index;
@@ -58,22 +61,6 @@ static void set_device () {
 	return;
 }
 
-static void set_context () {
-	int error = 0;
-	context = clCreateContext (
-		0,        // a reserved variable
-		1,        // the number of devices in the devices parameter
-		&device,  // a pointer to the list of device IDs from clGetDeviceIDs
-		NULL,     // a pointer to an error notice callback function (if any)
-		NULL,     // data to pass as a param to the callback function
-		&error);  // on return, points to a result code
-	if (! context) {
-		fprintf(stderr, "[GPU] opencl error (%d): %s\n", error, getErrorMessage(error));
-		exit (1);
-	}
-	return ;
-}
-
 static void get_deviceInfo () {
 
 	cl_int error = 0;
@@ -96,6 +83,90 @@ static void get_deviceInfo () {
 	fprintf(stdout, "[GPU] GPU memory addresses are %u bits aligned\n", value);
 
 	return ;
+}
+
+static void set_context () {
+	int error = 0;
+	context = clCreateContext (
+		0,        // properties
+		1,        // the number of devices in the devices parameter
+		&device,  // a pointer to the list of device IDs from clGetDeviceIDs
+		NULL,     // a pointer to an error notice callback function (if any)
+		NULL,     // data to pass as a param to the callback function
+		&error);  // on return, points to a result code
+	if (! context) {
+		fprintf(stderr, "[GPU] opencl error (%d): %s\n", error, getErrorMessage(error));
+		exit (1);
+	}
+	return ;
+}
+
+
+static void set_program(char const * file_name) {
+    FILE *file_p;
+    char * source_str;
+    size_t source_size;
+    cl_int error = 0;
+
+    /* Load kernel source */
+    file_p = fopen(file_name, "r");
+    if (!file_p) {
+        fprintf(stderr, "Failed to load kernel.\n");
+        exit(1);
+    }
+    source_str = (char*)malloc(MAX_SOURCE_SIZE);
+    source_size = fread( source_str, 1, MAX_SOURCE_SIZE, file_p);
+    fclose(file_p);
+
+	if (error != CL_SUCCESS) {
+		fprintf(stderr, "opencl error (%d): %s\n", error, getErrorMessage(error));
+		exit (1);
+	}
+    dbg("[GPU] Loaded kernel source length of %d bytes\n", source_size);
+
+    // Build a program from the loaded kernels
+    program = clCreateProgramWithSource(
+        context,
+        1,         /* The number of strings */
+        (const char**) &source_str,
+        NULL,
+        error);
+
+	if (error != CL_SUCCESS) {
+		fprintf(stderr, "opencl error (%d): %s\n", error, getErrorMessage(error));
+		exit (1);
+	}
+}
+
+static void build_program() {
+    cl_int error = 0;
+
+    error = clBuildProgram(
+        program,
+        1,         /* number of devices in next param */
+        &device,
+        NULL,      /* Build options */
+        NULL,      /* a pointer to  a notification callback function */
+        NULL);     /* a data to be passed as a parameter to the callback funciton */
+
+    if (error != CL_SUCCESS) {
+        size_t lenght;
+        char buffer[2048];
+
+        printf(stderr, "error: failed to build the program");
+
+        clGetProgramBuildInfo(
+            program,
+            device,
+            CL_PROGRAM_BUILD_LOG,
+            sizeof(buffer),
+            buffer,
+            &lenght);
+
+        printf(stderr, "%s\n", buffer);
+        exit(1);
+    }
+    dbg("[GPU] Building program succeed!\n", NULL);
 }
 
 // void gpu_init (JNIEnv *env, int _queries, int _depth) {
@@ -128,10 +199,18 @@ void gpu_init () {
 	set_device ();
 	set_context ();
 	get_deviceInfo ();
+    set_program ("filters_multiple_operators.cl");
+    build_program ();
 
-    // TODO: set a propert context variable and find out the program thing
-    cl_program program;
-    gpu_config_p context_p = gpu_config(1, device, context, program, 1, 1, 1);
+    // TODO: set a propert context variable
+    gpu_config_p context_p = gpu_config(
+        0,         // Only one query
+        device,
+        context, 
+        program,
+        1,         
+        1, 
+        1);
 
 	// Q = _queries; /* Number of queries */
 	// freeIndex = 0;
