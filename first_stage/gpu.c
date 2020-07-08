@@ -196,15 +196,18 @@ void gpu_init () {
      */ 
 
 	set_platform ();
+
 	set_device ();
-	set_context ();
 	get_deviceInfo ();
+	
+    set_context ();
+    
     set_program ("filters_multiple_operators.cl");
     build_program ();
 
     // TODO: set a propert context variable
-    gpu_config_p context_p = gpu_config(
-        0,         // Only one query
+    gpu_config_p config = gpu_config(
+        0,         // Only one query, idex 0
         device,
         context, 
         program,
