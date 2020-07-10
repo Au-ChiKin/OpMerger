@@ -149,9 +149,9 @@ static void build_program() {
         NULL,      /* a pointer to  a notification callback function */
         NULL);     /* a data to be passed as a parameter to the callback funciton */
 
-    if (error != CL_SUCCESS) {
+    // if (error != CL_SUCCESS) {
         size_t lenght;
-        char buffer[2048];
+        char msg [32768]; /* Compiler messager */
 
         printf(stderr, "error: failed to build the program");
 
@@ -159,13 +159,14 @@ static void build_program() {
             program,
             device,
             CL_PROGRAM_BUILD_LOG,
-            sizeof(buffer),
-            buffer,
+            sizeof(msg),
+            msg,
             &lenght);
 
-        printf(stderr, "%s\n", buffer);
-        exit(1);
-    }
+        printf(stderr, "%s\n", msg);
+        fflush(stderr);
+        // exit(1);
+    // }
     dbg("[GPU] Building program succeed!\n", NULL);
 }
 
