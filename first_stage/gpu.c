@@ -215,6 +215,7 @@ void gpu_init (char const * filename) {
         1,         
         1, 
         1);
+    dbg("[GPU] GPU configuration has finished\n");
 
 	// Q = _queries; /* Number of queries */
 	// freeIndex = 0;

@@ -80,7 +80,6 @@ int main() {
         cur += 1;
     }
 
-    // TODO: Start processing
     tuple_t results[BUFFER_SIZE];
     int results_size = 0;
     run_processing_cpu(buffer, BUFFER_SIZE, results, &results_size);
@@ -94,7 +93,13 @@ int main() {
      * 
      * output should be 32768 x (50%)^3 = 4096
      */
-    printf("The output from cpu is %d\n", results_size);
+    printf("[CPU] The output from cpu is %d\n\n", results_size);
+
+    // TODO: Start processing
+    results_size = 0; /* start from begining for GPU */
+    run_processing_gpu(buffer, BUFFER_SIZE, results, &results_size);
+
+    printf("[GPU] The output from gpu is %d\n", results_size);
 
     return 0;
 }

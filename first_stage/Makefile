@@ -13,7 +13,7 @@ VPATH    = $(OBJDIR)
 
 # Targets
 PROGS   = test_merged_filters # test_separate_filters
-SRCS = gpu.c gpu_config.c test_separate_filters.c openclerrorcode.c
+SRCS = gpu.c gpu_config.c test_merged_filters.c openclerrorcode.c
 OBJECTS = $(patsubst %.c,%.o,$(SRCS))
 
 # Scripts
