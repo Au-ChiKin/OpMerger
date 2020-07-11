@@ -171,7 +171,7 @@ static void build_program() {
 }
 
 // void gpu_init (JNIEnv *env, int _queries, int _depth) {
-void gpu_init () {
+void gpu_init (char const * filename) {
 
 	// int i;
 	// (void) env; 
@@ -203,7 +203,7 @@ void gpu_init () {
 	
     set_context ();
     
-    set_program ("filters_multiple_operators.cl");
+    set_program (filename);
     build_program ();
 
     // TODO: set a propert context variable
