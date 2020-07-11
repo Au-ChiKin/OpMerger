@@ -8,12 +8,41 @@
 #include <stdlib.h>
 #include <stdbool.h>
 
-#define BUFFER_SIZE 32768
+#define BUFFER_SIZE 32768 /* in tuple */
+#define VALUE_RANGE 128
 
-void run_processing(tuple_t * buffer, int size) {
+void run_processing_gpu(tuple_t * buffer, int size, tuple_t * result, int * output_size) {
     gpu_init();
 
     gpu_free();
+}
+
+void run_processing_cpu(tuple_t * buffer, int size, tuple_t * result, int * output_size) {
+    /* if not using gpu */
+    *output_size = 0;
+    for (int i = 0; i < size; i++) {
+        /* get one tuple */
+        tuple_t * tuple = buffer + i;
+
+        /* apply predicates */
+        int value = 1;
+	    int attribute_value = tuple->i1;
+	    value = value & (attribute_value < VALUE_RANGE/2); /* if attribute < 50? */
+
+	    attribute_value = tuple->i2;
+	    value = value & (attribute_value != 0); /* if attribute != 0? */
+
+	    attribute_value = tuple->i3;
+	    value = value & (attribute_value >= VALUE_RANGE/4); /* if attribute > 25? */
+
+        // printf("Predicate result %d\n", value);
+
+        /* output the tuple if valid */
+        if (value) {
+            *output_size += 1;
+            result[*output_size] = *tuple;
+        }
+    }
 }
 
 int main() {
@@ -32,7 +61,7 @@ int main() {
 
         // #1
         buffer[cur].i1 = value;
-        value = (value + 1) % 100;
+        value = (value + 1) % VALUE_RANGE;
 
         // #2
         if (flipper) {
@@ -51,10 +80,23 @@ int main() {
         buffer[cur].i6 = 1;
 
         cur += 1;
-    }   
+    }
 
     // TODO: Start processing
-    run_processing(buffer, BUFFER_SIZE);
+    tuple_t results[BUFFER_SIZE];
+    int results_size = 0;
+    run_processing_cpu(buffer, BUFFER_SIZE, results, &results_size);
+
+    /* output the result size */
+    /*
+     * 32768 tuples in total
+     * attr1 50% selectivity
+     * attr2 50% selectivity
+     * attr3 50% selectivity
+     * 
+     * output should be 32768 x (50%)^3 = 4096
+     */
+    printf("The output from cpu is %d\n", results_size);
 
     return 0;
 }

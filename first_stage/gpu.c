@@ -101,7 +101,6 @@ static void set_context () {
 	return ;
 }
 
-
 static void set_program(char const * file_name) {
     FILE *file_p;
     char * source_str;
@@ -153,7 +152,7 @@ static void build_program() {
         size_t lenght;
         char msg [32768]; /* Compiler messager */
 
-        printf(stderr, "error: failed to build the program");
+        // printf(stderr, "error: failed to build the program");
 
         clGetProgramBuildInfo(
             program,
@@ -163,10 +162,11 @@ static void build_program() {
             msg,
             &lenght);
 
-        printf(stderr, "%s\n", msg);
-        fflush(stderr);
+        // printf(stderr, "%s\n", msg);
+        // fflush(stderr);
         // exit(1);
     // }
+    dbg(msg, NULL);
     dbg("[GPU] Building program succeed!\n", NULL);
 }
 
