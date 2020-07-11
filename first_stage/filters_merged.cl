@@ -2,7 +2,7 @@
 *
 * SELECT *
 * FROM S1
-* WHERE S1.1 < 50 AND S1.2 = 1 AND S1.3 > 50
+* WHERE S1.1 < 50 AND S1.2 = 1 AND S1.3 >= 25
 * 
 * This attempt is to apply these predicates together
 */
@@ -57,13 +57,13 @@ typedef union {
 inline int selectf (__global input_t *p) {
 	int value = 1;
 	int attribute_value = __bswap32(p->tuple._1);
-	value = value & (attribute_value < 50); // if attribute != 0?
+	value = value & (attribute_value < 50); // if attribute < 50?
 
-	int attribute_value = __bswap32(p->tuple._2);
+	attribute_value = __bswap32(p->tuple._2);
 	value = value & (attribute_value != 0); // if attribute != 0?
 
-	int attribute_value = __bswap32(p->tuple._3);
-	value = value & (attribute_value > 50); // if attribute != 0?
+	attribute_value = __bswap32(p->tuple._3);
+	value = value & (attribute_value >= 25); // if attribute >= 25?
 
 	return value;
 }

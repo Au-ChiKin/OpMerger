@@ -35,8 +35,6 @@ void run_processing_cpu(tuple_t * buffer, int size, tuple_t * result, int * outp
 	    attribute_value = tuple->i3;
 	    value = value & (attribute_value >= VALUE_RANGE/4); /* if attribute > 25? */
 
-        // printf("Predicate result %d\n", value);
-
         /* output the tuple if valid */
         if (value) {
             *output_size += 1;
