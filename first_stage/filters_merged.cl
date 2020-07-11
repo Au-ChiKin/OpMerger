@@ -118,19 +118,19 @@ inline void downsweep (__local int *data, int length) {
 }
 
 /* Scan */
-inline void scan (__local int *data, int length) {
+// inline void scan (__local int *data, int length) {
 
-        int lid = get_local_id (0);
-        int lane = (lid * 2) + 1;
+//         int lid = get_local_id (0);
+//         int lane = (lid * 2) + 1;
 
-        upsweep (data, length);
+//         upsweep (data, length);
 
-        if (lane == (length - 1))
-                data[lane] = 0;
+//         if (lane == (length - 1))
+//                 data[lane] = 0;
 
-        downsweep (data, length);
-        return ;
-}
+//         downsweep (data, length);
+//         return ;
+// }
 
 /*
  * Assumes:

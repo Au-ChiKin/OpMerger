@@ -8,11 +8,14 @@
 #include <stdlib.h>
 #include <stdbool.h>
 
-#define BUFFER_SIZE 32768 /* in tuple */
+#define BUFFER_SIZE 32768 / 2 /* in tuple */
+#define TUPLE_SIZE 32
 #define VALUE_RANGE 128
 
 void run_processing_gpu(tuple_t * buffer, int size, tuple_t * result, int * output_size) {
     gpu_init("filters_merged.cl");
+
+    gpu_set_kernel(BUFFER_SIZE, TUPLE_SIZE);
 
     gpu_free();
 }

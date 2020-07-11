@@ -21,6 +21,7 @@ static cl_platform_id platform = NULL;
 static cl_device_id device = NULL;
 static cl_context context = NULL;
 static cl_program program = NULL;
+static cl_kernel kernel = NULL;
 
 // static int query_number;
 // static int free_index;
@@ -170,6 +171,7 @@ static void build_program() {
     dbg("[GPU] Building program succeed!\n", NULL);
 }
 
+/* Below are public functions */
 // void gpu_init (JNIEnv *env, int _queries, int _depth) {
 void gpu_init (char const * filename) {
 
@@ -235,6 +237,47 @@ void gpu_init (char const * filename) {
 
 	return;
 }
+
+void gpu_set_kernel(int batch_size, int tuple_size) {
+    char const kernel_name [64] = "selectKernel";
+    cl_int error = 0;
+
+    /* input arg */
+    cl_mem input_mem = clCreateBuffer(context, CL_MEM_READ_ONLY, batch_size * tuple_size * sizeof(unsigned char), NULL, &error);
+    
+    /* read / write arg */
+    cl_mem flags_mem = clCreateBuffer(context, CL_MEM_READ_WRITE, sizeof(int), NULL, &error);
+    
+    /* output args */
+    cl_mem offsets_mem = clCreateBuffer(context, CL_MEM_WRITE_ONLY, sizeof(int), NULL, &error);
+    cl_mem partitions_mem = clCreateBuffer(context, CL_MEM_WRITE_ONLY, sizeof(int), NULL, &error);
+    cl_mem output_mem = clCreateBuffer(context, CL_MEM_WRITE_ONLY, sizeof(unsigned char), NULL, &error);
+    cl_mem local_pos_mem = clCreateBuffer(context, CL_MEM_WRITE_ONLY, sizeof(int), NULL, &error);
+
+    kernel = clCreateKernel(program, kernel_name, &error);
+    if (error != CL_SUCCESS) {
+        fprintf(stderr, "error: fail to build the %s\n", kernel_name);
+    }
+
+    error = clSetKernelArg( kernel, 0, sizeof(cl_mem), &input_mem);
+    error = clSetKernelArg( kernel, 0, sizeof(cl_mem), &flags_mem);
+    error = clSetKernelArg( kernel, 0, sizeof(cl_mem), &offsets_mem);
+    error = clSetKernelArg( kernel, 0, sizeof(cl_mem), &partitions_mem);
+    error = clSetKernelArg( kernel, 0, sizeof(cl_mem), &output_mem);
+    error = clSetKernelArg( kernel, 0, sizeof(cl_mem), &local_pos_mem);
+    if (error != CL_SUCCESS) {
+        fprintf(stderr, "error: fail to set arguments\n", NULL);
+    }
+
+    dbg("[GPU] Set kernel succeed!");
+
+}
+
+// void gpu_exec(int batch_size, int tuple_size) {
+
+
+
+// }
 
 void gpu_free () {
 	// int i;
