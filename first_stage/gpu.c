@@ -2,8 +2,9 @@
 
 #include "../clib/debug.h"
 #include "../clib/utils.h"
-
 #include "../clib/openclerrorcode.h"
+
+#include "gpu_query.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -22,6 +23,11 @@ static cl_device_id device = NULL;
 static cl_context context = NULL;
 static cl_program program = NULL;
 static cl_kernel kernel = NULL;
+
+static gpu_config_p config = NULL;
+
+static cl_mem input_mem = NULL;
+static cl_mem flags_mem = NULL;
 
 // static int query_number;
 // static int free_index;
@@ -171,6 +177,69 @@ static void build_program() {
     dbg("[GPU] Building program succeed!\n", NULL);
 }
 
+void set_kernel_input(int batch_size, int tuple_size, void const * data) {
+    cl_int error = 0;
+
+    /* arg:input */
+    input_mem = clCreateBuffer(
+        context, 
+        CL_MEM_READ_ONLY, 
+        batch_size * tuple_size * sizeof(unsigned char), 
+        NULL, 
+        &error);
+    if (error != CL_SUCCESS) {
+        fprintf(stderr, "error: failed to set arguement input", NULL);
+        exit(1);
+    }
+
+    /* Copy the input buffer on the host to the memory buffer on device */
+    error = clEnqueueWriteBuffer(
+        config->command_queue[0], 
+        input_mem, 
+        CL_TRUE,         /* blocking write */
+        0, 
+        batch_size * tuple_size * sizeof(unsigned char), 
+        data,            /* data in the host memeory */
+        0, NULL, NULL);  /* event related */
+    if (error != CL_SUCCESS) {
+        fprintf(stderr, "error: failed to enqueue write buffer command", NULL);
+        exit(1);
+    }
+    dbg("[GPU] Succeed to set input\n", NULL);
+
+    /* arg:flags */
+    int * flags = (int *)malloc(sizeof(int)*batch_size);
+    for (int i=0; i<batch_size; i++) {
+        flags[i] = 1; /* default to be selected */
+    }
+    flags_mem = clCreateBuffer(
+        context, 
+        CL_MEM_READ_WRITE, 
+        batch_size * sizeof(int), 
+        NULL, 
+        &error);
+    if (error != CL_SUCCESS) {
+        fprintf(stderr, "error: failed to set arguement: flags", NULL);
+        exit(1);
+    }    
+
+    error = clEnqueueWriteBuffer(
+        config->command_queue[0], /* all put into the first queue for now */
+        input_mem, 
+        CL_TRUE,         /* blocking write */
+        0, 
+        batch_size * tuple_size * sizeof(unsigned char), 
+        data,            /* data in the host memeory */
+        0, NULL, NULL);  /* event related */
+    if (error != CL_SUCCESS) {
+        fprintf(stderr, "error: failed to enqueue write buffer command", NULL);
+        exit(1);
+    }
+    dbg("[GPU] Succeed to set flags\n", NULL);
+
+    
+}
+
 /* Below are public functions */
 // void gpu_init (JNIEnv *env, int _queries, int _depth) {
 void gpu_init (char const * filename) {
@@ -208,15 +277,16 @@ void gpu_init (char const * filename) {
     set_program (filename);
     build_program ();
 
-    // TODO: set a propert context variable
-    gpu_config_p config = gpu_config(
-        0,         // Only one query, idex 0
+    // [TODO] For multiple queries?
+    config = gpu_config(
+        0,         /* query_id - query index, only one so 0 */
         device,
         context, 
         program,
-        1,         
-        1, 
-        1);
+        2,         /* _kerenels - kernel number, somehow there are two opencl 
+                      kernels within one Saber kernel */
+        1,         /* _inputs - input number */
+        4);        /* _outputs - output number */
     dbg("[GPU] GPU configuration has finished\n");
 
 	// Q = _queries; /* Number of queries */
@@ -238,15 +308,12 @@ void gpu_init (char const * filename) {
 	return;
 }
 
-void gpu_set_kernel(int batch_size, int tuple_size) {
+
+void gpu_set_kernel(int batch_size, int tuple_size, void const * data) {
     char const kernel_name [64] = "selectKernel";
     cl_int error = 0;
 
-    /* input arg */
-    cl_mem input_mem = clCreateBuffer(context, CL_MEM_READ_ONLY, batch_size * tuple_size * sizeof(unsigned char), NULL, &error);
-    
-    /* read / write arg */
-    cl_mem flags_mem = clCreateBuffer(context, CL_MEM_READ_WRITE, sizeof(int), NULL, &error);
+    set_kernel_input(batch_size, tuple_size, data);
     
     /* output args */
     cl_mem offsets_mem = clCreateBuffer(context, CL_MEM_WRITE_ONLY, sizeof(int), NULL, &error);
@@ -257,6 +324,7 @@ void gpu_set_kernel(int batch_size, int tuple_size) {
     kernel = clCreateKernel(program, kernel_name, &error);
     if (error != CL_SUCCESS) {
         fprintf(stderr, "error: fail to build the %s\n", kernel_name);
+        exit(1);
     }
 
     error = clSetKernelArg( kernel, 0, sizeof(cl_mem), &input_mem);
@@ -267,11 +335,105 @@ void gpu_set_kernel(int batch_size, int tuple_size) {
     error = clSetKernelArg( kernel, 0, sizeof(cl_mem), &local_pos_mem);
     if (error != CL_SUCCESS) {
         fprintf(stderr, "error: fail to set arguments\n", NULL);
+        exit(1);
     }
 
-    dbg("[GPU] Set kernel succeed!");
+    dbg("[GPU] Set kernel succeed!\n");
 
 }
+
+// int gpu_query_setOutput (gpu_query_p q, int ndx, int size, int writeOnly, int doNotMove, int bearsMark, int readEvent, int ignoreMark) {
+// 	if (! q)
+// 		return -1;
+// 	if (ndx < 0 || ndx > q->contexts[0]->kernelOutput.count) {
+// 		fprintf(stderr, "error: output buffer index [%d] out of bounds\n", ndx);
+// 		exit (1);
+// 	}
+// 	int i;
+// 	for (i = 0; i < NCONTEXTS; i++)
+// 		gpu_context_setOutput (q->contexts[i], ndx, size, writeOnly, doNotMove, bearsMark, readEvent, ignoreMark);
+// 	return 0;
+// }
+
+
+// outputBufferP getOutputBuffer (cl_context context, cl_command_queue queue, int size,
+// 	int writeOnly, int doNotMove, int bearsMark, int readEvent, int ignoreMark) {
+
+// 	outputBufferP p = malloc(sizeof(output_buffer_t));
+// 	if (! p) {
+// 		fprintf(stderr, "fatal error: out of memory\n");
+// 		exit (1);
+// 	}
+// 	p->size = size;
+
+// 	p->writeOnly = (unsigned char) writeOnly;
+// 	p->doNotMove = (unsigned char) doNotMove;
+// 	p->bearsMark = (unsigned char) bearsMark;
+// 	p->readEvent = (unsigned char) readEvent;
+// 	p->ignoreMark= (unsigned char) ignoreMark;
+
+// 	int error;
+// 	cl_mem_flags flags;
+// 	if (writeOnly)
+// 		flags = CL_MEM_WRITE_ONLY;
+// 	else
+// 		flags = CL_MEM_READ_WRITE;
+// 	/* Set p->device_buffer */
+// 	p->device_buffer = clCreateBuffer (
+// 		context,
+// 		flags,
+// 		p->size,
+// 		NULL,
+// 		&error);
+// 	if (! p->device_buffer) {
+// 		fprintf(stderr, "opencl error (%d): %s\n", error, getErrorMessage(error));
+// 		exit (1);
+// 	}
+// 	/* Allocate buffers */
+// 	p->pinned_buffer = clCreateBuffer (
+// 		context,
+// 		CL_MEM_READ_WRITE | CL_MEM_ALLOC_HOST_PTR,
+// 		p->size,
+// 		NULL,
+// 		&error);
+// 	if (! p->pinned_buffer) {
+// 		fprintf(stderr, "opencl error (%d): %s\n", error, getErrorMessage(error));
+// 		exit (1);
+// 	}
+// 	p->mapped_buffer = (void *) clEnqueueMapBuffer (
+// 		queue,
+// 		p->pinned_buffer,
+// 		CL_TRUE,
+// 		CL_MAP_READ,
+// 		0,
+// 		p->size,
+// 		0, NULL, NULL,
+// 		&error);
+// 	if (! p->mapped_buffer) {
+// 		fprintf(stderr, "opencl error (%d): %s\n", error, getErrorMessage(error));
+// 		exit (1);
+// 	}
+// 	return p;
+// }
+
+// void gpu_context_setOutput (gpu_config_p c, int ndx, int size,
+
+// 	int writeOnly, int doNotMove, int bearsMark, int readEvent, int ignoreMark) {
+
+// 	c->kernelOutput.outputs[ndx] =
+// 			getOutputBuffer (c->context, c->queue[0], size, writeOnly, doNotMove, bearsMark, readEvent, ignoreMark);
+// }
+
+
+
+// void write_input(int batch_size, int tuple_size, char const * data) {
+//     cl_int error = 0;
+
+//     error = clEnqueueWriteBuffer(config->queue[0], input_mem, CL_TRUE, 0, batch_size * tuple_size, data, 0, NULL, NULL);
+//     if (error != CL_SUCCESS) {
+//         fprintf(stderr, "error: fialed to enqueue write buffer", NULL);
+//     }
+// }
 
 // void gpu_exec(int batch_size, int tuple_size) {
 
@@ -294,7 +456,7 @@ void gpu_free () {
 }
 
 // int gpu_query_exec (
-//     gpuQueryP q, 
+//     gpu_query_p q, 
 //     size_t *threads, 
 //     size_t *threadsPerGroup, 
 //     queryOperatorP operator, 
@@ -316,14 +478,14 @@ void gpu_free () {
 //  * Only one pipeline
 //  */
 // static int gpu_query_exec_1 (
-//     gpuQueryP query, 
+//     gpu_query_p query, 
 //     size_t *threads, 
 //     size_t *threadsPerGroup, 
 //     queryOperatorP operator, 
 //     JNIEnv *env, 
 //     jobject obj) {
 	
-// 	gpuContextP context = gpu_context_switch (query);
+// 	gpu_context_p context = gpu_context_switch (query);
 	
 // 	/* Write input */
 // 	gpu_context_writeInput (context, operator->writeInput, env, obj, query->qid);
@@ -359,6 +521,6 @@ void gpu_free () {
 // 		fprintf(stderr, "error: query index [%d] out of bounds\n", qid);
 // 		exit (1);
 // 	}
-// 	gpuQueryP p = queries[qid];
+// 	gpu_query_p p = queries[qid];
 // 	return gpu_query_exec (p, threads, threadsPerGroup, operator, env, obj);
 // }

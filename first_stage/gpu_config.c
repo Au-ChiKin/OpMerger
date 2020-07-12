@@ -18,8 +18,11 @@
 /*
  * Create an opencl context
  * 
+ * @return
+ * Transfer the ownership of gpu configuration to the caller
+ * 
  * @post
- * Each context would would two command queues
+ * Each configuration would would two command queues
  */ 
 gpu_config_p gpu_config (
     int query_id, 
@@ -31,7 +34,7 @@ gpu_config_p gpu_config (
     int _outputs
 ) {
 
-    /* Construct a gpu context */
+    /* Construct a gpu configuration */
 	gpu_config_p config = (gpu_config_p) malloc (sizeof(gpu_config_t));
 	if (! config) {
 		error_print("fatal error: out of memory\n", NULL);
@@ -50,21 +53,21 @@ gpu_config_p gpu_config (
 
 	/* Create two command queues */
 	int error;
-	config->queue[0] = clCreateCommandQueue (
+	config->command_queue[0] = clCreateCommandQueue (
 		config->context, 
 		config->device, 
 		CL_QUEUE_PROFILING_ENABLE, 
 		&error);
-	if (! config->queue[0]) {
+	if (! config->command_queue[0]) {
 		error_print("opencl error (%d): %s (%s)\n", error, getErrorMessage(error), __FUNCTION__);
 		exit (1);
 	}
-	config->queue[1] = clCreateCommandQueue (
+	config->command_queue[1] = clCreateCommandQueue (
 		config->context, 
 		config->device, 
 		CL_QUEUE_PROFILING_ENABLE, 
 		&error);
-	if (! config->queue[1]) {
+	if (! config->command_queue[1]) {
 		error_print("opencl error (%d): %s (%s)\n", error, getErrorMessage(error), __FUNCTION__);
 		exit (1);
 	}

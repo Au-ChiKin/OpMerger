@@ -15,7 +15,7 @@
 void run_processing_gpu(tuple_t * buffer, int size, tuple_t * result, int * output_size) {
     gpu_init("filters_merged.cl");
 
-    gpu_set_kernel(BUFFER_SIZE, TUPLE_SIZE);
+    gpu_set_kernel(BUFFER_SIZE, TUPLE_SIZE, buffer);
 
     gpu_free();
 }

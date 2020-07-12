@@ -24,7 +24,7 @@ typedef struct query_operator {
 // void gpu_init (JNIEnv *, int, int);
 void gpu_init ();
 
-void gpu_set_kernel(int batch_size, int tuple_size);
+void gpu_set_kernel(int batch_size, int tuple_size, void const * data);
 
 void gpu_free ();
 

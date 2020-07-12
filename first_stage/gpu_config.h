@@ -5,8 +5,9 @@
 
 #include "../clib/debug.h"
 
-// #include "inputbuffer.h"
-// #include "outputbuffer.h"
+/* We do not want to use them for now since they are too complicated */
+// #include "../clib/inputbuffer.h"
+// #include "../clib/outputbuffer.h"
 
 #ifdef __APPLE__
 #include <OpenCL/opencl.h>
@@ -43,7 +44,7 @@ typedef struct gpu_config {
 	gpu_kernel_t kernel;
 	gpu_kernel_input_t kernelInput;
 	gpu_kernel_output_t kernelOutput;
-	cl_command_queue queue [2];
+	cl_command_queue command_queue [2];
 	int scheduled;
 	cl_event  read_event;
 	cl_event write_event;

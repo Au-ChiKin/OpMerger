@@ -2,6 +2,8 @@
 #define __TUPLE_H_
 
 #define ATTRIBUTE_NUM 6
+
+/* must match the input struct in kernel code */
 typedef struct tuple {
     /* 32 bytes in total */
     long time_stamp;
