@@ -249,7 +249,7 @@ __kernel void selectKernel (
         // array corresponding to the group id and put a 0 to its flag  
         if (lid == (lgs - 1)) { // _left = lid * 2 = 2 * (lgs - 1) = (2 * lgs - 1) - 1
                 partitions[gid] = x[_right];
-                x[_right] = 0; // ???
+                x[_right] = 0; // So that in the downsweep, the last x[] element will be added to all the other elements
         }
 
         downsweep(x, L);
