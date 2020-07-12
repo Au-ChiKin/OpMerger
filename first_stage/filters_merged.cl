@@ -76,21 +76,50 @@ inline int selectf (__global input_t *p) {
  */
 inline void upsweep (__local int *data, int length) {
 
-        int lid  = get_local_id (0);
-        int b = (lid * 2) + 1;
-        int depth = 1 + (int) log2 ((float) length);
+        int lid  = get_local_id (0); /* local thread id */
+        int b = (lid * 2) + 1; /* pointer to the right tuple of the current thread */
+        int depth = 1 + (int) log2 ((float) length); /* how many digits of the length in binary takes up */
 
         for (int d = 0; d < depth; d++) {
+                /* when d = depth - 1, mask = 2 ^ (depth - 1) - 1 = length - 1 but in a work group there are only
+                   length / 2 threads so actually d = depth - 1 makes no influence */
 
-                barrier(CLK_LOCAL_MEM_FENCE);
-                int mask = (0x1 << d) - 1;
-                if ((lid & mask) == mask) {
+                barrier(CLK_LOCAL_MEM_FENCE); /* wait for all the other local threads */
+                int mask = (0x1 << d) - 1; /* recalling the mask in Saber java part, a way of doing mod 
+                                              mask equals to 0, 1, 3, ... , (2^(depth - 1) - 1) i.e. & mask = % 
+                                              1, 2, 4, ..., (2^(depth - 1) - 1) */
+                if ((lid & mask) == mask) { /* if the current thread id equals to the mask, lid = 
+                                               (2^(depth - 2) - 1) to (2 ^ 0 - 1) i.e. (length / 2 - 1), 
+                                               ... , 3, 1, 0 
+                                               
+                                               Note that (2^(depth - 1) - 1) is theorectically legit but there 
+                                               would not be such a thread in the group (only within 2^(depth - 2) = 
+                                               length / 2)
 
-                        int offset = (0x1 << d);
+                                               Also one lid can meet multiple masks e.g. 3 can meet 3 (%4), 1 (%2), 0 (%1)
+                                               When mask == 0, any lid & mask == mask, so every lid is legit*/
+
+                        int offset = (0x1 << d); /* i.e. length = 2 ^ (depth - 1), 2 ^ (depth - 2), ... , 2, 1 */
                         int a = b - offset;
                         data[b] += data[a];
                 }
         }
+        /* Taking a legth = 16, depth = 5, lid = 0 to 7 case as example:
+           d = 0 will have 0 1 2 3 4 5 6 7
+           d = 1 will have 1 3 5 7
+           d = 2 will have 3 7
+           d = 3 will have 7
+           d = 4 will have none
+
+           so
+           1st round: data[1] += data[0] data[3] += data[2]  data[5] += data[4] data[7] += data[6] data[9] += data[8] ... data[15] += data[14]
+           2nd round:                    data[3] += data[1]                     data[7] += data[5]                    ... data[15] += data[13]
+           3rd round:                                                           data[7] += data[3]                    ... data[15] += data[11]
+           4th round:                                                                                                     data[15] += data[ 7]
+        
+           Therfore all data would "reduced" to the last data element
+        */
+        /* Actually quite apparently the folding upsweep mentioned in cuda file */
 }
 
 /*
@@ -100,21 +129,47 @@ inline void upsweep (__local int *data, int length) {
 inline void downsweep (__local int *data, int length) {
 
         int lid = get_local_id (0);
-        int b = (lid * 2) + 1;
-        int depth = (int) log2 ((float) length);
-        for (int d = depth; d >= 0; d--) {
+        barrier(CLK_LOCAL_MEM_FENCE);int b = (lid * 2) + 1;
+        int depth = (int) log2 ((float) length); /* Without plus 1 */
+        for (int d = depth; d >= 0; d--) { /* from depth to 0 */
 
-                barrier(CLK_LOCAL_MEM_FENCE);
+                barrier(CLK_LOCAL_MEM_FENCE); /* wait until all the other threads reach this point */
                 int mask = (0x1 << d) - 1;
                 if ((lid & mask) == mask) {
 
                         int offset = (0x1 << d);
                         int a = b - offset;
-                        int t = data[a];
+                        int t = data[a]; /* swap data[a] and data[b] then data[b] += data[a] */
                         data[a] = data[b];
                         data[b] += t;
                 }
         }
+
+        /* Again depth = 4 and length = 16 so lid = 0 to 7 case as an example
+           d = 4 will have none
+           d = 3 will have 7
+           d = 2 will have 3 7
+           d = 1 will have 1 3 5 7
+           d = 0 will have 0 1 2 3 4 5 6 7
+
+           1st round: data[15] <-> data [7]
+                      data[15] += data[7]
+           2nd round: data[15] <-> data[11]    data[7] <-> data[3]
+                      data[15] += data[11]     data[7] += data[3]
+           3rd round: data[15] <-> data[13]    data[11] <-> data[9]    data[7] <-> data[5]    data[3] <-> data[1]
+                      data[15] += data[13]     data[11] += data[9]     data[7] += data[5]     data[3] += data[1]
+           4nd round: data[15] <-> data[14]    data[13] <-> data[12]   data[11] <-> data[10]  data[9] <-> data[8] ...
+                      data[15] += data[14]     data[13] += data[12]    data[11] += data[10]   data[9] += data[8]  ...
+        
+           let say the data is directly coming from the upsweep
+           then we would got (depicted as the original data index):
+           0 + ... + 15
+           0 + 0 + ... + 15
+           0 + 1 + 0 + ... + 15
+           ...
+           0 + 1 + 2 + ... + 7 + 0 + ... + 15
+           0 + ... + 15 + 0 + ... + 15
+        */
 }
 
 /* Scan */
