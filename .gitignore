@@ -3,4 +3,5 @@
 **/*.d
 
 #executable
-test_separate_filters
+**/obj/test_separate_filters
+**/obj/test_merged_filters
