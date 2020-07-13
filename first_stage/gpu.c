@@ -261,11 +261,27 @@ void gpu_free () {
 	// for (i = 0; i < MAX_QUERIES; i++)
 	// 	if (queries[i])
 	// 		gpu_query_free (queries[i]);
+
+    error = clFlush(config->command_queue[0]);
+    error |= clFlush(config->command_queue[1]);
+    error |= clFinish(config->command_queue[0]);
+    error |= clFinish(config->command_queue[1]);
+    error |= clReleaseKernel(kernel);
+    error |= clReleaseProgram(program);
+    error |= clReleaseMemObject(input_mem);
+    error |= clReleaseMemObject(flags_mem);
+    error |= clReleaseMemObject(num_mem);
+    error |= clReleaseMemObject(output_mem);
+    error |= clReleaseCommandQueue(config->command_queue[0]);
+    error |= clReleaseCommandQueue(config->command_queue[1]);
+	if (error != CL_SUCCESS)
+		fprintf(stderr, "error: failed to free objects\n");
+    
 	if (context)
 		error = clReleaseContext (context);
 	if (error != CL_SUCCESS)
 		fprintf(stderr, "error: failed to free context\n");
-	
+
 	return;
 }
 
