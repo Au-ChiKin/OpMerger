@@ -31,12 +31,8 @@ static cl_mem flags_mem = NULL;
 static cl_mem num_mem = NULL;
 static cl_mem output_mem = NULL;
 
-// static int query_number;
-// static int free_index;
-// ... a bunch of varibales
-
-/* some callback_functions */
-// ...
+static int batch_size = 0;
+static int const tuple_size = 32; /* byte */ 
 
 static void set_platform () {
     int error = 0;
@@ -179,7 +175,7 @@ static void build_program() {
     dbg("[GPU] Building program succeed!\n", NULL);
 }
 
-void set_kernel_input(int batch_size, int tuple_size, void const * data) {
+void set_kernel_input(void const * data) {
     cl_int error = 0;
 
     /* arg:input */
@@ -242,7 +238,7 @@ void set_kernel_input(int batch_size, int tuple_size, void const * data) {
     
 }
 
-void write_output_sim(int batch_size, void * output) {
+void write_output_sim(void * output) {
     cl_int error = 0;
 
     error = clEnqueueReadBuffer(
@@ -255,39 +251,8 @@ void write_output_sim(int batch_size, void * output) {
         0, NULL, NULL);
 }
 
-void gpu_free () {
-	// int i;
-	int error = 0;
-	// for (i = 0; i < MAX_QUERIES; i++)
-	// 	if (queries[i])
-	// 		gpu_query_free (queries[i]);
-
-    error = clFlush(config->command_queue[0]);
-    error |= clFlush(config->command_queue[1]);
-    error |= clFinish(config->command_queue[0]);
-    error |= clFinish(config->command_queue[1]);
-    error |= clReleaseKernel(kernel);
-    error |= clReleaseProgram(program);
-    error |= clReleaseMemObject(input_mem);
-    error |= clReleaseMemObject(flags_mem);
-    error |= clReleaseMemObject(num_mem);
-    error |= clReleaseMemObject(output_mem);
-    error |= clReleaseCommandQueue(config->command_queue[0]);
-    error |= clReleaseCommandQueue(config->command_queue[1]);
-	if (error != CL_SUCCESS)
-		fprintf(stderr, "error: failed to free objects\n");
-    
-	if (context)
-		error = clReleaseContext (context);
-	if (error != CL_SUCCESS)
-		fprintf(stderr, "error: failed to free context\n");
-
-	return;
-}
-
 /* Below are public functions */
-// void gpu_init (JNIEnv *env, int _queries, int _depth) {
-void gpu_init (char const * filename) {
+void gpu_init (char const * filename, int size) {
 
 	// int i;
 	// (void) env; 
@@ -322,6 +287,8 @@ void gpu_init (char const * filename) {
     set_program (filename);
     build_program ();
 
+    batch_size = size;
+
     // [TODO] For multiple queries?
     config = gpu_config(
         0,         /* query_id - query index, only one so 0 */
@@ -353,11 +320,11 @@ void gpu_init (char const * filename) {
 	return;
 }
 
-void gpu_set_kernel(int batch_size, int tuple_size, void const * data) {
+void gpu_set_kernel(void const * data) {
     char const kernel_name [64] = "selectKernel";
     cl_int error = 0;
 
-    set_kernel_input(batch_size, tuple_size, data);
+    set_kernel_input(data);
     
     /* output args */
     cl_mem offsets_mem = clCreateBuffer(context, CL_MEM_WRITE_ONLY, sizeof(int), NULL, &error);
@@ -386,13 +353,13 @@ void gpu_set_kernel(int batch_size, int tuple_size, void const * data) {
 
 }
 
-void gpu_set_kernel_sim(int batch_size, int tuple_size, void const * data, void * result) {
+void gpu_set_kernel_sim(void const * data, void * result) {
     char const kernel_name [64] = "selectf_sim";
     cl_int error = 0;
 
     /* input arguements */
     /* input and flags */
-    set_kernel_input(batch_size, tuple_size, data);
+    set_kernel_input(data);
     /* tuple number */
     num_mem = clCreateBuffer(
         context, 
@@ -451,7 +418,7 @@ void gpu_set_kernel_sim(int batch_size, int tuple_size, void const * data, void 
 
 }
 
-void gpu_exec_sim(int batch_size, void * result) {
+void gpu_exec_sim(void * result) {
     cl_int error = 0;
 
     const size_t local_item_size = 64;
@@ -469,7 +436,37 @@ void gpu_exec_sim(int batch_size, void * result) {
         exit(1);
     }
 
-    write_output_sim(batch_size, result);
+    write_output_sim(result);
 
     dbg("[GPU] Running kernel finishes!\n", NULL);
+}
+
+void gpu_free () {
+	// int i;
+	int error = 0;
+	// for (i = 0; i < MAX_QUERIES; i++)
+	// 	if (queries[i])
+	// 		gpu_query_free (queries[i]);
+
+    error = clFlush(config->command_queue[0]);
+    error |= clFlush(config->command_queue[1]);
+    error |= clFinish(config->command_queue[0]);
+    error |= clFinish(config->command_queue[1]);
+    error |= clReleaseKernel(kernel);
+    error |= clReleaseProgram(program);
+    error |= clReleaseMemObject(input_mem);
+    error |= clReleaseMemObject(flags_mem);
+    error |= clReleaseMemObject(num_mem);
+    error |= clReleaseMemObject(output_mem);
+    error |= clReleaseCommandQueue(config->command_queue[0]);
+    error |= clReleaseCommandQueue(config->command_queue[1]);
+	if (error != CL_SUCCESS)
+		fprintf(stderr, "error: failed to free objects\n");
+    
+	if (context)
+		error = clReleaseContext (context);
+	if (error != CL_SUCCESS)
+		fprintf(stderr, "error: failed to free context\n");
+
+	return;
 }

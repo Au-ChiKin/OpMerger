@@ -13,11 +13,11 @@
 #define VALUE_RANGE 128
 
 void run_processing_gpu(tuple_t * buffer, int size, int * result, int * output_size) {
-    gpu_init("filters_merged.cl");
+    gpu_init("filters_merged.cl", BUFFER_SIZE);
 
-    gpu_set_kernel_sim(BUFFER_SIZE, TUPLE_SIZE, buffer, result);
+    gpu_set_kernel_sim(buffer, result);
 
-    gpu_exec_sim(BUFFER_SIZE, result);
+    gpu_exec_sim(result);
 
     *output_size = size;
     for (int i=0; i<size; i++) {

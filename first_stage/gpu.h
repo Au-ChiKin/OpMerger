@@ -22,13 +22,13 @@ typedef struct query_operator {
 } query_operator_t;
 
 // void gpu_init (JNIEnv *, int, int);
-void gpu_init ();
+void gpu_init (char const * filename, int size);
 
-void gpu_set_kernel(int batch_size, int tuple_size, void const * data);
+void gpu_set_kernel(void const * data);
 
-void gpu_set_kernel_sim(int batch_size, int tuple_size, void const * data, void * result);
+void gpu_set_kernel_sim(void const * data, void * result);
 
-void gpu_exec_sim(int batch_size, void * result);
+void gpu_exec_sim(void * result);
 
 void gpu_free ();
 
