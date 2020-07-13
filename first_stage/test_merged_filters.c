@@ -8,7 +8,7 @@
 #include <stdlib.h>
 #include <stdbool.h>
 
-#define BUFFER_SIZE 32768 / 2 /* in tuple */
+#define BUFFER_SIZE 32768 / 8 /* in tuple */
 #define TUPLE_SIZE 32
 #define VALUE_RANGE 128
 
@@ -23,6 +23,8 @@ void run_processing_gpu(tuple_t * buffer, int size, int * result, int * output_s
             *output_size -= 1;
         }
     }
+
+    gpu_exec_sim(BUFFER_SIZE);
 
     gpu_free();
 }

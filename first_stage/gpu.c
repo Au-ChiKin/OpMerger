@@ -395,8 +395,8 @@ void gpu_set_kernel_sim(int batch_size, int tuple_size, void const * data, void 
 
     /* set arguments */
     error = clSetKernelArg( kernel, 0, sizeof(cl_mem), &input_mem);
-    error = clSetKernelArg( kernel, 0, sizeof(cl_mem), &flags_mem);
-    error = clSetKernelArg( kernel, 0, sizeof(cl_mem), &output_mem);
+    error = clSetKernelArg( kernel, 1, sizeof(cl_mem), &flags_mem);
+    error = clSetKernelArg( kernel, 2, sizeof(cl_mem), &num_mem);
     if (error != CL_SUCCESS) {
         fprintf(stderr, "error: fail to set arguments\n", NULL);
         exit(1);
@@ -406,11 +406,26 @@ void gpu_set_kernel_sim(int batch_size, int tuple_size, void const * data, void 
 
 }
 
-// void gpu_exec(int batch_size, int tuple_size) {
+void gpu_exec_sim(int batch_size) {
+    cl_int error = 0;
 
+    const size_t local_item_size = 64;
+    const size_t global_item_size = batch_size;
+    error = clEnqueueNDRangeKernel(
+        config->command_queue[0],
+        kernel,
+        1,
+        NULL,
+        &global_item_size,
+        &local_item_size,
+        0, NULL, NULL);
+    if (error != CL_SUCCESS) {
+        dbg("error: fail to enqueue the kernel with error(%d): %s\n", error, getErrorMessage(error));
+        exit(1);
+    }
 
-
-// }
+    dbg("[GPU] Running kernel finishes!\n", NULL);
+}
 
 // int gpu_query_setOutput (gpu_query_p q, int ndx, int size, int writeOnly, int doNotMove, int bearsMark, int readEvent, int ignoreMark) {
 // 	if (! q)
