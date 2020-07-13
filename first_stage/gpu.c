@@ -28,6 +28,7 @@ static gpu_config_p config = NULL;
 
 static cl_mem input_mem = NULL;
 static cl_mem flags_mem = NULL;
+static cl_mem num_mem = NULL;
 
 // static int query_number;
 // static int free_index;
@@ -308,7 +309,6 @@ void gpu_init (char const * filename) {
 	return;
 }
 
-
 void gpu_set_kernel(int batch_size, int tuple_size, void const * data) {
     char const kernel_name [64] = "selectKernel";
     cl_int error = 0;
@@ -341,6 +341,76 @@ void gpu_set_kernel(int batch_size, int tuple_size, void const * data) {
     dbg("[GPU] Set kernel succeed!\n");
 
 }
+
+void gpu_set_kernel_sim(int batch_size, int tuple_size, void const * data, void const * result) {
+    char const kernel_name [64] = "selectf_sim";
+    cl_int error = 0;
+
+    /* input arguements */
+    /* input and flags */
+    set_kernel_input(batch_size, tuple_size, data);
+    /* tuple number */
+    num_mem = clCreateBuffer(
+        context, 
+        CL_MEM_READ_ONLY, 
+        sizeof(int), 
+        NULL, 
+        &error);
+    if (error != CL_SUCCESS) {
+        fprintf(stderr, "error: failed to set arguement num", NULL);
+        exit(1);
+    }
+    error = clEnqueueWriteBuffer(
+        config->command_queue[0], 
+        num_mem, 
+        CL_TRUE,         /* blocking write */
+        0, 
+        sizeof(int), 
+        &tuple_size,     /* data in the host memeory */
+        0, NULL, NULL);  /* event related */
+    if (error != CL_SUCCESS) {
+        fprintf(stderr, "error: failed to enqueue write buffer command", NULL);
+        exit(1);
+    }
+    dbg("[GPU] Succeed to set input\n", NULL);
+    
+    /* output args */
+    cl_mem output_mem = clCreateBuffer(
+        context, 
+        CL_MEM_WRITE_ONLY, 
+        batch_size * sizeof(int), 
+        NULL, 
+        &error);
+    if (error != CL_SUCCESS) {
+        fprintf(stderr, "error: failed to set arguement output", NULL);
+        exit(1);
+    }
+
+    /* retrieve a kernel entry */
+    kernel = clCreateKernel(program, kernel_name, &error);
+    if (error != CL_SUCCESS) {
+        fprintf(stderr, "error: fail to build the %s\n", kernel_name);
+        exit(1);
+    }
+
+    /* set arguments */
+    error = clSetKernelArg( kernel, 0, sizeof(cl_mem), &input_mem);
+    error = clSetKernelArg( kernel, 0, sizeof(cl_mem), &flags_mem);
+    error = clSetKernelArg( kernel, 0, sizeof(cl_mem), &output_mem);
+    if (error != CL_SUCCESS) {
+        fprintf(stderr, "error: fail to set arguments\n", NULL);
+        exit(1);
+    }
+
+    dbg("[GPU] Set kernel succeed!\n");
+
+}
+
+// void gpu_exec(int batch_size, int tuple_size) {
+
+
+
+// }
 
 // int gpu_query_setOutput (gpu_query_p q, int ndx, int size, int writeOnly, int doNotMove, int bearsMark, int readEvent, int ignoreMark) {
 // 	if (! q)
@@ -435,11 +505,7 @@ void gpu_set_kernel(int batch_size, int tuple_size, void const * data) {
 //     }
 // }
 
-// void gpu_exec(int batch_size, int tuple_size) {
 
-
-
-// }
 
 void gpu_free () {
 	// int i;

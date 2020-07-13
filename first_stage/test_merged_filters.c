@@ -12,10 +12,17 @@
 #define TUPLE_SIZE 32
 #define VALUE_RANGE 128
 
-void run_processing_gpu(tuple_t * buffer, int size, tuple_t * result, int * output_size) {
+void run_processing_gpu(tuple_t * buffer, int size, int * result, int * output_size) {
     gpu_init("filters_merged.cl");
 
-    gpu_set_kernel(BUFFER_SIZE, TUPLE_SIZE, buffer);
+    gpu_set_kernel_sim(BUFFER_SIZE, TUPLE_SIZE, buffer, result);
+
+    *output_size = size;
+    for (int i=0; i<size; i++) {
+        if (!result[i]) {
+            *output_size -= 1;
+        }
+    }
 
     gpu_free();
 }
@@ -83,7 +90,7 @@ int main() {
         cur += 1;
     }
 
-    tuple_t results[BUFFER_SIZE];
+    tuple_t results[BUFFER_SIZE] = {1};
     int results_size = 0;
     run_processing_cpu(buffer, BUFFER_SIZE, results, &results_size);
 

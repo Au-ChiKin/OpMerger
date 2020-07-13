@@ -68,6 +68,18 @@ inline int selectf (__global input_t *p) {
 	return value;
 }
 
+__kernel void selectf_sim (__global input_t *p, __global int * flags, __global int * num) {
+	int value = 1;
+	int attribute_value = __bswap32(p->tuple._1);
+	value = value & (attribute_value < 50); // if attribute < 50?
+
+	attribute_value = __bswap32(p->tuple._2);
+	value = value & (attribute_value != 0); // if attribute != 0?
+
+	attribute_value = __bswap32(p->tuple._3);
+	value = value & (attribute_value >= 25); // if attribute >= 25?
+}
+
 /* Scan based on the implementation of [...] */
 
 /*
