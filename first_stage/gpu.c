@@ -354,7 +354,7 @@ void gpu_set_kernel(void const * data) {
 }
 
 void gpu_set_kernel_sim(void const * data, void * result) {
-    char const kernel_name [64] = "selectf_sim";
+    char const kernel_name [64] = "selectf1_sim";
     cl_int error = 0;
 
     /* input arguements */

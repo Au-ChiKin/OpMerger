@@ -1,5 +1,5 @@
 /* 
- * The main logic to run the experiment of seperated operators
+ * The main logic to run the experiment of merged operators
  */
 #include "gpu.h"
 #include "tuple.h"

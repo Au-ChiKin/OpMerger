@@ -9,10 +9,22 @@
 #include <stdbool.h>
 
 #define BUFFER_SIZE 32768 /* in tuple */
+#define TUPLE_SIZE 32
 #define VALUE_RANGE 128
 
-void run_processing_gpu(tuple_t * buffer, int size, tuple_t * result, int * output_size) {
-    gpu_init();
+void run_processing_gpu(tuple_t * buffer, int size, int * result, int * output_size) {
+    gpu_init("filters_separate.cl", BUFFER_SIZE);
+
+    gpu_set_kernel_sim(buffer, result);
+
+    gpu_exec_sim(result);
+
+    *output_size = size;
+    for (int i=0; i<size; i++) {
+        if (!result[i]) {
+            *output_size -= 1;
+        }
+    }
 
     gpu_free();
 }
@@ -59,7 +71,6 @@ int main() {
 
         // #1
         buffer[cur].i1 = value;
-        value = (value + 1) % VALUE_RANGE;
 
         // #2
         if (flipper) {
@@ -77,13 +88,14 @@ int main() {
         buffer[cur].i5 = 1;
         buffer[cur].i6 = 1;
 
+        value = (value + 1) % VALUE_RANGE;
         cur += 1;
     }
 
-    // TODO: Start processing
-    tuple_t results[BUFFER_SIZE];
+    
     int results_size = 0;
-    run_processing_cpu(buffer, BUFFER_SIZE, results, &results_size);
+    tuple_t results_tuple[BUFFER_SIZE];
+    run_processing_cpu(buffer, BUFFER_SIZE, results_tuple, &results_size);
 
     /* output the result size */
     /*
@@ -94,7 +106,17 @@ int main() {
      * 
      * output should be 32768 x (50%)^3 = 4096
      */
-    printf("The output from cpu is %d\n", results_size);
+    printf("[CPU] The output from cpu is %d\n\n", results_size);
+
+
+    int results[BUFFER_SIZE];
+    for (int i=0; i<BUFFER_SIZE; i++) {
+        results[i] = 1;
+    }
+    results_size = 0; /* start from begining for GPU */
+    run_processing_gpu(buffer, BUFFER_SIZE, results, &results_size);
+
+    printf("[GPU] The output from gpu is %d\n", results_size);
 
     return 0;
 }

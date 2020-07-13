@@ -16,7 +16,7 @@
 
 #pragma OPENCL EXTENSION cl_khr_byte_addressable_store: enable
 
-#include ".。/clib/templates/byteorder.h"
+#include "../clib/templates/byteorder.h"
 #define INPUT_VECTOR_SIZE 2
 #define OUTPUT_VECTOR_SIZE 2
 
@@ -55,27 +55,30 @@ typedef union {
 } output_t;
 
 // predicate1 : column1 < 50 
-inline int selectf1 (__global input_t *p) {
-	int value = 1;
-	int attribute_value = __bswap32(p->tuple._1);
-	value = value & (attribute_value < 50); // if attribute != 0?
-	return value;
+__kernel void selectf1_sim (__global input_t * input, __global int * flags, __global int * num, __global int * output) {
+	int gid = get_global_id(0);
+        int value = 1;
+	int attribute_value = input[gid].tuple._1;;
+	value = value & (attribute_value < 128 / 2); // if attribute != 0?
+	output[gid] = value;
 }
 
 // predicate2 : column2 == 1
-inline int selectf2 (__global input_t *p) {
-	int value = 1;
-	int attribute_value = __bswap32(p->tuple._2);
+__kernel void selectf2_sim (__global input_t * input, __global int * flags, __global int * num, __global int * output) {
+	int gid = get_global_id(0);
+        int value = 1;
+	int attribute_value = input[gid].tuple._2;
 	value = value & (attribute_value != 0); // if attribute != 0?
-	return value;
+	output[gid] &= value;
 }
 
 // predicate3 : column3 > 50
-inline int selectf2 (__global input_t *p) {
-	int value = 1;
-	int attribute_value = __bswap32(p->tuple._3);
-	value = value & (attribute_value > 50); // if attribute != 0?
-	return value;
+__kernel void selectf3_sim (__global input_t * input, __global int * flags, __global int * num, __global int * output) {
+	int gid = get_global_id(0);
+        int value = 1;
+	int attribute_value = input[gid].tuple._3;
+	value = value & (attribute_value > 128 / 4); // if attribute != 0?
+	output[gid] &= value;
 }
 
 /* Scan based on the implementation of [...] */
@@ -84,63 +87,63 @@ inline int selectf2 (__global input_t *p) {
  * Up-sweep (reduce) on a local array `data` of length `length`.
  * `length` must be a power of two.
  */
-inline void upsweep (__local int *data, int length) {
+// inline void upsweep (__local int *data, int length) {
 
-        int lid  = get_local_id (0);
-        int b = (lid * 2) + 1;
-        int depth = 1 + (int) log2 ((float) length);
+//         int lid  = get_local_id (0);
+//         int b = (lid * 2) + 1;
+//         int depth = 1 + (int) log2 ((float) length);
 
-        for (int d = 0; d < depth; d++) {
+//         for (int d = 0; d < depth; d++) {
 
-                barrier(CLK_LOCAL_MEM_FENCE);
-                int mask = (0x1 << d) - 1;
-                if ((lid & mask) == mask) {
+//                 barrier(CLK_LOCAL_MEM_FENCE);
+//                 int mask = (0x1 << d) - 1;
+//                 if ((lid & mask) == mask) {
 
-                        int offset = (0x1 << d);
-                        int a = b - offset;
-                        data[b] += data[a];
-                }
-        }
-}
+//                         int offset = (0x1 << d);
+//                         int a = b - offset;
+//                         data[b] += data[a];
+//                 }
+//         }
+// }
 
 /*
  * Down-sweep on a local array `data` of length `length`.
  * `length` must be a power of two.
  */
-inline void downsweep (__local int *data, int length) {
+// inline void downsweep (__local int *data, int length) {
 
-        int lid = get_local_id (0);
-        int b = (lid * 2) + 1;
-        int depth = (int) log2 ((float) length);
-        for (int d = depth; d >= 0; d--) {
+//         int lid = get_local_id (0);
+//         int b = (lid * 2) + 1;
+//         int depth = (int) log2 ((float) length);
+//         for (int d = depth; d >= 0; d--) {
 
-                barrier(CLK_LOCAL_MEM_FENCE);
-                int mask = (0x1 << d) - 1;
-                if ((lid & mask) == mask) {
+//                 barrier(CLK_LOCAL_MEM_FENCE);
+//                 int mask = (0x1 << d) - 1;
+//                 if ((lid & mask) == mask) {
 
-                        int offset = (0x1 << d);
-                        int a = b - offset;
-                        int t = data[a];
-                        data[a] = data[b];
-                        data[b] += t;
-                }
-        }
-}
+//                         int offset = (0x1 << d);
+//                         int a = b - offset;
+//                         int t = data[a];
+//                         data[a] = data[b];
+//                         data[b] += t;
+//                 }
+//         }
+// }
 
 /* Scan */
-inline void scan (__local int *data, int length) {
+// inline void scan (__local int *data, int length) {
 
-        int lid = get_local_id (0);
-        int lane = (lid * 2) + 1;
+//         int lid = get_local_id (0);
+//         int lane = (lid * 2) + 1;
 
-        upsweep (data, length);
+//         upsweep (data, length);
 
-        if (lane == (length - 1))
-                data[lane] = 0;
+//         if (lane == (length - 1))
+//                 data[lane] = 0;
 
-        downsweep (data, length);
-        return ;
-}
+//         downsweep (data, length);
+//         return ;
+// }
 
 /*
  * Assumes:
@@ -154,79 +157,79 @@ inline void scan (__local int *data, int length) {
  *
  */
 
-__kernel void selectKernel (
-        const int operator,
-        const int size,
-        const int tuples,
-        __global const uchar *input,
-        __global int *flags, /* The output of select (0 or 1) */ // [input & output]
-        __global int *offsets, // [output] maps the local memory position of the tuples to global memory
-        __global int *partitions, // [output] ???
-        __global uchar *output, // [output] ???
-        __local  int *x // [output] local memory position of tuples
-)
-{
-        int lgs = get_local_size (0); // local group size (thread number in the group)
-        int tid = get_global_id (0);  // global thread id
+// __kernel void selectKernel (
+//         const int operator,
+//         const int size,
+//         const int tuples,
+//         __global const uchar *input,
+//         __global int *flags, /* The output of select (0 or 1) */ // [input & output]
+//         __global int *offsets, // [output] maps the local memory position of the tuples to global memory
+//         __global int *partitions, // [output] ???
+//         __global uchar *output, // [output] ???
+//         __local  int *x // [output] local memory position of tuples
+// )
+// {
+//         int lgs = get_local_size (0); // local group size (thread number in the group)
+//         int tid = get_global_id (0);  // global thread id
 
-        int  left = (2 * tid); // tuple1 id
-        int right = (2 * tid) + 1; // tuple2 id
+//         int  left = (2 * tid); // tuple1 id
+//         int right = (2 * tid) + 1; // tuple2 id
 
-        int lid = get_local_id(0); // local thread id
+//         int lid = get_local_id(0); // local thread id
 
-        /* Local memory indices */
-        int  _left = (2 * lid); // tuple1 memory indice on local memory
-        int _right = (2 * lid) + 1; // tuple2 memory indice
+//         /* Local memory indices */
+//         int  _left = (2 * lid); // tuple1 memory indice on local memory
+//         int _right = (2 * lid) + 1; // tuple2 memory indice
 
-        int gid = get_group_id (0); // group id
-        /* A thread group processes twice as many tuples */
-        int L = 2 * lgs; // total tuples in the group
+//         int gid = get_group_id (0); // group id
+//         /* A thread group processes twice as many tuples */
+//         int L = 2 * lgs; // total tuples in the group
 
-        /* Fetch tuple and apply selection filter */
-        const int lidx =  left * sizeof(input_t);
-        const int ridx = right * sizeof(input_t);
+//         /* Fetch tuple and apply selection filter */
+//         const int lidx =  left * sizeof(input_t);
+//         const int ridx = right * sizeof(input_t);
 
-        // opencl syntax
-        __global input_t *lp = (__global input_t *) &input[lidx];
-        __global input_t *rp = (__global input_t *) &input[ridx];
+//         // opencl syntax
+//         __global input_t *lp = (__global input_t *) &input[lidx];
+//         __global input_t *rp = (__global input_t *) &input[ridx];
 
-        // apply predicates
-        switch (operator) {
-            case 1:
-                flags[ left] = selectf1 (lp);
-                flags[right] = selectf1 (rp);
-                break;
-            case 2:
-                flags[ left] = selectf2 (lp);
-                flags[right] = selectf2 (rp);
-                break;
-            case 3:
-                flags[ left] = selectf3 (lp);
-                flags[right] = selectf3 (rp);
-                break;
-            default:
-                break;
-        }
+//         // apply predicates
+//         switch (operator) {
+//             case 1:
+//                 flags[ left] = selectf1 (lp);
+//                 flags[right] = selectf1 (rp);
+//                 break;
+//             case 2:
+//                 flags[ left] = selectf2 (lp);
+//                 flags[right] = selectf2 (rp);
+//                 break;
+//             case 3:
+//                 flags[ left] = selectf3 (lp);
+//                 flags[right] = selectf3 (rp);
+//                 break;
+//             default:
+//                 break;
+//         }
 
-        /* Copy flag to local memory */
-        x[ _left] = (left  < tuples) ? flags[ left] : 0; // left < tuples means not exceeding the total amount of tuples
-        x[_right] = (right < tuples) ? flags[right] : 0; // if exceeding -> 0 -> means not taking this tuple
+//         /* Copy flag to local memory */
+//         x[ _left] = (left  < tuples) ? flags[ left] : 0; // left < tuples means not exceeding the total amount of tuples
+//         x[_right] = (right < tuples) ? flags[right] : 0; // if exceeding -> 0 -> means not taking this tuple
 
-        upsweep(x, L);
+//         upsweep(x, L);
 
-        // if this thread is the last in this group, save the flag of right tuple in partitions 
-        // array corresponding to the group id and put a 0 to its flag  
-        if (lid == (lgs - 1)) { // _left = lid * 2 = 2 * (lgs - 1) = (2 * lgs - 1) - 1
-                partitions[gid] = x[_right];
-                x[_right] = 0; // ???
-        }
+//         // if this thread is the last in this group, save the flag of right tuple in partitions 
+//         // array corresponding to the group id and put a 0 to its flag  
+//         if (lid == (lgs - 1)) { // _left = lid * 2 = 2 * (lgs - 1) = (2 * lgs - 1) - 1
+//                 partitions[gid] = x[_right];
+//                 x[_right] = 0; // ???
+//         }
 
-        downsweep(x, L);
+//         downsweep(x, L);
 
-        /* Write results to global memory */
-        offsets[ left] = ( left < tuples) ? x[ _left] : -1;
-        offsets[right] = (right < tuples) ? x[_right] : -1;
-}
+//         /* Write results to global memory */
+//         offsets[ left] = ( left < tuples) ? x[ _left] : -1;
+//         offsets[right] = (right < tuples) ? x[_right] : -1;
+// }
 
 
 __kernel void compactKernel (
