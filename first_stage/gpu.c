@@ -426,21 +426,23 @@ void gpu_set_kernel_sim(void const * data, void * result) {
 }
 
 void gpu_exec_sim(void * result) {
-    cl_int error = 0;
 
     const size_t local_item_size = 64;
     const size_t global_item_size = batch_size;
-    error = clEnqueueNDRangeKernel(
-        config->command_queue[0],
-        kernel[0],
-        1,
-        NULL,
-        &global_item_size,
-        &local_item_size,
-        0, NULL, NULL);
-    if (error != CL_SUCCESS) {
-        fprintf(stderr, "error: fail to enqueue the kernel with error(%d): %s\n", error, getErrorMessage(error));
-        exit(1);
+    for (int k=0; k<config->kernel.count; k++) {
+        cl_int error = 0;
+        error = clEnqueueNDRangeKernel(
+            config->command_queue[0],
+            kernel[k],
+            1,
+            NULL,
+            &global_item_size,
+            &local_item_size,
+            0, NULL, NULL);
+        if (error != CL_SUCCESS) {
+            fprintf(stderr, "error: fail to enqueue the kernel with error(%d): %s\n", error, getErrorMessage(error));
+            exit(1);
+        }
     }
 
     write_output_sim(result);

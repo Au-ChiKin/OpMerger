@@ -77,7 +77,7 @@ __kernel void selectf3_sim (__global input_t * input, __global int * flags, __gl
 	int gid = get_global_id(0);
         int value = 1;
 	int attribute_value = input[gid].tuple._3;
-	value = value & (attribute_value > 128 / 4); // if attribute != 0?
+	value = value & (attribute_value >= 128 / 4); // if attribute != 0?
 	output[gid] &= value;
 }
 
