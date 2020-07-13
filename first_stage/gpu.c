@@ -129,7 +129,7 @@ static void set_program(char const * file_name) {
 		fprintf(stderr, "opencl error (%d): %s\n", error, getErrorMessage(error));
 		exit (1);
 	}
-    dbg("[GPU] Loaded kernel source length of %d bytes\n", source_size);
+    dbg("[GPU] Loaded kernel source length of %zu bytes\n", source_size);
 
     // Build a program from the loaded kernels
     program = clCreateProgramWithSource(
@@ -137,7 +137,7 @@ static void set_program(char const * file_name) {
         1,         /* The number of strings */
         (const char**) &source_str,
         NULL,
-        error);
+        &error);
 
 	if (error != CL_SUCCESS) {
 		fprintf(stderr, "opencl error (%d): %s\n", error, getErrorMessage(error));
@@ -357,7 +357,7 @@ void gpu_set_kernel_sim(int batch_size, int tuple_size, void const * data, void 
         NULL, 
         &error);
     if (error != CL_SUCCESS) {
-        fprintf(stderr, "error: failed to set arguement num", NULL);
+        fprintf(stderr, "error: failed to set arguement num\n", NULL);
         exit(1);
     }
     error = clEnqueueWriteBuffer(
@@ -369,7 +369,7 @@ void gpu_set_kernel_sim(int batch_size, int tuple_size, void const * data, void 
         &tuple_size,     /* data in the host memeory */
         0, NULL, NULL);  /* event related */
     if (error != CL_SUCCESS) {
-        fprintf(stderr, "error: failed to enqueue write buffer command", NULL);
+        fprintf(stderr, "error: failed to enqueue write buffer command\n", NULL);
         exit(1);
     }
     dbg("[GPU] Succeed to set input\n", NULL);
@@ -382,7 +382,7 @@ void gpu_set_kernel_sim(int batch_size, int tuple_size, void const * data, void 
         NULL, 
         &error);
     if (error != CL_SUCCESS) {
-        fprintf(stderr, "error: failed to set arguement output", NULL);
+        fprintf(stderr, "error: failed to set arguement output\n", NULL);
         exit(1);
     }
 
@@ -420,106 +420,12 @@ void gpu_exec_sim(int batch_size) {
         &local_item_size,
         0, NULL, NULL);
     if (error != CL_SUCCESS) {
-        dbg("error: fail to enqueue the kernel with error(%d): %s\n", error, getErrorMessage(error));
+        fprintf(stderr, "error: fail to enqueue the kernel with error(%d): %s\n", error, getErrorMessage(error));
         exit(1);
     }
 
     dbg("[GPU] Running kernel finishes!\n", NULL);
 }
-
-// int gpu_query_setOutput (gpu_query_p q, int ndx, int size, int writeOnly, int doNotMove, int bearsMark, int readEvent, int ignoreMark) {
-// 	if (! q)
-// 		return -1;
-// 	if (ndx < 0 || ndx > q->contexts[0]->kernelOutput.count) {
-// 		fprintf(stderr, "error: output buffer index [%d] out of bounds\n", ndx);
-// 		exit (1);
-// 	}
-// 	int i;
-// 	for (i = 0; i < NCONTEXTS; i++)
-// 		gpu_context_setOutput (q->contexts[i], ndx, size, writeOnly, doNotMove, bearsMark, readEvent, ignoreMark);
-// 	return 0;
-// }
-
-
-// outputBufferP getOutputBuffer (cl_context context, cl_command_queue queue, int size,
-// 	int writeOnly, int doNotMove, int bearsMark, int readEvent, int ignoreMark) {
-
-// 	outputBufferP p = malloc(sizeof(output_buffer_t));
-// 	if (! p) {
-// 		fprintf(stderr, "fatal error: out of memory\n");
-// 		exit (1);
-// 	}
-// 	p->size = size;
-
-// 	p->writeOnly = (unsigned char) writeOnly;
-// 	p->doNotMove = (unsigned char) doNotMove;
-// 	p->bearsMark = (unsigned char) bearsMark;
-// 	p->readEvent = (unsigned char) readEvent;
-// 	p->ignoreMark= (unsigned char) ignoreMark;
-
-// 	int error;
-// 	cl_mem_flags flags;
-// 	if (writeOnly)
-// 		flags = CL_MEM_WRITE_ONLY;
-// 	else
-// 		flags = CL_MEM_READ_WRITE;
-// 	/* Set p->device_buffer */
-// 	p->device_buffer = clCreateBuffer (
-// 		context,
-// 		flags,
-// 		p->size,
-// 		NULL,
-// 		&error);
-// 	if (! p->device_buffer) {
-// 		fprintf(stderr, "opencl error (%d): %s\n", error, getErrorMessage(error));
-// 		exit (1);
-// 	}
-// 	/* Allocate buffers */
-// 	p->pinned_buffer = clCreateBuffer (
-// 		context,
-// 		CL_MEM_READ_WRITE | CL_MEM_ALLOC_HOST_PTR,
-// 		p->size,
-// 		NULL,
-// 		&error);
-// 	if (! p->pinned_buffer) {
-// 		fprintf(stderr, "opencl error (%d): %s\n", error, getErrorMessage(error));
-// 		exit (1);
-// 	}
-// 	p->mapped_buffer = (void *) clEnqueueMapBuffer (
-// 		queue,
-// 		p->pinned_buffer,
-// 		CL_TRUE,
-// 		CL_MAP_READ,
-// 		0,
-// 		p->size,
-// 		0, NULL, NULL,
-// 		&error);
-// 	if (! p->mapped_buffer) {
-// 		fprintf(stderr, "opencl error (%d): %s\n", error, getErrorMessage(error));
-// 		exit (1);
-// 	}
-// 	return p;
-// }
-
-// void gpu_context_setOutput (gpu_config_p c, int ndx, int size,
-
-// 	int writeOnly, int doNotMove, int bearsMark, int readEvent, int ignoreMark) {
-
-// 	c->kernelOutput.outputs[ndx] =
-// 			getOutputBuffer (c->context, c->queue[0], size, writeOnly, doNotMove, bearsMark, readEvent, ignoreMark);
-// }
-
-
-
-// void write_input(int batch_size, int tuple_size, char const * data) {
-//     cl_int error = 0;
-
-//     error = clEnqueueWriteBuffer(config->queue[0], input_mem, CL_TRUE, 0, batch_size * tuple_size, data, 0, NULL, NULL);
-//     if (error != CL_SUCCESS) {
-//         fprintf(stderr, "error: fialed to enqueue write buffer", NULL);
-//     }
-// }
-
 
 
 void gpu_free () {

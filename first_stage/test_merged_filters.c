@@ -8,7 +8,7 @@
 #include <stdlib.h>
 #include <stdbool.h>
 
-#define BUFFER_SIZE 32768 / 8 /* in tuple */
+#define BUFFER_SIZE 32768 /* in tuple */
 #define TUPLE_SIZE 32
 #define VALUE_RANGE 128
 
@@ -92,9 +92,10 @@ int main() {
         cur += 1;
     }
 
-    tuple_t results[BUFFER_SIZE] = {1};
+    
     int results_size = 0;
-    run_processing_cpu(buffer, BUFFER_SIZE, results, &results_size);
+    tuple_t results_tuple[BUFFER_SIZE];
+    run_processing_cpu(buffer, BUFFER_SIZE, results_tuple, &results_size);
 
     /* output the result size */
     /*
@@ -107,7 +108,11 @@ int main() {
      */
     printf("[CPU] The output from cpu is %d\n\n", results_size);
 
-    // TODO: Start processing
+
+    int results[BUFFER_SIZE];
+    for (int i=0; i<BUFFER_SIZE; i++) {
+        results[i] = 1;
+    }
     results_size = 0; /* start from begining for GPU */
     run_processing_gpu(buffer, BUFFER_SIZE, results, &results_size);
 
