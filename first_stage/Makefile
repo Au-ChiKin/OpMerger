@@ -12,10 +12,10 @@ DEPDIR  := $(OBJDIR)/.deps
 VPATH    = $(OBJDIR)
 
 # Targets
-# PROGS   = test_merged_filters 
-PROGS   = test_separate_filters
-# SRCS = gpu.c gpu_config.c test_merged_filters.c openclerrorcode.c
-SRCS = gpu.c gpu_config.c test_separate_filters.c openclerrorcode.c
+PROGS   = test_merged_filters 
+# PROGS   = test_separate_filters
+SRCS = gpu.c gpu_config.c test_merged_filters.c openclerrorcode.c
+# SRCS = gpu.c gpu_config.c test_separate_filters.c openclerrorcode.c
 OBJECTS = $(patsubst %.c,%.o,$(SRCS))
 
 # Scripts
