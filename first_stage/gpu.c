@@ -22,7 +22,7 @@ static cl_platform_id platform = NULL;
 static cl_device_id device = NULL;
 static cl_context context = NULL;
 static cl_program program = NULL;
-static cl_kernel kernel = NULL;
+static cl_kernel kernel[3];
 
 static gpu_config_p config = NULL;
 
@@ -252,7 +252,7 @@ void write_output_sim(void * output) {
 }
 
 /* Below are public functions */
-void gpu_init (char const * filename, int size) {
+void gpu_init (char const * filename, int size, int kernel_num) {
 
 	// int i;
 	// (void) env; 
@@ -295,7 +295,7 @@ void gpu_init (char const * filename, int size) {
         device,
         context, 
         program,
-        2,         /* _kerenels - kernel number, somehow there are two opencl 
+        kernel_num,         /* _kerenels - kernel number, somehow there are two opencl 
                       kernels within one Saber kernel */
         1,         /* _inputs - input number */
         4);        /* _outputs - output number */
@@ -320,41 +320,40 @@ void gpu_init (char const * filename, int size) {
 	return;
 }
 
-void gpu_set_kernel(void const * data) {
-    char const kernel_name [64] = "selectKernel";
-    cl_int error = 0;
+// void gpu_set_kernel(void const * data) {
+//     char const kernel_name [64] = "selectKernel";
+//     cl_int error = 0;
 
-    set_kernel_input(data);
+//     set_kernel_input(data);
     
-    /* output args */
-    cl_mem offsets_mem = clCreateBuffer(context, CL_MEM_WRITE_ONLY, sizeof(int), NULL, &error);
-    cl_mem partitions_mem = clCreateBuffer(context, CL_MEM_WRITE_ONLY, sizeof(int), NULL, &error);
-    cl_mem output_mem = clCreateBuffer(context, CL_MEM_WRITE_ONLY, sizeof(unsigned char), NULL, &error);
-    cl_mem local_pos_mem = clCreateBuffer(context, CL_MEM_WRITE_ONLY, sizeof(int), NULL, &error);
+//     /* output args */
+//     cl_mem offsets_mem = clCreateBuffer(context, CL_MEM_WRITE_ONLY, sizeof(int), NULL, &error);
+//     cl_mem partitions_mem = clCreateBuffer(context, CL_MEM_WRITE_ONLY, sizeof(int), NULL, &error);
+//     cl_mem output_mem = clCreateBuffer(context, CL_MEM_WRITE_ONLY, sizeof(unsigned char), NULL, &error);
+//     cl_mem local_pos_mem = clCreateBuffer(context, CL_MEM_WRITE_ONLY, sizeof(int), NULL, &error);
 
-    kernel = clCreateKernel(program, kernel_name, &error);
-    if (error != CL_SUCCESS) {
-        fprintf(stderr, "error: fail to build the %s\n", kernel_name);
-        exit(1);
-    }
+//     kernel[0] = clCreateKernel(program, kernel_name, &error);
+//     if (error != CL_SUCCESS) {
+//         fprintf(stderr, "error: fail to build the %s\n", kernel_name);
+//         exit(1);
+//     }
 
-    error = clSetKernelArg( kernel, 0, sizeof(cl_mem), &input_mem);
-    error = clSetKernelArg( kernel, 0, sizeof(cl_mem), &flags_mem);
-    error = clSetKernelArg( kernel, 0, sizeof(cl_mem), &offsets_mem);
-    error = clSetKernelArg( kernel, 0, sizeof(cl_mem), &partitions_mem);
-    error = clSetKernelArg( kernel, 0, sizeof(cl_mem), &output_mem);
-    error = clSetKernelArg( kernel, 0, sizeof(cl_mem), &local_pos_mem);
-    if (error != CL_SUCCESS) {
-        fprintf(stderr, "error: fail to set arguments\n", NULL);
-        exit(1);
-    }
+//     error = clSetKernelArg( kernel, 0, sizeof(cl_mem), &input_mem);
+//     error = clSetKernelArg( kernel, 0, sizeof(cl_mem), &flags_mem);
+//     error = clSetKernelArg( kernel, 0, sizeof(cl_mem), &offsets_mem);
+//     error = clSetKernelArg( kernel, 0, sizeof(cl_mem), &partitions_mem);
+//     error = clSetKernelArg( kernel, 0, sizeof(cl_mem), &output_mem);
+//     error = clSetKernelArg( kernel, 0, sizeof(cl_mem), &local_pos_mem);
+//     if (error != CL_SUCCESS) {
+//         fprintf(stderr, "error: fail to set arguments\n", NULL);
+//         exit(1);
+//     }
 
-    dbg("[GPU] Set kernel succeed!\n");
+//     dbg("[GPU] Set kernel succeed!\n");
 
-}
+// }
 
 void gpu_set_kernel_sim(void const * data, void * result) {
-    char const kernel_name [64] = "selectf1_sim";
     cl_int error = 0;
 
     /* input arguements */
@@ -396,24 +395,32 @@ void gpu_set_kernel_sim(void const * data, void * result) {
         fprintf(stderr, "error: failed to set arguement output\n", NULL);
         exit(1);
     }
+    dbg("[GPU] Succeed to set output\n", NULL);
 
-    /* retrieve a kernel entry */
-    kernel = clCreateKernel(program, kernel_name, &error);
-    if (error != CL_SUCCESS) {
-        fprintf(stderr, "error: fail to build the %s\n", kernel_name);
-        exit(1);
+    for (int k=0; k<config->kernel.count; k++) {
+        char kernel_name [64] = "selectf";
+        char num [2];
+        sprintf(num, "%d", k+1);
+        strcat(kernel_name, num);
+        strcat(kernel_name, "_sim");
+
+        /* retrieve a kernel entry */
+        kernel[k] = clCreateKernel(program, kernel_name, &error);
+        if (error != CL_SUCCESS) {
+            fprintf(stderr, "error: fail to build the %s\n", kernel_name);
+            exit(1);
+        }
+
+        /* set arguments */
+        error = clSetKernelArg( kernel[k], 0, sizeof(cl_mem), &input_mem);
+        error |= clSetKernelArg( kernel[k], 1, sizeof(cl_mem), &flags_mem);
+        error |= clSetKernelArg( kernel[k], 2, sizeof(cl_mem), &num_mem);
+        error |= clSetKernelArg( kernel[k], 3, sizeof(cl_mem), &output_mem);
+        if (error != CL_SUCCESS) {
+            fprintf(stderr, "error: fail to set arguments\n", NULL);
+            exit(1);
+        }
     }
-
-    /* set arguments */
-    error = clSetKernelArg( kernel, 0, sizeof(cl_mem), &input_mem);
-    error |= clSetKernelArg( kernel, 1, sizeof(cl_mem), &flags_mem);
-    error |= clSetKernelArg( kernel, 2, sizeof(cl_mem), &num_mem);
-    error |= clSetKernelArg( kernel, 3, sizeof(cl_mem), &output_mem);
-    if (error != CL_SUCCESS) {
-        fprintf(stderr, "error: fail to set arguments\n", NULL);
-        exit(1);
-    }
-
     dbg("[GPU] Set kernel succeed!\n");
 
 }
@@ -425,7 +432,7 @@ void gpu_exec_sim(void * result) {
     const size_t global_item_size = batch_size;
     error = clEnqueueNDRangeKernel(
         config->command_queue[0],
-        kernel,
+        kernel[0],
         1,
         NULL,
         &global_item_size,
@@ -452,7 +459,7 @@ void gpu_free () {
     error |= clFlush(config->command_queue[1]);
     error |= clFinish(config->command_queue[0]);
     error |= clFinish(config->command_queue[1]);
-    error |= clReleaseKernel(kernel);
+    error |= clReleaseKernel(kernel[0]);
     error |= clReleaseProgram(program);
     error |= clReleaseMemObject(input_mem);
     error |= clReleaseMemObject(flags_mem);
