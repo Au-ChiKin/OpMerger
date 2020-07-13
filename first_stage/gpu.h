@@ -26,9 +26,9 @@ void gpu_init ();
 
 void gpu_set_kernel(int batch_size, int tuple_size, void const * data);
 
-void gpu_set_kernel_sim(int batch_size, int tuple_size, void const * data, void const * result);
+void gpu_set_kernel_sim(int batch_size, int tuple_size, void const * data, void * result);
 
-void gpu_exec_sim(int batch_size);
+void gpu_exec_sim(int batch_size, void * result);
 
 void gpu_free ();
 

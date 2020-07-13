@@ -29,6 +29,7 @@ static gpu_config_p config = NULL;
 static cl_mem input_mem = NULL;
 static cl_mem flags_mem = NULL;
 static cl_mem num_mem = NULL;
+static cl_mem output_mem = NULL;
 
 // static int query_number;
 // static int free_index;
@@ -241,6 +242,33 @@ void set_kernel_input(int batch_size, int tuple_size, void const * data) {
     
 }
 
+void write_output_sim(int batch_size, void * output) {
+    cl_int error = 0;
+
+    error = clEnqueueReadBuffer(
+        config->command_queue[0], 
+        output_mem, 
+        CL_TRUE, 
+        0, 
+        batch_size * sizeof(int), 
+        output, 
+        0, NULL, NULL);
+}
+
+void gpu_free () {
+	// int i;
+	int error = 0;
+	// for (i = 0; i < MAX_QUERIES; i++)
+	// 	if (queries[i])
+	// 		gpu_query_free (queries[i]);
+	if (context)
+		error = clReleaseContext (context);
+	if (error != CL_SUCCESS)
+		fprintf(stderr, "error: failed to free context\n");
+	
+	return;
+}
+
 /* Below are public functions */
 // void gpu_init (JNIEnv *env, int _queries, int _depth) {
 void gpu_init (char const * filename) {
@@ -342,7 +370,7 @@ void gpu_set_kernel(int batch_size, int tuple_size, void const * data) {
 
 }
 
-void gpu_set_kernel_sim(int batch_size, int tuple_size, void const * data, void const * result) {
+void gpu_set_kernel_sim(int batch_size, int tuple_size, void const * data, void * result) {
     char const kernel_name [64] = "selectf_sim";
     cl_int error = 0;
 
@@ -375,7 +403,7 @@ void gpu_set_kernel_sim(int batch_size, int tuple_size, void const * data, void 
     dbg("[GPU] Succeed to set input\n", NULL);
     
     /* output args */
-    cl_mem output_mem = clCreateBuffer(
+    output_mem = clCreateBuffer(
         context, 
         CL_MEM_WRITE_ONLY, 
         batch_size * sizeof(int), 
@@ -395,8 +423,9 @@ void gpu_set_kernel_sim(int batch_size, int tuple_size, void const * data, void 
 
     /* set arguments */
     error = clSetKernelArg( kernel, 0, sizeof(cl_mem), &input_mem);
-    error = clSetKernelArg( kernel, 1, sizeof(cl_mem), &flags_mem);
-    error = clSetKernelArg( kernel, 2, sizeof(cl_mem), &num_mem);
+    error |= clSetKernelArg( kernel, 1, sizeof(cl_mem), &flags_mem);
+    error |= clSetKernelArg( kernel, 2, sizeof(cl_mem), &num_mem);
+    error |= clSetKernelArg( kernel, 3, sizeof(cl_mem), &output_mem);
     if (error != CL_SUCCESS) {
         fprintf(stderr, "error: fail to set arguments\n", NULL);
         exit(1);
@@ -406,7 +435,7 @@ void gpu_set_kernel_sim(int batch_size, int tuple_size, void const * data, void 
 
 }
 
-void gpu_exec_sim(int batch_size) {
+void gpu_exec_sim(int batch_size, void * result) {
     cl_int error = 0;
 
     const size_t local_item_size = 64;
@@ -424,90 +453,7 @@ void gpu_exec_sim(int batch_size) {
         exit(1);
     }
 
+    write_output_sim(batch_size, result);
+
     dbg("[GPU] Running kernel finishes!\n", NULL);
 }
-
-
-void gpu_free () {
-	// int i;
-	int error = 0;
-	// for (i = 0; i < MAX_QUERIES; i++)
-	// 	if (queries[i])
-	// 		gpu_query_free (queries[i]);
-	if (context)
-		error = clReleaseContext (context);
-	if (error != CL_SUCCESS)
-		fprintf(stderr, "error: failed to free context\n");
-	
-	return;
-}
-
-// int gpu_query_exec (
-//     gpu_query_p q, 
-//     size_t *threads, 
-//     size_t *threadsPerGroup, 
-//     queryOperatorP operator, 
-//     JNIEnv *env, 
-//     jobject obj) {
-	
-// 	if (! q)
-// 		return -1;
-
-// 	if (NCONTEXTS == 1) { // NCONTEXTS defined in utils.h
-// 		return gpu_query_exec_1 (q, threads, threadsPerGroup, operator, env, obj);
-// 	} 
-//     // else {
-// 	// 	return gpu_query_exec_2 (q, threads, threadsPerGroup, operator, env, obj);
-// 	// }
-// }
-
-// /*
-//  * Only one pipeline
-//  */
-// static int gpu_query_exec_1 (
-//     gpu_query_p query, 
-//     size_t *threads, 
-//     size_t *threadsPerGroup, 
-//     queryOperatorP operator, 
-//     JNIEnv *env, 
-//     jobject obj) {
-	
-// 	gpu_context_p context = gpu_context_switch (query);
-	
-// 	/* Write input */
-// 	gpu_context_writeInput (context, operator->writeInput, env, obj, query->qid);
-
-// 	gpu_context_moveInputBuffers (context);
-	
-// 	if (operator->configure != NULL) {
-// 		gpu_context_configureKernel (context, operator->configure, operator->args1, operator->args2);
-// 	}
-
-// 	gpu_context_submitKernel (context, threads, threadsPerGroup);
-
-// 	gpu_context_moveOutputBuffers (context);
-
-// 	gpu_context_flush (context);
-	
-// 	gpu_context_finish(context);
-	
-// 	gpu_context_readOutput (context, operator->readOutput, env, obj, query->qid);
-
-// 	return 0;
-// }
-
-
-// int gpu_exec (int qid,
-// 	size_t *threads, 
-//     size_t *threadsPerGroup,
-// 	queryOperatorP operator,
-// 	JNIEnv *env, 
-//     jobject obj) {
-
-// 	if (qid < 0 || qid >= Q) {
-// 		fprintf(stderr, "error: query index [%d] out of bounds\n", qid);
-// 		exit (1);
-// 	}
-// 	gpu_query_p p = queries[qid];
-// 	return gpu_query_exec (p, threads, threadsPerGroup, operator, env, obj);
-// }

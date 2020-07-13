@@ -24,7 +24,7 @@ void run_processing_gpu(tuple_t * buffer, int size, int * result, int * output_s
         }
     }
 
-    gpu_exec_sim(BUFFER_SIZE);
+    gpu_exec_sim(BUFFER_SIZE, result);
 
     gpu_free();
 }
