@@ -17,14 +17,14 @@ void run_processing_gpu(tuple_t * buffer, int size, int * result, int * output_s
 
     gpu_set_kernel_sim(BUFFER_SIZE, TUPLE_SIZE, buffer, result);
 
+    gpu_exec_sim(BUFFER_SIZE, result);
+
     *output_size = size;
     for (int i=0; i<size; i++) {
         if (!result[i]) {
             *output_size -= 1;
         }
     }
-
-    gpu_exec_sim(BUFFER_SIZE, result);
 
     gpu_free();
 }
@@ -71,7 +71,6 @@ int main() {
 
         // #1
         buffer[cur].i1 = value;
-        value = (value + 1) % VALUE_RANGE;
 
         // #2
         if (flipper) {
@@ -89,6 +88,7 @@ int main() {
         buffer[cur].i5 = 1;
         buffer[cur].i6 = 1;
 
+        value = (value + 1) % VALUE_RANGE;
         cur += 1;
     }
 
