@@ -1,10 +1,15 @@
 # Compiler Configurations
 CC        = gcc
-CFLAGS    = -Wall -g -I/usr/local/cuda/include
-LDLIBS    = -lOpenCL
+CFLAGS    = -Wall -g
+UNAME := $(shell uname -s)
+LDLIBS    =
 DEPFLAGS  = -MT $@ -MMD -MP -MF $(DEPDIR)/$*.d
 COMPILE.c = $(CC) $(DEPFLAGS) $(CFLAGS) $(CPPFLAGS) $(TARGET_ARCH) $(LDLIBS) -c
 LINK.o    = $(CC) $(CFLAGS)
+ifeq ($(UNAME),Linux)
+	CFLAGS += -I/usr/local/cuda/include
+	LDLIBS += -lOpenCL
+endif
 
 # Environmrnt
 OBJDIR  := obj
