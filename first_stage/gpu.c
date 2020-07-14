@@ -201,6 +201,30 @@ void set_kernel_input(void const * data) {
         fprintf(stderr, "error: failed to enqueue write buffer command", NULL);
         exit(1);
     }
+
+    /* tuple number */
+    num_mem = clCreateBuffer(
+        context, 
+        CL_MEM_READ_ONLY, 
+        sizeof(int), 
+        NULL, 
+        &error);
+    if (error != CL_SUCCESS) {
+        fprintf(stderr, "error: failed to set arguement num\n", NULL);
+        exit(1);
+    }
+    error = clEnqueueWriteBuffer(
+        config->command_queue[0], 
+        num_mem, 
+        CL_TRUE,         /* blocking write */
+        0, 
+        sizeof(int), 
+        &tuple_size,     /* data in the host memeory */
+        0, NULL, NULL);  /* event related */
+    if (error != CL_SUCCESS) {
+        fprintf(stderr, "error: failed to enqueue write buffer command\n", NULL);
+        exit(1);
+    }
     dbg("[GPU] Succeed to set input\n", NULL);
 }
 
@@ -244,6 +268,22 @@ void read_inter_agrs() {
 
 void write_inter_args() {
     // TODO
+}
+
+void set_kernel_output() {
+    cl_int error = 0;
+
+    output_mem = clCreateBuffer(
+        context, 
+        CL_MEM_WRITE_ONLY, 
+        batch_size * sizeof(int), 
+        NULL, 
+        &error);
+    if (error != CL_SUCCESS) {
+        fprintf(stderr, "error: failed to set arguement output\n", NULL);
+        exit(1);
+    }
+    dbg("[GPU] Succeed to set output\n", NULL);
 }
 
 void write_output_sim(void * output) {
@@ -365,45 +405,10 @@ void gpu_set_kernel_sim(void const * data, void * result) {
     cl_int error = 0;
 
     /* input arguements */
-    /* input and flags */
     set_kernel_input(data);
-    /* tuple number */
-    num_mem = clCreateBuffer(
-        context, 
-        CL_MEM_READ_ONLY, 
-        sizeof(int), 
-        NULL, 
-        &error);
-    if (error != CL_SUCCESS) {
-        fprintf(stderr, "error: failed to set arguement num\n", NULL);
-        exit(1);
-    }
-    error = clEnqueueWriteBuffer(
-        config->command_queue[0], 
-        num_mem, 
-        CL_TRUE,         /* blocking write */
-        0, 
-        sizeof(int), 
-        &tuple_size,     /* data in the host memeory */
-        0, NULL, NULL);  /* event related */
-    if (error != CL_SUCCESS) {
-        fprintf(stderr, "error: failed to enqueue write buffer command\n", NULL);
-        exit(1);
-    }
-    dbg("[GPU] Succeed to set input\n", NULL);
     
     /* output args */
-    output_mem = clCreateBuffer(
-        context, 
-        CL_MEM_WRITE_ONLY, 
-        batch_size * sizeof(int), 
-        NULL, 
-        &error);
-    if (error != CL_SUCCESS) {
-        fprintf(stderr, "error: failed to set arguement output\n", NULL);
-        exit(1);
-    }
-    dbg("[GPU] Succeed to set output\n", NULL);
+    set_kernel_output();
 
     for (int k=0; k<config->kernel.count; k++) {
         char kernel_name [64] = "selectf";
