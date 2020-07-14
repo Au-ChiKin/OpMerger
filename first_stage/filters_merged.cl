@@ -2,7 +2,7 @@
 *
 * SELECT *
 * FROM S1
-* WHERE S1.1 < 50 AND S1.2 = 1 AND S1.3 >= 25
+* WHERE S1.1 < 128/2 AND S1.2 = 1 AND S1.3 >= 128/4
 * 
 * This attempt is to apply these predicates together
 */
@@ -73,13 +73,13 @@ __kernel void selectf1_sim (__global input_t * input, __global int * flags, __gl
         int value = 1;
 
 	int attribute_value = input[gid].tuple._1;
-	value = value & (attribute_value < 128 / 2); // if attribute < 50?
+	value = value & (attribute_value < 128 / 2); // if attribute < 128/2?
 
 	attribute_value = input[gid].tuple._2;
 	value = value & (attribute_value != 0); // if attribute != 0?
 
 	attribute_value = input[gid].tuple._3;
-	value = value & (attribute_value >= 128 / 4); // if attribute >= 25?
+	value = value & (attribute_value >= 128 / 4); // if attribute >= 128/4?
 
         output[gid] = value;
 }
