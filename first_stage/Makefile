@@ -9,6 +9,8 @@ LINK.o    = $(CC) $(CFLAGS)
 ifeq ($(UNAME),Linux)
 	CFLAGS += -I/usr/local/cuda/include
 	LDLIBS += -lOpenCL
+else
+	LDLIBS += -framework OpenCL
 endif
 
 # Environmrnt
