@@ -157,7 +157,7 @@ static void build_program() {
         size_t lenght;
         char msg [32768]; /* Compiler messager */
 
-        printf(stderr, "error: failed to build the program");
+        fprintf(stderr, "error: failed to build the program");
 
         clGetProgramBuildInfo(
             program,
@@ -202,7 +202,10 @@ void set_kernel_input(void const * data) {
         exit(1);
     }
     dbg("[GPU] Succeed to set input\n", NULL);
+}
 
+void set_inter_args() {
+    cl_int error = 0;
     /* arg:flags */
     int * flags = (int *)malloc(sizeof(int)*batch_size);
     for (int i=0; i<batch_size; i++) {
@@ -218,22 +221,29 @@ void set_kernel_input(void const * data) {
         fprintf(stderr, "error: failed to set arguement: flags", NULL);
         exit(1);
     }    
-
-    error = clEnqueueWriteBuffer(
-        config->command_queue[0], /* all put into the first queue for now */
-        input_mem, 
-        CL_TRUE,         /* blocking write */
-        0, 
-        batch_size * tuple_size * sizeof(unsigned char), 
-        data,            /* data in the host memeory */
-        0, NULL, NULL);  /* event related */
-    if (error != CL_SUCCESS) {
-        fprintf(stderr, "error: failed to enqueue write buffer command", NULL);
-        exit(1);
-    }
     dbg("[GPU] Succeed to set flags\n", NULL);
 
-    
+    // May not enqueue write here
+    // error = clEnqueueWriteBuffer(
+    //     config->command_queue[0], /* all put into the first queue for now */
+    //     input_mem, 
+    //     CL_TRUE,         /* blocking write */
+    //     0, 
+    //     batch_size * tuple_size * sizeof(unsigned char), 
+    //     data,            /* data in the host memeory */
+    //     0, NULL, NULL);  /* event related */
+    // if (error != CL_SUCCESS) {
+    //     fprintf(stderr, "error: failed to enqueue write buffer command", NULL);
+    //     exit(1);
+    // }
+}
+
+void read_inter_agrs() {
+    // TODO
+}
+
+void write_inter_args() {
+    // TODO
 }
 
 void write_output_sim(void * output) {
@@ -411,9 +421,9 @@ void gpu_set_kernel_sim(void const * data, void * result) {
 
         /* set arguments */
         error = clSetKernelArg( kernel[k], 0, sizeof(cl_mem), &input_mem);
-        error |= clSetKernelArg( kernel[k], 1, sizeof(cl_mem), &flags_mem);
-        error |= clSetKernelArg( kernel[k], 2, sizeof(cl_mem), &num_mem);
-        error |= clSetKernelArg( kernel[k], 3, sizeof(cl_mem), &output_mem);
+        // error |= clSetKernelArg( kernel[k], 1, sizeof(cl_mem), &flags_mem);
+        error |= clSetKernelArg( kernel[k], 1, sizeof(cl_mem), &num_mem);
+        error |= clSetKernelArg( kernel[k], 2, sizeof(cl_mem), &output_mem);
         if (error != CL_SUCCESS) {
             fprintf(stderr, "error: fail to set arguments\n", NULL);
             exit(1);
@@ -462,7 +472,7 @@ void gpu_free () {
     error |= clReleaseKernel(kernel[0]);
     error |= clReleaseProgram(program);
     error |= clReleaseMemObject(input_mem);
-    error |= clReleaseMemObject(flags_mem);
+    // error |= clReleaseMemObject(flags_mem);
     error |= clReleaseMemObject(num_mem);
     error |= clReleaseMemObject(output_mem);
     error |= clReleaseCommandQueue(config->command_queue[0]);

@@ -68,7 +68,7 @@ inline int selectf (__global input_t *p) {
 	return value;
 }
 
-__kernel void selectf1_sim (__global input_t * input, __global int * flags, __global int * num, __global int * output) {
+__kernel void selectf1_sim (__global input_t * input, __global int * num, __global int * output) {
 	int gid = get_global_id(0);
         int value = 1;
 
