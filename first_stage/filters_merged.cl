@@ -53,17 +53,17 @@ typedef union {
 /* Full select */
 inline int selectf (__global input_t *p) {
     int value = 1;
-    // if attribute < 128/2?
-    int attribute_value = __bswap32(p->tuple._1);
-    value = value & (attribute_value < 50);
+    /* if attribute < 128/2? */
+    int attribute_value = input[gid].tuple._1;
+    value = value & (attribute_value < 128 / 2);
 
-    // if attribute != 0?
-    attribute_value = __bswap32(p->tuple._2);
+    /* if attribute != 0? */
+    attribute_value = input[gid].tuple._2;
     value = value & (attribute_value != 0);
 
-    // if attribute >= 25?
-    attribute_value = __bswap32(p->tuple._3);
-    value = value & (attribute_value >= 24);
+    /* if attribute >= 128/4? */
+    attribute_value = input[gid].tuple._3;
+    value = value & (attribute_value >= 128 / 4);
 
     return value;
 }
@@ -153,17 +153,17 @@ inline void upsweep (__local int *data, int length) {
 inline void downsweep (__local int *data, int length) {
 
     int lid = get_local_id (0);
-    barrier(CLK_LOCAL_MEM_FENCE);int b = (lid * 2) + 1;
-    int depth = (int) log2 ((float) length); /* Without plus 1 */
-    for (int d = depth; d >= 0; d--) { /* from depth to 0 */
+    int b = (lid * 2) + 1;
+    int depth = (int) log2 ((float) length);
+    for (int d = depth; d >= 0; d--) {
 
-        barrier(CLK_LOCAL_MEM_FENCE); /* wait until all the other threads reach this point */
+        barrier(CLK_LOCAL_MEM_FENCE);
         int mask = (0x1 << d) - 1;
         if ((lid & mask) == mask) {
 
             int offset = (0x1 << d);
             int a = b - offset;
-            int t = data[a]; /* swap data[a] and data[b] then data[b] += data[a] */
+            int t = data[a];
             data[a] = data[b];
             data[b] += t;
         }
@@ -224,15 +224,15 @@ inline void downsweep (__local int *data, int length) {
  */
 
 __kernel void selectKernel (
-    const int operator,
-    const int size,
-    const int tuples,
+    const int operator, /* Seems to be no use but keep it first */
+    const int size, /* Seems to be no use but keep it first */
+    const int tuples, /* Seems to be no use but keep it first */
     __global const uchar *input,
-    __global int *flags, /* The output of select (0 or 1) */ // [input & output]
-    __global int *offsets, // [output] maps the local memory position of the tuples to global memory
-    __global int *partitions, // [output] ???
-    __global uchar *output, // [output] ???
-    __local  int *x // [output] local memory position of tuples
+    __global int *flags, /* The output of select (0 or 1) */
+    __global int *goffsets, /* If flags == 1, refers to the global offset of the corresponding tuple in output */
+    __global int *partitions, /* Refers to the global block offset of the work group in output */
+    __global uchar *output, /* Output tuples */
+    __local  int *loffsets /* Refers to local offset of the corresponding tuples in output */
 )
 {
     int lgs = get_local_size (0); // local group size (thread number in the group)
@@ -248,8 +248,8 @@ __kernel void selectKernel (
     int _right = (2 * lid) + 1; // tuple2 memory indice
 
     int gid = get_group_id (0); // group id
-    /* A thread group processes twice as many tuples */
-    int L = 2 * lgs; // total tuples in the group
+    /* A thread group processes twice as many tuples as the work items at the group */
+    int l_tuple_num = 2 * lgs;
 
     /* Fetch tuple and apply selection filter */
     const int lidx =  left * sizeof(input_t);
@@ -263,36 +263,57 @@ __kernel void selectKernel (
     flags[ left] = selectf (lp);
     flags[right] = selectf (rp);
 
-    /* Copy flag to local memory */
-    x[ _left] = (left  < tuples) ? flags[ left] : 0; // left < tuples means not exceeding the total amount of tuples
-    x[_right] = (right < tuples) ? flags[right] : 0; // if exceeding -> 0 -> means not taking this tuple
+    /* Initialise the local offsets with flags */
+    loffsets[ _left] = (left  < tuples) ? flags[ left] : 0; // left < tuples means not exceeding the total amount of tuples
+    loffsets[_right] = (right < tuples) ? flags[right] : 0; // if exceeding -> 0 -> means not taking this tuple
 
-    upsweep(x, L);
+    /* upsweep + reduce */
+    upsweep(loffsets, l_tuple_num);
 
-    // if this thread is the last in this group, save the flag of right tuple in partitions 
-    // array corresponding to the group id and put a 0 to its flag  
+    // if this thread is the last in this group, pass the result of reduce (loffsets[_right]) to the partition array and 
+    // set loffsets[_right] to 0
     if (lid == (lgs - 1)) { // _left = lid * 2 = 2 * (lgs - 1) = (2 * lgs - 1) - 1
-        partitions[gid] = x[_right];
-        x[_right] = 0; // So that in the downsweep, the last x[] element will be added to all the other elements
+        partitions[gid] = loffsets[_right];
+        loffsets[_right] = 0; // So that in the downsweep, the last x[] element will be added to all the other elements
     }
 
-    downsweep(x, L);
+    downsweep(loffsets, l_tuple_num);
 
     /* Write results to global memory */
-    offsets[ left] = ( left < tuples) ? x[ _left] : -1;
-    offsets[right] = (right < tuples) ? x[_right] : -1;
+    goffsets[ left] = ( left < tuples) ? loffsets[ _left] : -1;
+    goffsets[right] = (right < tuples) ? loffsets[_right] : -1;
 }
 
+inline void compact_tuple(
+    __global const uchar *input,
+    __global uchar *output, 
+    __global int *flags, 
+    __local int *pivot, 
+    int tuple_id
+) {
+    /* Compact left and right */
+    if (flags[tuple_id] == 1) {
+
+        const int l_in_byte = tuple_id * sizeof(input_t); // left tuple of input memory location
+        const int l_out_byte = (goffsets[tuple_id] + *pivot) * sizeof(output_t); // left tuple of output memory location
+        flags[tuple_id] = l_out_byte + sizeof(output_t);
+            __global  input_t *l_in  = (__global  input_t *) &  input[l_in_byte];
+            __global output_t *l_out = (__global output_t *) & output[l_out_byte`];
+
+            l_out->vectors[0] = l_in->vectors[0];
+            l_out->vectors[1] = l_in->vectors[1];
+    }   
+}
 
 __kernel void compactKernel (
-    const int size,
-    const int tuples,
+    const int size, /* Seems to be no use but keep it first */
+    const int tuples, /* Seems to be no use but keep it first */
     __global const uchar *input,
     __global int *flags,
-    __global int *offsets,
-    __global int *partitions, // [input now]
+    __global int *goffsets,
+    __global int *partitions,
     __global uchar *output,
-    __local  int *x
+    __local  int *loffsets
 ) {
 
     int tid = get_global_id (0);
@@ -314,40 +335,10 @@ __kernel void compactKernel (
             }
         }
     }
-    barrier(CLK_LOCAL_MEM_FENCE); // From now on protect the local memory
+    barrier(CLK_LOCAL_MEM_FENCE);
 
     /* Compact left and right */
-    if (flags[left] == 1) {
-
-        const int lq = (offsets[left] + pivot) * sizeof(output_t); // left tuple of output memory location
-        const int lp = left * sizeof(input_t); // left tuple of input memory location
-        flags[left] = lq + sizeof(output_t); // ???
-            __global  input_t *lx = (__global  input_t *) &  input[lp];
-            __global output_t *ly = (__global output_t *) & output[lq];
-
-            /* TODO: replace with generic function */
-
-            ly->vectors[0] = lx->vectors[0];
-            ly->vectors[1] = lx->vectors[1];
-        //  ly->vectors[2] = lx->vectors[2];
-        //  ly->vectors[3] = lx->vectors[3];
-    }
-
-    if (flags[right] == 1) {
-
-        const int rq = (offsets[right] + pivot) * sizeof(output_t);
-        const int rp = right * sizeof(input_t);
-        flags[right] = rq + sizeof(output_t);
-            __global  input_t *rx = (__global  input_t *) &  input[rp];
-            __global output_t *ry = (__global output_t *) & output[rq];
-
-            /* TODO: replace with generic function */
-
-            ry->vectors[0] = rx->vectors[0];
-            ry->vectors[1] = rx->vectors[1];
-            // ry->vectors[2] = rx->vectors[2];
-            // ry->vectors[3] = rx->vectors[3];
-
-    }
+    compact_tuple(left);
+    compact_tuple(right);
 }
  
