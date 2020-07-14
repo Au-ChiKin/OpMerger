@@ -113,7 +113,7 @@ static void set_program(char const * file_name) {
     cl_int error = 0;
 
     /* Load kernel source */
-    file_p = fopen(file_name, "r");
+    file_p = fopen(file_name, "rb");
     if (!file_p) {
         fprintf(stderr, "Failed to load kernel.\n");
         exit(1);
@@ -219,7 +219,7 @@ void set_kernel_input(void const * data) {
         CL_TRUE,         /* blocking write */
         0, 
         sizeof(int), 
-        &tuple_size,     /* data in the host memeory */
+        &batch_size,     /* data in the host memeory */
         0, NULL, NULL);  /* event related */
     if (error != CL_SUCCESS) {
         fprintf(stderr, "error: failed to enqueue write buffer command\n", NULL);

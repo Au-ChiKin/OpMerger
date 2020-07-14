@@ -1,9 +1,9 @@
 # Compiler Configurations
 CC        = gcc
-CFLAGS    = -Wall -g
-LDLIBS    = -framework OpenCL
+CFLAGS    = -Wall -g -I/usr/local/cuda/include
+LDLIBS    = -lOpenCL
 DEPFLAGS  = -MT $@ -MMD -MP -MF $(DEPDIR)/$*.d
-COMPILE.c = $(CC) $(DEPFLAGS) $(CFLAGS) $(CPPFLAGS) $(TARGET_ARCH) -c
+COMPILE.c = $(CC) $(DEPFLAGS) $(CFLAGS) $(CPPFLAGS) $(TARGET_ARCH) $(LDLIBS) -c
 LINK.o    = $(CC) $(CFLAGS)
 
 # Environmrnt
