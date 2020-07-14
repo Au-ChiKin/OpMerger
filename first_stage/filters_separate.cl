@@ -55,7 +55,7 @@ typedef union {
 } output_t;
 
 // predicate1 : column1 < 50 
-__kernel void selectf1_sim (__global input_t * input, __global int * flags, __global int * num, __global int * output) {
+__kernel void selectf1_sim (__global input_t * input, __global int * num, __global int * output) {
 	int gid = get_global_id(0);
         int value = 1;
 	int attribute_value = input[gid].tuple._1;;
@@ -64,7 +64,7 @@ __kernel void selectf1_sim (__global input_t * input, __global int * flags, __gl
 }
 
 // predicate2 : column2 == 1
-__kernel void selectf2_sim (__global input_t * input, __global int * flags, __global int * num, __global int * output) {
+__kernel void selectf2_sim (__global input_t * input, __global int * num, __global int * output) {
 	int gid = get_global_id(0);
         int value = 1;
 	int attribute_value = input[gid].tuple._2;
@@ -73,7 +73,7 @@ __kernel void selectf2_sim (__global input_t * input, __global int * flags, __gl
 }
 
 // predicate3 : column3 > 50
-__kernel void selectf3_sim (__global input_t * input, __global int * flags, __global int * num, __global int * output) {
+__kernel void selectf3_sim (__global input_t * input, __global int * num, __global int * output) {
 	int gid = get_global_id(0);
         int value = 1;
 	int attribute_value = input[gid].tuple._3;
