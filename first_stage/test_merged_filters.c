@@ -7,6 +7,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
+#include <unistd.h>
 
 #define BUFFER_SIZE 32768 /* in tuple */
 #define TUPLE_SIZE 32
@@ -55,7 +56,22 @@ void run_processing_cpu(tuple_t * buffer, int size, tuple_t * result, int * outp
     }
 }
 
-int main() {
+int main(int argc, char * argv[]) {
+
+    // TODO: Parse option and arguments
+    bool isCaseInsensitive = false;
+    int opt;
+    enum { MERGED_SELECT, SEPARATE_SELECT } mode = MERGED_SELECT;
+
+    while ((opt = getopt(argc, argv, "ms")) != -1) {
+        switch (opt) {
+        case 'm': mode = MERGED_SELECT; break;
+        case 's': mode = SEPARATE_SELECT; break;
+        default:
+            fprintf(stderr, "Usage: %s [-m / -s] \n", argv[0]);
+            exit(EXIT_FAILURE);
+        }
+    }
 
     // TODO: Create a buffer of tuples with a circular buffer
     // 32768 x 32 = 1MB
