@@ -51,7 +51,7 @@ typedef union {
 
 
 /* Full select */
-inline int selectf (__global input_t *input) {
+inline int selectf1 (__global input_t *input) {
     int value = 1;
     /* if attribute < 128/2? */
     int attribute_value = input->tuple._1;
@@ -67,6 +67,10 @@ inline int selectf (__global input_t *input) {
 
     return value;
 }
+
+/* studs */
+inline int selectf2 (__global input_t * input) {return 1;}
+inline int selectf3 (__global input_t * input) {return 1;}
 
 /* Simplified version of merged select */
 __kernel void selectf1_sim (__global input_t * input, __global int * num, __global int * output) {
@@ -223,7 +227,7 @@ inline void downsweep (__local int *data, int length) {
  *
  */
 
-__kernel void selectKernel (
+__kernel void selectKernel1 (
     const int operator, /* Seems to be no use but keep it first */
     const int size, /* Seems to be no use but keep it first */
     const int tuples, /* Seems to be no use but keep it first */
@@ -260,8 +264,130 @@ __kernel void selectKernel (
     __global input_t *rp = (__global input_t *) &input[ridx];
 
     // apply predicates
-    flags[ left] = selectf (lp);
-    flags[right] = selectf (rp);
+    flags[ left] = selectf1 (lp);
+    flags[right] = selectf1 (rp);
+
+    /* Initialise the local offsets with flags */
+    loffsets[ _left] = (left  < tuples) ? flags[ left] : 0; // left < tuples means not exceeding the total amount of tuples
+    loffsets[_right] = (right < tuples) ? flags[right] : 0; // if exceeding -> 0 -> means not taking this tuple
+
+    /* upsweep + reduce */
+    upsweep(loffsets, l_tuple_num);
+
+    // if this thread is the last in this group, pass the result of reduce (loffsets[_right]) to the partition array and 
+    // set loffsets[_right] to 0
+    if (lid == (lgs - 1)) { // _left = lid * 2 = 2 * (lgs - 1) = (2 * lgs - 1) - 1
+        partitions[gid] = loffsets[_right];
+        loffsets[_right] = 0; // So that in the downsweep, the last x[] element will be added to all the other elements
+    }
+
+    downsweep(loffsets, l_tuple_num);
+
+    /* Write results to global memory */
+    goffsets[ left] = ( left < tuples) ? loffsets[ _left] : -1;
+    goffsets[right] = (right < tuples) ? loffsets[_right] : -1;
+}
+
+__kernel void selectKernel2 (
+    const int operator, /* Seems to be no use but keep it first */
+    const int size, /* Seems to be no use but keep it first */
+    const int tuples, /* Seems to be no use but keep it first */
+    __global const uchar *input,
+    __global int *flags, /* The output of select (0 or 1) */
+    __global int *goffsets, /* If flags == 1, refers to the global offset of the corresponding tuple in output */
+    __global int *partitions, /* Refers to the global block offset of the work group in output */
+    __global uchar *output, /* Output tuples */
+    __local  int *loffsets /* Refers to local offset of the corresponding tuples in output */
+)
+{
+    int lgs = get_local_size (0); // local group size (thread number in the group)
+    int tid = get_global_id (0);  // global thread id
+
+    int  left = (2 * tid); // tuple1 id
+    int right = (2 * tid) + 1; // tuple2 id
+
+    int lid = get_local_id(0); // local thread id
+
+    /* Local memory indices */
+    int  _left = (2 * lid); // tuple1 memory indice on local memory
+    int _right = (2 * lid) + 1; // tuple2 memory indice
+
+    int gid = get_group_id (0); // group id
+    /* A thread group processes twice as many tuples as the work items at the group */
+    int l_tuple_num = 2 * lgs;
+
+    /* Fetch tuple and apply selection filter */
+    const int lidx =  left * sizeof(input_t);
+    const int ridx = right * sizeof(input_t);
+
+    // opencl syntax
+    __global input_t *lp = (__global input_t *) &input[lidx];
+    __global input_t *rp = (__global input_t *) &input[ridx];
+
+    // apply predicates
+    flags[ left] = selectf2 (lp);
+    flags[right] = selectf2 (rp);
+
+    /* Initialise the local offsets with flags */
+    loffsets[ _left] = (left  < tuples) ? flags[ left] : 0; // left < tuples means not exceeding the total amount of tuples
+    loffsets[_right] = (right < tuples) ? flags[right] : 0; // if exceeding -> 0 -> means not taking this tuple
+
+    /* upsweep + reduce */
+    upsweep(loffsets, l_tuple_num);
+
+    // if this thread is the last in this group, pass the result of reduce (loffsets[_right]) to the partition array and 
+    // set loffsets[_right] to 0
+    if (lid == (lgs - 1)) { // _left = lid * 2 = 2 * (lgs - 1) = (2 * lgs - 1) - 1
+        partitions[gid] = loffsets[_right];
+        loffsets[_right] = 0; // So that in the downsweep, the last x[] element will be added to all the other elements
+    }
+
+    downsweep(loffsets, l_tuple_num);
+
+    /* Write results to global memory */
+    goffsets[ left] = ( left < tuples) ? loffsets[ _left] : -1;
+    goffsets[right] = (right < tuples) ? loffsets[_right] : -1;
+}
+
+__kernel void selectKernel3 (
+    const int operator, /* Seems to be no use but keep it first */
+    const int size, /* Seems to be no use but keep it first */
+    const int tuples, /* Seems to be no use but keep it first */
+    __global const uchar *input,
+    __global int *flags, /* The output of select (0 or 1) */
+    __global int *goffsets, /* If flags == 1, refers to the global offset of the corresponding tuple in output */
+    __global int *partitions, /* Refers to the global block offset of the work group in output */
+    __global uchar *output, /* Output tuples */
+    __local  int *loffsets /* Refers to local offset of the corresponding tuples in output */
+)
+{
+    int lgs = get_local_size (0); // local group size (thread number in the group)
+    int tid = get_global_id (0);  // global thread id
+
+    int  left = (2 * tid); // tuple1 id
+    int right = (2 * tid) + 1; // tuple2 id
+
+    int lid = get_local_id(0); // local thread id
+
+    /* Local memory indices */
+    int  _left = (2 * lid); // tuple1 memory indice on local memory
+    int _right = (2 * lid) + 1; // tuple2 memory indice
+
+    int gid = get_group_id (0); // group id
+    /* A thread group processes twice as many tuples as the work items at the group */
+    int l_tuple_num = 2 * lgs;
+
+    /* Fetch tuple and apply selection filter */
+    const int lidx =  left * sizeof(input_t);
+    const int ridx = right * sizeof(input_t);
+
+    // opencl syntax
+    __global input_t *lp = (__global input_t *) &input[lidx];
+    __global input_t *rp = (__global input_t *) &input[ridx];
+
+    // apply predicates
+    flags[ left] = selectf3 (lp);
+    flags[right] = selectf3 (rp);
 
     /* Initialise the local offsets with flags */
     loffsets[ _left] = (left  < tuples) ? flags[ left] : 0; // left < tuples means not exceeding the total amount of tuples
