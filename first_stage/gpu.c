@@ -173,7 +173,7 @@ static void build_program() {
     dbg("[GPU] Building program succeed!\n", NULL);
 }
 
-void set_kernel_input(void const * data) {
+void set_kernel_input_sim(void const * data) {
     cl_int error = 0;
 
     /* arg:input */
@@ -270,7 +270,7 @@ void write_inter_args() {
     // TODO
 }
 
-void set_kernel_output() {
+void set_kernel_output_sim() {
     cl_int error = 0;
 
     output_mem = clCreateBuffer(
@@ -343,10 +343,10 @@ void gpu_init (char const * filename, int size, int kernel_num) {
         device,
         context, 
         program,
-        kernel_num,         /* _kerenels - kernel number, somehow there are two opencl 
-                      kernels within one Saber kernel */
-        1,         /* _inputs - input number */
-        4);        /* _outputs - output number */
+        kernel_num,  /* _kerenels - kernel number, somehow there are two opencl 
+                        kernels within one Saber kernel */
+        1,           /* _inputs - input number */
+        4);          /* _outputs - output number */
     dbg("[GPU] GPU configuration has finished\n");
 
 	// Q = _queries; /* Number of queries */
@@ -405,10 +405,10 @@ void gpu_set_kernel_sim(void const * data, void * result) {
     cl_int error = 0;
 
     /* input arguements */
-    set_kernel_input(data);
+    set_kernel_input_sim(data);
     
     /* output args */
-    set_kernel_output();
+    set_kernel_output_sim();
 
     for (int k=0; k<config->kernel.count; k++) {
         char kernel_name [64] = "selectf";
@@ -426,7 +426,6 @@ void gpu_set_kernel_sim(void const * data, void * result) {
 
         /* set arguments */
         error = clSetKernelArg( kernel[k], 0, sizeof(cl_mem), &input_mem);
-        // error |= clSetKernelArg( kernel[k], 1, sizeof(cl_mem), &flags_mem);
         error |= clSetKernelArg( kernel[k], 1, sizeof(cl_mem), &num_mem);
         error |= clSetKernelArg( kernel[k], 2, sizeof(cl_mem), &output_mem);
         if (error != CL_SUCCESS) {
@@ -477,7 +476,6 @@ void gpu_free () {
     error |= clReleaseKernel(kernel[0]);
     error |= clReleaseProgram(program);
     error |= clReleaseMemObject(input_mem);
-    // error |= clReleaseMemObject(flags_mem);
     error |= clReleaseMemObject(num_mem);
     error |= clReleaseMemObject(output_mem);
     error |= clReleaseCommandQueue(config->command_queue[0]);

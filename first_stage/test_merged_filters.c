@@ -36,6 +36,10 @@ void run_processing_gpu(tuple_t * buffer, int size, int * result, int * output_s
 
     gpu_exec_sim(result);
 
+    // gpu_set_kernel(buffer, result);
+    
+    // gpu_exec(result);
+
     *output_size = size;
     for (int i=0; i<size; i++) {
         if (!result[i]) {
