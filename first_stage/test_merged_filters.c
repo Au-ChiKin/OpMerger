@@ -13,8 +13,24 @@
 #define TUPLE_SIZE 32
 #define VALUE_RANGE 128
 
-void run_processing_gpu(tuple_t * buffer, int size, int * result, int * output_size) {
-    gpu_init("filters_merged.cl", BUFFER_SIZE, 1);
+enum Tests { 
+    MERGED_SELECT, 
+    SEPARATE_SELECT 
+};
+
+void run_processing_gpu(tuple_t * buffer, int size, int * result, int * output_size, enum Tests mode) {
+    switch (mode) {
+        case MERGED_SELECT: 
+            fprintf(stdout, "========== Running merged select test ===========\n");
+            gpu_init("filters_merged.cl", BUFFER_SIZE, 1); 
+            break;
+        case SEPARATE_SELECT: 
+            fprintf(stdout, "========== Running sepaerate select test ===========\n");
+            gpu_init("filters_separate.cl", BUFFER_SIZE, 3); 
+            break;
+        default: 
+            break; 
+    }
 
     gpu_set_kernel_sim(buffer, result);
 
@@ -61,15 +77,16 @@ int main(int argc, char * argv[]) {
     // TODO: Parse option and arguments
     bool isCaseInsensitive = false;
     int opt;
-    enum { MERGED_SELECT, SEPARATE_SELECT } mode = MERGED_SELECT;
+    enum Tests mode = MERGED_SELECT;
 
     while ((opt = getopt(argc, argv, "ms")) != -1) {
         switch (opt) {
         case 'm': mode = MERGED_SELECT; break;
         case 's': mode = SEPARATE_SELECT; break;
         default:
-            fprintf(stderr, "Usage: %s [-m / -s] \n", argv[0]);
-            exit(EXIT_FAILURE);
+            // fprintf(stderr, "Usage: %s [-m / -s] \n", argv[0]);
+            // exit(EXIT_FAILURE);
+            break;
         }
     }
 
@@ -130,7 +147,7 @@ int main(int argc, char * argv[]) {
         results[i] = 1;
     }
     results_size = 0; /* start from begining for GPU */
-    run_processing_gpu(buffer, BUFFER_SIZE, results, &results_size);
+    run_processing_gpu(buffer, BUFFER_SIZE, results, &results_size, mode);
 
     printf("[GPU] The output from gpu is %d\n", results_size);
 

@@ -135,11 +135,11 @@ static void set_program(char const * file_name) {
         (const char**) &source_str,
         NULL,
         &error);
-
 	if (error != CL_SUCCESS) {
 		fprintf(stderr, "opencl error (%d): %s\n", error, getErrorMessage(error));
 		exit (1);
 	}
+    dbg("[GPU] Created a program from the loaded source\n", NULL);
 }
 
 static void build_program() {
@@ -167,8 +167,8 @@ static void build_program() {
             msg,
             &lenght);
 
-        fprintf(stderr, "%s\n", msg);
-        exit(1);
+        fprintf(stderr, "%s", msg);
+        // exit(1);
     // }
     dbg("[GPU] Building program succeed!\n", NULL);
 }
@@ -184,7 +184,7 @@ void set_kernel_input(void const * data) {
         NULL, 
         &error);
     if (error != CL_SUCCESS) {
-        fprintf(stderr, "error: failed to set arguement input", NULL);
+        fprintf(stderr, "error: failed to set arguement input\n", NULL);
         exit(1);
     }
 
@@ -198,7 +198,7 @@ void set_kernel_input(void const * data) {
         data,            /* data in the host memeory */
         0, NULL, NULL);  /* event related */
     if (error != CL_SUCCESS) {
-        fprintf(stderr, "error: failed to enqueue write buffer command", NULL);
+        fprintf(stderr, "error: failed to enqueue write buffer command\n", NULL);
         exit(1);
     }
 

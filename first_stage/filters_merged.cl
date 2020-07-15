@@ -51,18 +51,18 @@ typedef union {
 
 
 /* Full select */
-inline int selectf (__global input_t *p) {
+inline int selectf (__global input_t *input) {
     int value = 1;
     /* if attribute < 128/2? */
-    int attribute_value = input[gid].tuple._1;
+    int attribute_value = input->tuple._1;
     value = value & (attribute_value < 128 / 2);
 
     /* if attribute != 0? */
-    attribute_value = input[gid].tuple._2;
+    attribute_value = input->tuple._2;
     value = value & (attribute_value != 0);
 
     /* if attribute >= 128/4? */
-    attribute_value = input[gid].tuple._3;
+    attribute_value = input->tuple._3;
     value = value & (attribute_value >= 128 / 4);
 
     return value;
@@ -286,9 +286,10 @@ __kernel void selectKernel (
 
 inline void compact_tuple(
     __global const uchar *input,
+    __global int *goffsets,
+    __global int *flags,
     __global uchar *output, 
-    __global int *flags, 
-    __local int *pivot, 
+    __local int *pivot,
     int tuple_id
 ) {
     /* Compact left and right */
@@ -298,7 +299,7 @@ inline void compact_tuple(
         const int l_out_byte = (goffsets[tuple_id] + *pivot) * sizeof(output_t); // left tuple of output memory location
         flags[tuple_id] = l_out_byte + sizeof(output_t);
             __global  input_t *l_in  = (__global  input_t *) &  input[l_in_byte];
-            __global output_t *l_out = (__global output_t *) & output[l_out_byte`];
+            __global output_t *l_out = (__global output_t *) & output[l_out_byte];
 
             l_out->vectors[0] = l_in->vectors[0];
             l_out->vectors[1] = l_in->vectors[1];
@@ -338,7 +339,7 @@ __kernel void compactKernel (
     barrier(CLK_LOCAL_MEM_FENCE);
 
     /* Compact left and right */
-    compact_tuple(left);
-    compact_tuple(right);
+    compact_tuple(input, goffsets, flags, output, &pivot, left);
+    compact_tuple(input, goffsets, flags, output, &pivot, right);
 }
  
