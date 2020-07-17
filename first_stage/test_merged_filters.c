@@ -8,17 +8,19 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <unistd.h>
+#include <string.h>
 
 #define BUFFER_SIZE 32768 /* in tuple */
 #define TUPLE_SIZE 32
 #define VALUE_RANGE 128
 
-enum Tests { 
+enum test_cases { 
     MERGED_SELECT, 
-    SEPARATE_SELECT 
+    SEPARATE_SELECT,
+    ERROR
 };
 
-void run_processing_gpu(tuple_t * buffer, int size, int * result, int * output_size, enum Tests mode) {
+void run_processing_gpu(tuple_t * buffer, int size, int * result, int * output_size, enum test_cases mode) {
     switch (mode) {
         case MERGED_SELECT: 
             fprintf(stdout, "========== Running merged select test ===========\n");
@@ -76,23 +78,72 @@ void run_processing_cpu(tuple_t * buffer, int size, tuple_t * result, int * outp
     }
 }
 
+void set_test_case(char const * mname, enum test_cases * mode) {
+    if (strcmp(mname, "merged-select") == 0) {
+        *mode = MERGED_SELECT; 
+    } else if (strcmp(mname, "separate-select") == 0) {
+        *mode = SEPARATE_SELECT;
+    } else {
+        *mode = ERROR;
+    }
+    return;
+}
+
 int main(int argc, char * argv[]) {
 
-    // TODO: Parse option and arguments
-    bool isCaseInsensitive = false;
-    int opt;
-    enum Tests mode = MERGED_SELECT;
+    enum test_cases mode = MERGED_SELECT;
 
-    while ((opt = getopt(argc, argv, "ms")) != -1) {
-        switch (opt) {
-        case 'm': mode = MERGED_SELECT; break;
-        case 's': mode = SEPARATE_SELECT; break;
-        default:
-            // fprintf(stderr, "Usage: %s [-m / -s] \n", argv[0]);
-            // exit(EXIT_FAILURE);
-            break;
+	extern char *optarg;
+	extern int optind;
+	int c, err = 0; 
+    int debug = 0;
+	int mflag=0;
+	char *mname = "merged-select";
+	static char usage[] = "usage: %s -m test-case\n";
+
+	while ((c = getopt(argc, argv, "dm:")) != -1) {
+		switch (c) {
+            case 'd':
+                debug = 1;
+                break;
+            case 'm':
+                mflag = 1;
+                mname = optarg;
+                set_test_case(mname, &mode);
+                break;
+            case '?':
+                err = 1;
+                break;
+		}
+    }
+	if (mflag == 0) {	/* -m was mandatory */
+		fprintf(stderr, "%s: missing -m option\n", argv[0]);
+		fprintf(stderr, usage, argv[0]);
+		exit(1);
+	} else if ((optind) > argc) {	
+		/* need at least one argument (change +1 to +2 for two, etc. as needeed) */
+
+		fprintf(stderr, "optind = %d, argc = %d\n", optind, argc);
+		fprintf(stderr, "%s: missing test case name\n", argv[0]);
+		fprintf(stderr, usage, argv[0]);
+		exit(1);
+	} else if (err) {
+		fprintf(stderr, usage, argv[0]);
+		exit(1);
+	}
+    if (debug) {
+        /* see what we have */
+        printf("debug = %d\n", debug);
+        printf("mflag = %d\n", mflag);
+        
+        if (optind < argc)	/* these are the arguments after the command-line options */
+            for (; optind < argc; optind++)
+                printf("argument: \"%s\"\n", argv[optind]);
+        else {
+            printf("no arguments left to process\n");
         }
     }
+
 
     // TODO: Create a buffer of tuples with a circular buffer
     // 32768 x 32 = 1MB
