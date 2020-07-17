@@ -228,7 +228,6 @@ inline void downsweep (__local int *data, int length) {
  */
 
 __kernel void selectKernel1 (
-    const int operator, /* Seems to be no use but keep it first */
     const int size, /* Seems to be no use but keep it first */
     const int tuples, /* Seems to be no use but keep it first */
     __global const uchar *input,

@@ -14,6 +14,11 @@
 #define TUPLE_SIZE 32
 #define VALUE_RANGE 128
 
+/*
+ * To add case:
+ *     add one enum here and
+ *     add coresponding string tag in set_test_case
+ */
 enum test_cases {
     CPU,
     MERGED_SELECT, 

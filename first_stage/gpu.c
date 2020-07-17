@@ -23,16 +23,21 @@ static cl_device_id device = NULL;
 static cl_context context = NULL;
 static cl_program program = NULL;
 static cl_kernel kernel[3];
+static cl_kernel compact_kernel;
 
 static gpu_config_p config = NULL;
 
 static cl_mem input_mem = NULL;
 static cl_mem flags_mem = NULL;
+static cl_mem goffsets_mem = NULL;
+static cl_mem partitions_mem = NULL;
 static cl_mem num_mem = NULL;
 static cl_mem output_mem = NULL;
 
 static int batch_size = 0;
 static int const tuple_size = 32; /* byte */ 
+static int const tuple_per_thread = 2;
+static int const max_threads_per_group = 64;
 
 static void set_platform () {
     int error = 0;
@@ -228,14 +233,28 @@ void set_kernel_input_sim(void const * data) {
     dbg("[GPU] Succeed to set input\n", NULL);
 }
 
-void set_inter_args() {
+void create_kernel_input() {
+    cl_int error = 0;
+    
+    /* arg:input */
+    input_mem = clCreateBuffer(
+        context, 
+        CL_MEM_READ_ONLY, 
+        batch_size * tuple_size * sizeof(unsigned char), 
+        NULL, 
+        &error);
+    if (error != CL_SUCCESS) {
+        fprintf(stderr, "error: failed to set arguement input\n", NULL);
+        exit(1);
+    }
+
+    dbg("[GPU] Succeed to create input buffer\n", NULL);
+}
+
+void create_kernel_inter() {
     cl_int error = 0;
 
     /* arg:flags */
-    int * flags = (int *)malloc(sizeof(int)*batch_size);
-    for (int i=0; i<batch_size; i++) {
-        flags[i] = 1; /* default to be selected */
-    }
     flags_mem = clCreateBuffer(
         context, 
         CL_MEM_READ_WRITE, 
@@ -246,36 +265,30 @@ void set_inter_args() {
         fprintf(stderr, "error: failed to set arguement: flags", NULL);
         exit(1);
     }    
-    dbg("[GPU] Succeed to set flags\n", NULL);
 
-    // cl_mem offsets_mem = clCreateBuffer(context, CL_MEM_WRITE_ONLY, sizeof(int), NULL, &error);
-    // cl_mem partitions_mem = clCreateBuffer(context, CL_MEM_WRITE_ONLY, sizeof(int), NULL, &error);
-    // cl_mem output_mem = clCreateBuffer(context, CL_MEM_WRITE_ONLY, sizeof(unsigned char), NULL, &error);
-    // cl_mem local_pos_mem = clCreateBuffer(context, CL_MEM_WRITE_ONLY, sizeof(int), NULL, &error);
-}
-
-void read_inter_agrs() {
-    // TODO
-}
-
-void write_inter_args() {
-    // TODO
-}
-
-void set_kernel_output() {
-    cl_int error = 0;
-
-    output_mem = clCreateBuffer(
+    partitions_mem = clCreateBuffer(
         context, 
-        CL_MEM_WRITE_ONLY, 
+        CL_MEM_READ_WRITE, 
         batch_size * sizeof(int), 
         NULL, 
         &error);
     if (error != CL_SUCCESS) {
-        fprintf(stderr, "error: failed to set arguement output\n", NULL);
+        fprintf(stderr, "error: failed to set arguement: partitions", NULL);
+        exit(1);
+    }    
+
+    goffsets_mem = clCreateBuffer(
+        context, 
+        CL_MEM_READ_WRITE, 
+        batch_size * tuple_size * sizeof(unsigned char), 
+        NULL, 
+        &error);
+    if (error != CL_SUCCESS) {
+        fprintf(stderr, "error: failed to set arguement: goffsets", NULL);
         exit(1);
     }
-    dbg("[GPU] Succeed to set output\n", NULL);
+
+    dbg("[GPU] Succeed to create intermediate buffers\n", NULL);
 }
 
 void set_kernel_output_sim() {
@@ -294,6 +307,41 @@ void set_kernel_output_sim() {
     dbg("[GPU] Succeed to set output\n", NULL);
 }
 
+void create_kernel_output() {
+    cl_int error = 0;
+
+    output_mem = clCreateBuffer(
+        context, 
+        CL_MEM_WRITE_ONLY, 
+        batch_size * tuple_size * sizeof(unsigned char), 
+        NULL, 
+        &error);
+    if (error != CL_SUCCESS) {
+        fprintf(stderr, "error: failed to set arguement output\n", NULL);
+        exit(1);
+    }
+    dbg("[GPU] Succeed to create output buffer\n", NULL);
+}
+
+void read_input(void const * data) {
+    cl_int error = 0;
+
+    /* Copy the input buffer on the host to the memory buffer on device */
+    error = clEnqueueWriteBuffer(
+        config->command_queue[0], 
+        input_mem, 
+        CL_TRUE,         /* blocking write */
+        0, 
+        batch_size * tuple_size * sizeof(unsigned char), 
+        data,            /* data in the host memeory */
+        0, NULL, NULL);  /* event related */
+    if (error != CL_SUCCESS) {
+        fprintf(stderr, "error: failed to enqueue write buffer command\n", NULL);
+        exit(1);
+    }
+
+    dbg("[GPU] Succeed to read input\n", NULL);
+}
 
 void write_output_sim(void * output) {
     cl_int error = 0;
@@ -306,6 +354,74 @@ void write_output_sim(void * output) {
         batch_size * sizeof(int), 
         output, 
         0, NULL, NULL);
+}
+
+void write_output(void * output) {
+    cl_int error = 0;
+
+    error = clEnqueueReadBuffer(
+        config->command_queue[0], 
+        output_mem, 
+        CL_TRUE, 
+        0, 
+        batch_size * tuple_size * sizeof(unsigned char), 
+        output, 
+        0, NULL, NULL);
+}
+
+void set_kernel_args(cl_kernel kernel_) {
+    cl_int error = 0;
+
+    /* 
+     * threads number = batch_size / tuples per threads
+     * threads per group = number of threads per group(64) or threads number (if threads number is smaller)
+     * number of groups = threads number / threads per group
+     * 
+     * cache size = 4 (up to 4 loacl cache) * threads per group * tuples per threads
+     */
+    int const cache_size = 4 * max_threads_per_group * tuple_per_thread;
+
+	/* Set constant arguments */
+	error |= clSetKernelArg (kernel_, 0, sizeof(int), (void *)   &tuple_size);
+	error |= clSetKernelArg (kernel_, 1, sizeof(int), (void *)  &batch_size);
+	/* Set I/O byte buffers */
+	error |= clSetKernelArg (
+		kernel_,
+		2,
+		sizeof(cl_mem),
+		&input_mem);
+	error |= clSetKernelArg (
+		kernel_,
+		3,
+		sizeof(cl_mem),
+		&flags_mem);
+	error |= clSetKernelArg (
+		kernel_,
+		4,
+		sizeof(cl_mem),
+		&goffsets_mem);    
+	error |= clSetKernelArg (
+		kernel_,
+		5,
+		sizeof(cl_mem),
+		&partitions_mem);
+	error |= clSetKernelArg (
+		kernel_,
+		6,
+		sizeof(cl_mem),
+		&output_mem);
+	/* Set local memory */
+	error |= clSetKernelArg (
+        kernel_, 
+        7, 
+        (size_t) cache_size, 
+        (void *) NULL);
+    
+    if (error != CL_SUCCESS) {
+		fprintf(stderr, "opencl error (%d): %s\n", error, getErrorMessage(error));
+		exit (1);
+	}
+
 }
 
 /* Below are public functions */
@@ -381,55 +497,43 @@ void gpu_set_kernel(void const * data, void * result) {
     cl_int error = 0;
 
     /* input arguements */
-    // set_kernel_input(data);
+    create_kernel_input();
     
     /* inter-arguments i.e. arguments that holds the shared information between select and compact */
-    // set_inter_args();
+    create_kernel_inter();
 
     /* output args */
-    // set_kernel_output();
+    create_kernel_output();
 
     /* set kernels */
     for (int k=0; k<config->kernel.count; k++) {
-        char const compact_kernel [64] = "compactKernel";
+        char const compact_kernel_name [64] = "compactKernel";
 
-        char select_kernel [64] = "selectKernel";
+        char select_kernel_name [64] = "selectKernel";
         char num [2];
         sprintf(num, "%d", k+1);
-        strcat(select_kernel, num);
+        strcat(select_kernel_name, num);
 
         /* retrieve a kernel entry */
-        kernel[k] = clCreateKernel(program, select_kernel, &error);
+        kernel[k] = clCreateKernel(program, select_kernel_name, &error);
         if (error != CL_SUCCESS) {
-            fprintf(stderr, "error: fail to build the %s\n", select_kernel);
+            fprintf(stderr, "error: fail to build the %s\n", select_kernel_name);
             exit(1);
         }
 
-        /* set arguments */
-        // error  = clSetKernelArg( kernel[2*k], 0, sizeof(cl_mem), &input_mem);
-        // error |= clSetKernelArg( kernel[2*k], 1, sizeof(cl_mem), &num_mem);
-        // error |= clSetKernelArg( kernel[2*k], 2, sizeof(cl_mem), &output_mem);
-        // if (error != CL_SUCCESS) {
-        //     fprintf(stderr, "error: fail to set arguments\n", NULL);
-        //     exit(1);
-        // }
+        /* set arguments for select kernel */
+        set_kernel_args(kernel[k]);
 
-        kernel[k] = clCreateKernel(program, compact_kernel, &error);
+        compact_kernel = clCreateKernel(program, compact_kernel_name, &error);
         if (error != CL_SUCCESS) {
-            fprintf(stderr, "error: fail to build the %s\n", select_kernel);
+            fprintf(stderr, "error: fail to build the %s\n", compact_kernel_name);
             exit(1);
         }
 
-        // error  = clSetKernelArg( kernel[2*k+1], 0, sizeof(cl_mem), &input_mem);
-        // error |= clSetKernelArg( kernel[2*k+1], 1, sizeof(cl_mem), &num_mem);
-        // error |= clSetKernelArg( kernel[2*k+1], 2, sizeof(cl_mem), &output_mem);
-        // if (error != CL_SUCCESS) {
-        //     fprintf(stderr, "error: fail to set arguments\n", NULL);
-        //     exit(1);
-        // }
+        set_kernel_args(compact_kernel);
     }
-    dbg("[GPU] Set kernel succeed!\n");
 
+    dbg("[GPU] Set kernel succeed!\n");
 }
 
 void gpu_set_kernel_sim(void const * data, void * result) {
@@ -456,7 +560,7 @@ void gpu_set_kernel_sim(void const * data, void * result) {
         }
 
         /* set arguments */
-        error = clSetKernelArg( kernel[k], 0, sizeof(cl_mem), &input_mem);
+        error  = clSetKernelArg( kernel[k], 0, sizeof(cl_mem), &input_mem);
         error |= clSetKernelArg( kernel[k], 1, sizeof(cl_mem), &num_mem);
         error |= clSetKernelArg( kernel[k], 2, sizeof(cl_mem), &output_mem);
         if (error != CL_SUCCESS) {
@@ -466,6 +570,44 @@ void gpu_set_kernel_sim(void const * data, void * result) {
     }
     dbg("[GPU] Set kernel succeed!\n");
 
+}
+
+void gpu_exec(void * result) {
+
+    const size_t local_item_size = 64; /* minimum threads per group */
+    const size_t global_item_size = batch_size / tuple_per_thread;
+    for (int k=0; k<config->kernel.count; k++) {
+        cl_int error = 0;
+        error = clEnqueueNDRangeKernel(
+            config->command_queue[0],
+            kernel[k],
+            1,
+            NULL,
+            &global_item_size,
+            &local_item_size,
+            0, NULL, NULL);
+        if (error != CL_SUCCESS) {
+            fprintf(stderr, "error: fail to enqueue the kernel with error(%d): %s\n", error, getErrorMessage(error));
+            exit(1);
+        }
+
+        error = clEnqueueNDRangeKernel(
+            config->command_queue[0],
+            compact_kernel,
+            1,
+            NULL,
+            &global_item_size,
+            &local_item_size,
+            0, NULL, NULL);
+        if (error != CL_SUCCESS) {
+            fprintf(stderr, "error: fail to enqueue the compact kernel with error(%d): %s\n", error, getErrorMessage(error));
+            exit(1);
+        }
+    }
+
+    write_output_sim(result);
+
+    dbg("[GPU] Running kernel finishes!\n", NULL);
 }
 
 void gpu_exec_sim(void * result) {
