@@ -20,6 +20,9 @@ enum test_cases {
     ERROR
 };
 
+void set_test_case(char const * mname, enum test_cases * mode);
+void parse_arguments(int argc, char * argv[], enum test_cases * mode);
+
 void run_processing_gpu(tuple_t * buffer, int size, int * result, int * output_size, enum test_cases mode) {
     switch (mode) {
         case MERGED_SELECT: 
@@ -78,72 +81,11 @@ void run_processing_cpu(tuple_t * buffer, int size, tuple_t * result, int * outp
     }
 }
 
-void set_test_case(char const * mname, enum test_cases * mode) {
-    if (strcmp(mname, "merged-select") == 0) {
-        *mode = MERGED_SELECT; 
-    } else if (strcmp(mname, "separate-select") == 0) {
-        *mode = SEPARATE_SELECT;
-    } else {
-        *mode = ERROR;
-    }
-    return;
-}
-
 int main(int argc, char * argv[]) {
 
     enum test_cases mode = MERGED_SELECT;
 
-	extern char *optarg;
-	extern int optind;
-	int c, err = 0; 
-    int debug = 0;
-	int mflag=0;
-	char *mname = "merged-select";
-	static char usage[] = "usage: %s -m test-case\n";
-
-	while ((c = getopt(argc, argv, "dm:")) != -1) {
-		switch (c) {
-            case 'd':
-                debug = 1;
-                break;
-            case 'm':
-                mflag = 1;
-                mname = optarg;
-                set_test_case(mname, &mode);
-                break;
-            case '?':
-                err = 1;
-                break;
-		}
-    }
-	if (mflag == 0) {	/* -m was mandatory */
-		fprintf(stderr, "%s: missing -m option\n", argv[0]);
-		fprintf(stderr, usage, argv[0]);
-		exit(1);
-	} else if ((optind) > argc) {	
-		/* need at least one argument (change +1 to +2 for two, etc. as needeed) */
-
-		fprintf(stderr, "optind = %d, argc = %d\n", optind, argc);
-		fprintf(stderr, "%s: missing test case name\n", argv[0]);
-		fprintf(stderr, usage, argv[0]);
-		exit(1);
-	} else if (err) {
-		fprintf(stderr, usage, argv[0]);
-		exit(1);
-	}
-    if (debug) {
-        /* see what we have */
-        printf("debug = %d\n", debug);
-        printf("mflag = %d\n", mflag);
-        
-        if (optind < argc)	/* these are the arguments after the command-line options */
-            for (; optind < argc; optind++)
-                printf("argument: \"%s\"\n", argv[optind]);
-        else {
-            printf("no arguments left to process\n");
-        }
-    }
-
+    parse_arguments(argc, argv, &mode);
 
     // TODO: Create a buffer of tuples with a circular buffer
     // 32768 x 32 = 1MB
@@ -207,4 +149,72 @@ int main(int argc, char * argv[]) {
     printf("[GPU] The output from gpu is %d\n", results_size);
 
     return 0;
+}
+
+void set_test_case(char const * mname, enum test_cases * mode) {
+    if (strcmp(mname, "merged-select") == 0) {
+        *mode = MERGED_SELECT; 
+    } else if (strcmp(mname, "separate-select") == 0) {
+        *mode = SEPARATE_SELECT;
+    } else {
+        *mode = ERROR;
+    }
+    return;
+}
+
+void parse_arguments(int argc, char * argv[], enum test_cases * mode) {
+	extern char *optarg;
+	extern int optind;
+	int c, err = 0; 
+    int debug = 0;
+	int mflag=0;
+	char *mname = "merged-select";
+	static char usage[] = "usage: %s [-d] -m test-case\n";
+
+	while ((c = getopt(argc, argv, "dm:")) != -1) {
+		switch (c) {
+            case 'd':
+                debug = 1;
+                break;
+            case 'm':
+                mflag = 1;
+                mname = optarg;
+                set_test_case(mname, mode);
+                if (*mode == ERROR) {
+                    // TODO: Move this error detection to outsied of the loop
+                    fprintf(stderr, "Mode \"%s\" has not yet been defined\n", mname);
+                }
+                break;
+            case '?':
+                err = 1;
+                break;
+		}
+    }
+	if (mflag == 0) {	/* -m was mandatory */
+		fprintf(stderr, "%s: missing -m option\n", argv[0]);
+		fprintf(stderr, usage, argv[0]);
+		exit(1);
+	} else if ((optind) > argc) {	
+		/* need at least one argument (change +1 to +2 for two, etc. as needeed) */
+
+		fprintf(stderr, "optind = %d, argc = %d\n", optind, argc);
+		fprintf(stderr, "%s: missing test case name\n", argv[0]);
+		fprintf(stderr, usage, argv[0]);
+		exit(1);
+	} else if (err) {
+		fprintf(stderr, usage, argv[0]);
+		exit(1);
+	}
+    if (debug) {
+        /* see what we have */
+        printf("debug = %d\n", debug);
+        printf("mflag = %d\n", mflag);
+        
+        if (optind < argc)	/* these are the arguments after the command-line options */
+            for (; optind < argc; optind++)
+                printf("argument: \"%s\"\n", argv[optind]);
+        else {
+            printf("no arguments left to process\n");
+        }
+    }
 }
