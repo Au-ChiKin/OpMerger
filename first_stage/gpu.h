@@ -24,9 +24,11 @@ typedef struct query_operator {
 // void gpu_init (JNIEnv *, int, int);
 void gpu_init (char const * filename, int size, int kernel_num);
 
-void gpu_set_kernel(void const * data, void * result);
+void gpu_set_kernel();
 
 void gpu_set_kernel_sim(void const * data, void * result);
+
+void gpu_read_input(void const * data);
 
 void gpu_exec(void * result);
 

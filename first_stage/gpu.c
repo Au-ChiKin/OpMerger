@@ -323,7 +323,7 @@ void create_kernel_output() {
     dbg("[GPU] Succeed to create output buffer\n", NULL);
 }
 
-void read_input(void const * data) {
+void gpu_read_input(void const * data) {
     cl_int error = 0;
 
     /* Copy the input buffer on the host to the memory buffer on device */
@@ -493,7 +493,7 @@ void gpu_init (char const * filename, int size, int kernel_num) {
 	return;
 }
 
-void gpu_set_kernel(void const * data, void * result) {
+void gpu_set_kernel() {
     cl_int error = 0;
 
     /* input arguements */

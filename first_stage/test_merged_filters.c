@@ -48,7 +48,9 @@ void run_processing_gpu(tuple_t * buffer, int size, int * result, int * output_s
 
     // gpu_exec_sim(result);
 
-    gpu_set_kernel(buffer, result);
+    gpu_set_kernel();
+
+    gpu_read_input(buffer);
     
     // gpu_exec(result);
 
