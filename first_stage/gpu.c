@@ -361,10 +361,11 @@ void write_output(void * output) {
 
     error = clEnqueueReadBuffer(
         config->command_queue[0], 
-        output_mem, 
+        flags_mem, 
         CL_TRUE, 
         0, 
-        batch_size * tuple_size * sizeof(unsigned char), 
+        // batch_size * tuple_size * sizeof(unsigned char), 
+        batch_size * sizeof(int), 
         output, 
         0, NULL, NULL);
 }
@@ -573,9 +574,9 @@ void gpu_set_kernel_sim(void const * data, void * result) {
 }
 
 void gpu_exec(void * result) {
-
     const size_t local_item_size = 64; /* minimum threads per group */
     const size_t global_item_size = batch_size / tuple_per_thread;
+
     for (int k=0; k<config->kernel.count; k++) {
         cl_int error = 0;
         error = clEnqueueNDRangeKernel(
@@ -605,7 +606,7 @@ void gpu_exec(void * result) {
         }
     }
 
-    write_output_sim(result);
+    write_output(result);
 
     dbg("[GPU] Running kernel finishes!\n", NULL);
 }
