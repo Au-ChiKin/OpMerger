@@ -14,7 +14,8 @@
 #define TUPLE_SIZE 32
 #define VALUE_RANGE 128
 
-enum test_cases { 
+enum test_cases {
+    CPU,
     MERGED_SELECT, 
     SEPARATE_SELECT,
     ERROR
@@ -22,6 +23,7 @@ enum test_cases {
 
 void set_test_case(char const * mname, enum test_cases * mode);
 void parse_arguments(int argc, char * argv[], enum test_cases * mode);
+void write_input_buffer(tuple_t * buffer);
 
 void run_processing_gpu(tuple_t * buffer, int size, int * result, int * output_size, enum test_cases mode) {
     switch (mode) {
@@ -90,8 +92,41 @@ int main(int argc, char * argv[]) {
     // TODO: Create a buffer of tuples with a circular buffer
     // 32768 x 32 = 1MB
     tuple_t buffer[BUFFER_SIZE];
+    write_input_buffer(buffer);
 
-    // TODO: Fill the buffer according to parameters
+
+    /* output the result size */
+    /*
+     * 32768 tuples in total
+     * attr1 50% selectivity
+     * attr2 50% selectivity
+     * attr3 50% selectivity
+     * 
+     * output should be 32768 x (50%)^3 = 4096
+     */
+    int results_size = 0;
+    tuple_t results_tuple[BUFFER_SIZE];
+
+    if (mode == CPU) {
+        run_processing_cpu(buffer, BUFFER_SIZE, results_tuple, &results_size);
+        
+        printf("[CPU] The output from cpu is %d\n\n", results_size);
+    } else {
+        int results[BUFFER_SIZE];
+        for (int i=0; i<BUFFER_SIZE; i++) {
+            results[i] = 1;
+        }
+
+        run_processing_gpu(buffer, BUFFER_SIZE, results, &results_size, mode);
+
+        printf("[GPU] The output from gpu is %d\n", results_size);
+    }
+
+    return 0;
+}
+
+// TODO: Fill the buffer according to parameters
+void write_input_buffer(tuple_t * buffer) {
     int value = 0;
     bool flipper = false;
     int cur = 0;
@@ -121,34 +156,6 @@ int main(int argc, char * argv[]) {
         value = (value + 1) % VALUE_RANGE;
         cur += 1;
     }
-
-    
-    int results_size = 0;
-    tuple_t results_tuple[BUFFER_SIZE];
-    run_processing_cpu(buffer, BUFFER_SIZE, results_tuple, &results_size);
-
-    /* output the result size */
-    /*
-     * 32768 tuples in total
-     * attr1 50% selectivity
-     * attr2 50% selectivity
-     * attr3 50% selectivity
-     * 
-     * output should be 32768 x (50%)^3 = 4096
-     */
-    printf("[CPU] The output from cpu is %d\n\n", results_size);
-
-
-    int results[BUFFER_SIZE];
-    for (int i=0; i<BUFFER_SIZE; i++) {
-        results[i] = 1;
-    }
-    results_size = 0; /* start from begining for GPU */
-    run_processing_gpu(buffer, BUFFER_SIZE, results, &results_size, mode);
-
-    printf("[GPU] The output from gpu is %d\n", results_size);
-
-    return 0;
 }
 
 void set_test_case(char const * mname, enum test_cases * mode) {
@@ -156,6 +163,8 @@ void set_test_case(char const * mname, enum test_cases * mode) {
         *mode = MERGED_SELECT; 
     } else if (strcmp(mname, "separate-select") == 0) {
         *mode = SEPARATE_SELECT;
+    } else if (strcmp(mname, "cpu") == 0) {
+        *mode = CPU;
     } else {
         *mode = ERROR;
     }
