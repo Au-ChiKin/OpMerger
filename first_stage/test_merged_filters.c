@@ -52,9 +52,9 @@ void run_processing_gpu(tuple_t * buffer, int size, int * result, int * output_s
 
     gpu_read_input(buffer);
     
-    gpu_exec(result);
+    gpu_exec();
 
-    // gpu_write_output(result);
+    gpu_write_output(result);
 
     *output_size = size;
     for (int i=0; i<size; i++) {

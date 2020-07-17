@@ -30,7 +30,9 @@ void gpu_set_kernel_sim(void const * data, void * result);
 
 void gpu_read_input(void const * data);
 
-void gpu_exec(void * result);
+void gpu_exec();
+
+void gpu_write_output(void * output);
 
 void gpu_exec_sim(void * result);
 

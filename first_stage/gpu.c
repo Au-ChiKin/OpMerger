@@ -356,7 +356,7 @@ void write_output_sim(void * output) {
         0, NULL, NULL);
 }
 
-void write_output(void * output) {
+void gpu_write_output(void * output) {
     cl_int error = 0;
 
     error = clEnqueueReadBuffer(
@@ -573,7 +573,7 @@ void gpu_set_kernel_sim(void const * data, void * result) {
 
 }
 
-void gpu_exec(void * result) {
+void gpu_exec() {
     const size_t local_item_size = 64; /* minimum threads per group */
     const size_t global_item_size = batch_size / tuple_per_thread;
 
@@ -605,8 +605,6 @@ void gpu_exec(void * result) {
             exit(1);
         }
     }
-
-    write_output(result);
 
     dbg("[GPU] Running kernel finishes!\n", NULL);
 }
@@ -650,7 +648,6 @@ void gpu_free () {
     error |= clReleaseKernel(kernel[0]);
     error |= clReleaseProgram(program);
     error |= clReleaseMemObject(input_mem);
-    error |= clReleaseMemObject(num_mem);
     error |= clReleaseMemObject(output_mem);
     error |= clReleaseCommandQueue(config->command_queue[0]);
     error |= clReleaseCommandQueue(config->command_queue[1]);
