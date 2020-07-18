@@ -76,6 +76,8 @@ static void get_deviceInfo () {
 	cl_int error = 0;
 
 	cl_uint value = 0;
+	size_t max_work_group = 0;
+	size_t max_work_item[3];
 	char extensions [2048];
 	char name [256];
 
@@ -83,6 +85,8 @@ static void get_deviceInfo () {
 	error |= clGetDeviceInfo (device, CL_DEVICE_MEM_BASE_ADDR_ALIGN, sizeof (cl_uint), &value,         NULL);
 	error |= clGetDeviceInfo (device, CL_DEVICE_EXTENSIONS,                      2048, &extensions[0], NULL);
 	error |= clGetDeviceInfo (device, CL_DEVICE_NAME,                            2048, &name[0],       NULL);
+	error |= clGetDeviceInfo (device, CL_DEVICE_MAX_WORK_GROUP_SIZE, sizeof (size_t),  &max_work_group,NULL);
+	error |= clGetDeviceInfo (device, CL_DEVICE_MAX_WORK_ITEM_SIZES, 3*sizeof (size_t),&max_work_item, NULL);
 
 	if (error != CL_SUCCESS) {
 		fprintf(stderr, "opencl error (%d): %s\n", error, getErrorMessage(error));
@@ -91,6 +95,8 @@ static void get_deviceInfo () {
 	fprintf(stdout, "[GPU] GPU name: %s\n", name);
 	fprintf(stdout, "[GPU] GPU supported extensions are: %s\n", extensions);
 	fprintf(stdout, "[GPU] GPU memory addresses are %u bits aligned\n", value);
+	fprintf(stdout, "[GPU] GPU maximum work group size is %zu\n", max_work_group);
+	fprintf(stdout, "[GPU] GPU maximum work item size for the first dimentsion is %zu\n", max_work_item[0]);
 
 	return ;
 }
