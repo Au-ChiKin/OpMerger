@@ -60,7 +60,7 @@ static void set_device () {
 	error = clGetDeviceIDs (
         platform,             // platform ID
         CL_DEVICE_TYPE_GPU,   // look only for GPUs
-        2,                    // return an ID for only one GPU &device_id
+        1,                    // return an ID for only one GPU &device_id
         &device,              // on return, the device ID
         &count);              // on return, the number of devices
 	if (error != CL_SUCCESS) {
