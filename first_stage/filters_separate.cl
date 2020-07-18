@@ -81,54 +81,83 @@ __kernel void selectf3_sim (__global input_t * input, __global int * num, __glob
 	output[gid] &= value;
 }
 
+inline int selectf1 (__global input_t *input) {
+    int value = 1;
+    /* if attribute < 128/2? */
+    int attribute_value = input->tuple._1;
+    value = value & (attribute_value < 128 / 2);
+
+    return value;
+}
+
+inline int selectf2 (__global input_t *input) {
+    int value = 1;
+
+    /* if attribute != 0? */
+    int attribute_value = input->tuple._2;
+    value = value & (attribute_value != 0);
+
+    return value;
+}
+
+inline int selectf3 (__global input_t *input) {
+    int value = 1;
+
+    /* if attribute >= 128/4? */
+    int attribute_value = input->tuple._3;
+    value = value & (attribute_value >= 128 / 4);
+
+    return value;
+}
+
 /* Scan based on the implementation of [...] */
 
 /*
  * Up-sweep (reduce) on a local array `data` of length `length`.
  * `length` must be a power of two.
  */
-// inline void upsweep (__local int *data, int length) {
+inline void upsweep (__local int *data, int length) {
 
-//         int lid  = get_local_id (0);
-//         int b = (lid * 2) + 1;
-//         int depth = 1 + (int) log2 ((float) length);
+        int lid  = get_local_id (0);
+        int b = (lid * 2) + 1;
+        int depth = 1 + (int) log2 ((float) length);
 
-//         for (int d = 0; d < depth; d++) {
+        for (int d = 0; d < depth; d++) {
 
-//                 barrier(CLK_LOCAL_MEM_FENCE);
-//                 int mask = (0x1 << d) - 1;
-//                 if ((lid & mask) == mask) {
+                barrier(CLK_LOCAL_MEM_FENCE);
+                int mask = (0x1 << d) - 1;
+                if ((lid & mask) == mask) {
 
-//                         int offset = (0x1 << d);
-//                         int a = b - offset;
-//                         data[b] += data[a];
-//                 }
-//         }
-// }
+                        int offset = (0x1 << d);
+                        int a = b - offset;
+                        data[b] += data[a];
+                }
+        }
+}
 
 /*
  * Down-sweep on a local array `data` of length `length`.
  * `length` must be a power of two.
  */
-// inline void downsweep (__local int *data, int length) {
+inline void downsweep (__local int *data, int length) {
 
-//         int lid = get_local_id (0);
-//         int b = (lid * 2) + 1;
-//         int depth = (int) log2 ((float) length);
-//         for (int d = depth; d >= 0; d--) {
+        int lid = get_local_id (0);
+        int b = (lid * 2) + 1;
+        int depth = (int) log2 ((float) length);
+        for (int d = depth; d >= 0; d--) {
 
-//                 barrier(CLK_LOCAL_MEM_FENCE);
-//                 int mask = (0x1 << d) - 1;
-//                 if ((lid & mask) == mask) {
+                barrier(CLK_LOCAL_MEM_FENCE);
+                int mask = (0x1 << d) - 1;
+                if ((lid & mask) == mask) {
 
-//                         int offset = (0x1 << d);
-//                         int a = b - offset;
-//                         int t = data[a];
-//                         data[a] = data[b];
-//                         data[b] += t;
-//                 }
-//         }
-// }
+                        int offset = (0x1 << d);
+                        int a = b - offset;
+                        int t = data[a];
+                        data[a] = data[b];
+                        data[b] += t;
+                }
+        }
+}
 
 /* Scan */
 // inline void scan (__local int *data, int length) {
@@ -157,144 +186,243 @@ __kernel void selectf3_sim (__global input_t * input, __global int * num, __glob
  *
  */
 
-// __kernel void selectKernel (
-//         const int operator,
-//         const int size,
-//         const int tuples,
-//         __global const uchar *input,
-//         __global int *flags, /* The output of select (0 or 1) */ // [input & output]
-//         __global int *offsets, // [output] maps the local memory position of the tuples to global memory
-//         __global int *partitions, // [output] ???
-//         __global uchar *output, // [output] ???
-//         __local  int *x // [output] local memory position of tuples
-// )
-// {
-//         int lgs = get_local_size (0); // local group size (thread number in the group)
-//         int tid = get_global_id (0);  // global thread id
+__kernel void selectKernel1 (
+    const int size, /* Seems to be no use but keep it first */
+    const int tuples, /* Seems to be no use but keep it first */
+    __global const uchar *input,
+    __global int *flags, /* The output of select (0 or 1) */
+    __global int *goffsets, /* If flags == 1, refers to the global offset of the corresponding tuple in output */
+    __global int *partitions, /* Refers to the global block offset of the work group in output */
+    __global uchar *output, /* Output tuples */
+    __local  int *loffsets /* Refers to local offset of the corresponding tuples in output */
+)
+{
+    int lgs = get_local_size (0); // local group size (thread number in the group)
+    int tid = get_global_id (0);  // global thread id
 
-//         int  left = (2 * tid); // tuple1 id
-//         int right = (2 * tid) + 1; // tuple2 id
+    int  left = (2 * tid); // tuple1 id
+    int right = (2 * tid) + 1; // tuple2 id
 
-//         int lid = get_local_id(0); // local thread id
+    int lid = get_local_id(0); // local thread id
 
-//         /* Local memory indices */
-//         int  _left = (2 * lid); // tuple1 memory indice on local memory
-//         int _right = (2 * lid) + 1; // tuple2 memory indice
+    /* Local memory indices */
+    int  _left = (2 * lid); // tuple1 memory indice on local memory
+    int _right = (2 * lid) + 1; // tuple2 memory indice
 
-//         int gid = get_group_id (0); // group id
-//         /* A thread group processes twice as many tuples */
-//         int L = 2 * lgs; // total tuples in the group
+    int gid = get_group_id (0); // group id
+    /* A thread group processes twice as many tuples as the work items at the group */
+    int l_tuple_num = 2 * lgs;
 
-//         /* Fetch tuple and apply selection filter */
-//         const int lidx =  left * sizeof(input_t);
-//         const int ridx = right * sizeof(input_t);
+    /* Fetch tuple and apply selection filter */
+    const int lidx =  left * sizeof(input_t);
+    const int ridx = right * sizeof(input_t);
 
-//         // opencl syntax
-//         __global input_t *lp = (__global input_t *) &input[lidx];
-//         __global input_t *rp = (__global input_t *) &input[ridx];
+    // opencl syntax
+    __global input_t *lp = (__global input_t *) &input[lidx];
+    __global input_t *rp = (__global input_t *) &input[ridx];
 
-//         // apply predicates
-//         switch (operator) {
-//             case 1:
-//                 flags[ left] = selectf1 (lp);
-//                 flags[right] = selectf1 (rp);
-//                 break;
-//             case 2:
-//                 flags[ left] = selectf2 (lp);
-//                 flags[right] = selectf2 (rp);
-//                 break;
-//             case 3:
-//                 flags[ left] = selectf3 (lp);
-//                 flags[right] = selectf3 (rp);
-//                 break;
-//             default:
-//                 break;
-//         }
+    // apply predicates
+    flags[ left] = selectf1 (lp);
+    flags[right] = selectf1 (rp);
 
-//         /* Copy flag to local memory */
-//         x[ _left] = (left  < tuples) ? flags[ left] : 0; // left < tuples means not exceeding the total amount of tuples
-//         x[_right] = (right < tuples) ? flags[right] : 0; // if exceeding -> 0 -> means not taking this tuple
+    /* Initialise the local offsets with flags */
+    loffsets[ _left] = (left  < tuples) ? flags[ left] : 0; // left < tuples means not exceeding the total amount of tuples
+    loffsets[_right] = (right < tuples) ? flags[right] : 0; // if exceeding -> 0 -> means not taking this tuple
 
-//         upsweep(x, L);
+    /* upsweep + reduce */
+    upsweep(loffsets, l_tuple_num);
 
-//         // if this thread is the last in this group, save the flag of right tuple in partitions 
-//         // array corresponding to the group id and put a 0 to its flag  
-//         if (lid == (lgs - 1)) { // _left = lid * 2 = 2 * (lgs - 1) = (2 * lgs - 1) - 1
-//                 partitions[gid] = x[_right];
-//                 x[_right] = 0; // ???
-//         }
+    // if this thread is the last in this group, pass the result of reduce (loffsets[_right]) to the partition array and 
+    // set loffsets[_right] to 0
+    if (lid == (lgs - 1)) { // _left = lid * 2 = 2 * (lgs - 1) = (2 * lgs - 1) - 1
+        partitions[gid] = loffsets[_right];
+        loffsets[_right] = 0; // So that in the downsweep, the last x[] element will be added to all the other elements
+    }
 
-//         downsweep(x, L);
+    downsweep(loffsets, l_tuple_num);
 
-//         /* Write results to global memory */
-//         offsets[ left] = ( left < tuples) ? x[ _left] : -1;
-//         offsets[right] = (right < tuples) ? x[_right] : -1;
-// }
+    /* Write results to global memory */
+    goffsets[ left] = ( left < tuples) ? loffsets[ _left] : -1;
+    goffsets[right] = (right < tuples) ? loffsets[_right] : -1;
+}
 
+__kernel void selectKernel2 (
+    const int size, /* Seems to be no use but keep it first */
+    const int tuples, /* Seems to be no use but keep it first */
+    __global const uchar *input,
+    __global int *flags, /* The output of select (0 or 1) */
+    __global int *goffsets, /* If flags == 1, refers to the global offset of the corresponding tuple in output */
+    __global int *partitions, /* Refers to the global block offset of the work group in output */
+    __global uchar *output, /* Output tuples */
+    __local  int *loffsets /* Refers to local offset of the corresponding tuples in output */
+)
+{
+    int lgs = get_local_size (0); // local group size (thread number in the group)
+    int tid = get_global_id (0);  // global thread id
+
+    int  left = (2 * tid); // tuple1 id
+    int right = (2 * tid) + 1; // tuple2 id
+
+    int lid = get_local_id(0); // local thread id
+
+    /* Local memory indices */
+    int  _left = (2 * lid); // tuple1 memory indice on local memory
+    int _right = (2 * lid) + 1; // tuple2 memory indice
+
+    int gid = get_group_id (0); // group id
+    /* A thread group processes twice as many tuples as the work items at the group */
+    int l_tuple_num = 2 * lgs;
+
+    /* Fetch tuple and apply selection filter */
+    const int lidx =  left * sizeof(input_t);
+    const int ridx = right * sizeof(input_t);
+
+    // opencl syntax
+    __global input_t *lp = (__global input_t *) &input[lidx];
+    __global input_t *rp = (__global input_t *) &input[ridx];
+
+    // apply predicates
+    flags[ left] = selectf2 (lp);
+    flags[right] = selectf2 (rp);
+
+    /* Initialise the local offsets with flags */
+    loffsets[ _left] = (left  < tuples) ? flags[ left] : 0; // left < tuples means not exceeding the total amount of tuples
+    loffsets[_right] = (right < tuples) ? flags[right] : 0; // if exceeding -> 0 -> means not taking this tuple
+
+    /* upsweep + reduce */
+    upsweep(loffsets, l_tuple_num);
+
+    // if this thread is the last in this group, pass the result of reduce (loffsets[_right]) to the partition array and 
+    // set loffsets[_right] to 0
+    if (lid == (lgs - 1)) { // _left = lid * 2 = 2 * (lgs - 1) = (2 * lgs - 1) - 1
+        partitions[gid] = loffsets[_right];
+        loffsets[_right] = 0; // So that in the downsweep, the last x[] element will be added to all the other elements
+    }
+
+    downsweep(loffsets, l_tuple_num);
+
+    /* Write results to global memory */
+    goffsets[ left] = ( left < tuples) ? loffsets[ _left] : -1;
+    goffsets[right] = (right < tuples) ? loffsets[_right] : -1;
+}
+
+__kernel void selectKernel3 (
+    const int size, /* Seems to be no use but keep it first */
+    const int tuples, /* Seems to be no use but keep it first */
+    __global const uchar *input,
+    __global int *flags, /* The output of select (0 or 1) */
+    __global int *goffsets, /* If flags == 1, refers to the global offset of the corresponding tuple in output */
+    __global int *partitions, /* Refers to the global block offset of the work group in output */
+    __global uchar *output, /* Output tuples */
+    __local  int *loffsets /* Refers to local offset of the corresponding tuples in output */
+)
+{
+    int lgs = get_local_size (0); // local group size (thread number in the group)
+    int tid = get_global_id (0);  // global thread id
+
+    int  left = (2 * tid); // tuple1 id
+    int right = (2 * tid) + 1; // tuple2 id
+
+    int lid = get_local_id(0); // local thread id
+
+    /* Local memory indices */
+    int  _left = (2 * lid); // tuple1 memory indice on local memory
+    int _right = (2 * lid) + 1; // tuple2 memory indice
+
+    int gid = get_group_id (0); // group id
+    /* A thread group processes twice as many tuples as the work items at the group */
+    int l_tuple_num = 2 * lgs;
+
+    /* Fetch tuple and apply selection filter */
+    const int lidx =  left * sizeof(input_t);
+    const int ridx = right * sizeof(input_t);
+
+    // opencl syntax
+    __global input_t *lp = (__global input_t *) &input[lidx];
+    __global input_t *rp = (__global input_t *) &input[ridx];
+
+    // apply predicates
+    flags[ left] = selectf3 (lp);
+    flags[right] = selectf3 (rp);
+
+    /* Initialise the local offsets with flags */
+    loffsets[ _left] = (left  < tuples) ? flags[ left] : 0; // left < tuples means not exceeding the total amount of tuples
+    loffsets[_right] = (right < tuples) ? flags[right] : 0; // if exceeding -> 0 -> means not taking this tuple
+
+    /* upsweep + reduce */
+    upsweep(loffsets, l_tuple_num);
+
+    // if this thread is the last in this group, pass the result of reduce (loffsets[_right]) to the partition array and 
+    // set loffsets[_right] to 0
+    if (lid == (lgs - 1)) { // _left = lid * 2 = 2 * (lgs - 1) = (2 * lgs - 1) - 1
+        partitions[gid] = loffsets[_right];
+        loffsets[_right] = 0; // So that in the downsweep, the last x[] element will be added to all the other elements
+    }
+
+    downsweep(loffsets, l_tuple_num);
+
+    /* Write results to global memory */
+    goffsets[ left] = ( left < tuples) ? loffsets[ _left] : -1;
+    goffsets[right] = (right < tuples) ? loffsets[_right] : -1;
+}
+
+
+inline void compact_tuple(
+    __global const uchar *input,
+    __global int *goffsets,
+    __global int *flags,
+    __global uchar *output, 
+    __local int *pivot,
+    int tuple_id
+) {
+    /* Compact left and right */
+    if (flags[tuple_id] == 1) {
+
+        const int l_in_byte = tuple_id * sizeof(input_t); // left tuple of input memory location
+        const int l_out_byte = (goffsets[tuple_id] + *pivot) * sizeof(output_t); // left tuple of output memory location
+        flags[tuple_id] = l_out_byte + sizeof(output_t);
+            __global  input_t *l_in  = (__global  input_t *) &  input[l_in_byte];
+            __global output_t *l_out = (__global output_t *) & output[l_out_byte];
+
+            l_out->vectors[0] = l_in->vectors[0];
+            l_out->vectors[1] = l_in->vectors[1];
+    }   
+}
 
 __kernel void compactKernel (
-        const int size,
-        const int tuples,
-        __global const uchar *input,
-        __global int *flags,
-        __global int *offsets,
-        __global int *partitions, // [input now]
-        __global uchar *output,
-        __local  int *x
+    const int size, /* Seems to be no use but keep it first */
+    const int tuples, /* Seems to be no use but keep it first */
+    __global const uchar *input,
+    __global int *flags,
+    __global int *goffsets,
+    __global int *partitions,
+    __global uchar *output,
+    __local  int *loffsets
 ) {
 
-        int tid = get_global_id (0);
+    int tid = get_global_id (0);
 
-        int  left = (2 * tid);
-        int right = (2 * tid) + 1;
+    int  left = (2 * tid);
+    int right = (2 * tid) + 1;
 
-        int lid = get_local_id (0);
+    int lid = get_local_id (0);
 
-        int gid = get_group_id (0);
+    int gid = get_group_id (0);
 
-        /* Compute pivot value */
-        __local int pivot;
-        if (lid == 0) { // if this the first thread in the group
-                pivot = 0;
-                if (gid > 0) {
-                        for (int i = 0; i < gid; i++) {
-                                pivot += (partitions[i]);
-                        }
-                }
+    /* Compute pivot value */
+    __local int pivot;
+    if (lid == 0) { // if this the first thread in the group
+        pivot = 0;
+        if (gid > 0) {
+            for (int i = 0; i < gid; i++) {
+                pivot += (partitions[i]);
+            }
         }
-        barrier(CLK_LOCAL_MEM_FENCE); // From now on protect the local memory
+    }
+    barrier(CLK_LOCAL_MEM_FENCE);
 
-        /* Compact left and right */
-        if (flags[left] == 1) {
-
-                const int lq = (offsets[left] + pivot) * sizeof(output_t); // left tuple of output memory location
-                const int lp = left * sizeof(input_t); // left tuple of input memory location
-                flags[left] = lq + sizeof(output_t); // ???
-                 __global  input_t *lx = (__global  input_t *) &  input[lp];
-                 __global output_t *ly = (__global output_t *) & output[lq];
-
-                 /* TODO: replace with generic function */
-
-                 ly->vectors[0] = lx->vectors[0];
-                 ly->vectors[1] = lx->vectors[1];
-                //  ly->vectors[2] = lx->vectors[2];
-                //  ly->vectors[3] = lx->vectors[3];
-        }
-
-        if (flags[right] == 1) {
-
-                const int rq = (offsets[right] + pivot) * sizeof(output_t);
-                const int rp = right * sizeof(input_t);
-                flags[right] = rq + sizeof(output_t);
-                 __global  input_t *rx = (__global  input_t *) &  input[rp];
-                 __global output_t *ry = (__global output_t *) & output[rq];
-
-                 /* TODO: replace with generic function */
-
-                 ry->vectors[0] = rx->vectors[0];
-                 ry->vectors[1] = rx->vectors[1];
-                 // ry->vectors[2] = rx->vectors[2];
-                 // ry->vectors[3] = rx->vectors[3];
-
-        }
+    /* Compact left and right */
+    compact_tuple(input, goffsets, flags, output, &pivot, left);
+    compact_tuple(input, goffsets, flags, output, &pivot, right);
 }
+ 
