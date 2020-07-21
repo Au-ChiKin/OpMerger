@@ -20,9 +20,10 @@ VPATH    = $(OBJDIR)
 
 # Targets
 PROGS   = test_merged_filters 
-# PROGS   = test_separate_filters
 SRCS = gpu.c gpu_config.c test_merged_filters.c openclerrorcode.c
-# SRCS = gpu.c gpu_config.c test_separate_filters.c openclerrorcode.c
+
+# Submodules
+include ./libcirbuf/cirbuf.mk
 
 OBJECTS = $(patsubst %.c,%.o,$(SRCS))
 
@@ -48,13 +49,13 @@ include $(wildcard $(DEPFILES))
 # Compile the main program
 OBJPROG = $(addprefix $(OBJDIR)/, $(PROGS))
 
-all: $(OBJPROG)
+all: $(OUTDIR) $(DEPOUTDIR) $(OBJPROG)
 
-$(OBJPROG): $(addprefix $(OBJDIR)/, $(OBJECTS))
+$(OBJPROG): $(addprefix $(OBJDIR)/, $(OBJECTS)) 
 		$(LINK.o) $^ $(LDLIBS) -o $@
 
 
 # clean
 .PHONY: clean
 clean:
-	rm -f $(OBJDIR)/*.o $(DEPDIR)/*.d $(TARGET) *~
+	rm -f $(OBJDIR)/*.o $(DEPDIR)/*.d $(OBJPROG) *~

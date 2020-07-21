@@ -10,6 +10,8 @@
 #include <unistd.h>
 #include <string.h>
 
+#include "libcirbuf/circular_buffer.h"
+
 #define BUFFER_SIZE 32768 /* in tuple */
 #define TUPLE_SIZE 32
 #define VALUE_RANGE 128
