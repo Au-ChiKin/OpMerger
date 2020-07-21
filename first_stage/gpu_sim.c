@@ -23,14 +23,11 @@ static cl_device_id device = NULL;
 static cl_context context = NULL;
 static cl_program program = NULL;
 static cl_kernel kernel[3];
-static cl_kernel compact_kernel;
 
 static gpu_config_p config = NULL;
 
 static cl_mem input_mem = NULL;
 static cl_mem flags_mem = NULL;
-static cl_mem goffsets_mem = NULL;
-static cl_mem partitions_mem = NULL;
 static cl_mem num_mem = NULL;
 static cl_mem output_mem = NULL;
 
