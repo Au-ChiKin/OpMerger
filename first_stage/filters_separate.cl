@@ -398,3 +398,4 @@ __kernel void compactKernel (
     compact_tuple(input, goffsets, flags, output, &pivot, left);
     compact_tuple(input, goffsets, flags, output, &pivot, right);
 }
+ 
