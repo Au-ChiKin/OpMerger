@@ -92,12 +92,38 @@ inline void upsweep (__local int *data, int length) {
         int mask = (0x1 << d) - 1; /* recalling the mask in Saber java part, a way of doing mod 
                                         mask equals to 0, 1, 3, ... , (2^(depth - 1) - 1) i.e. & mask = % 
                                         1, 2, 4, ..., (2^(depth - 1) - 1) */
-        if ((lid & mask) == mask) {
+        if ((lid & mask) == mask) { /* if the current thread id equals to the mask, lid = 
+                                        (2^(depth - 2) - 1) to (2 ^ 0 - 1) i.e. (length / 2 - 1), 
+                                        ... , 3, 1, 0 
+                    
+                                        Note that (2^(depth - 1) - 1) is theorectically legit but there 
+                                        would not be such a thread in the group (only within 2^(depth - 2) = 
+                                        length / 2)
+
+                                        Also one lid can meet multiple masks e.g. 3 can meet 3 (%4), 1 (%2), 0 (%1)
+                                        When mask == 0, any lid & mask == mask, so every lid is legit*/
+
             int offset = (0x1 << d); /* i.e. length = 2 ^ (depth - 1), 2 ^ (depth - 2), ... , 2, 1 */
             int a = b - offset;
             data[b] += data[a];
         }
     }
+    /* Taking a legth = 16, depth = 5, lid = 0 to 7 case as example:
+        d = 0 will have 0 1 2 3 4 5 6 7
+        d = 1 will have 1 3 5 7
+        d = 2 will have 3 7
+        d = 3 will have 7
+        d = 4 will have none
+
+        so
+        1st round: data[1] += data[0] data[3] += data[2]  data[5] += data[4] data[7] += data[6] data[9] += data[8] ... data[15] += data[14]
+        2nd round:                    data[3] += data[1]                     data[7] += data[5]                    ... data[15] += data[13]
+        3rd round:                                                           data[7] += data[3]                    ... data[15] += data[11]
+        4th round:                                                                                                     data[15] += data[ 7]
+
+        Therfore all data would "reduced" to the last data element
+    */
+    /* Actually quite apparently the folding upsweep mentioned in cuda file */
 }
 
 /*
@@ -122,7 +148,48 @@ inline void downsweep (__local int *data, int length) {
             data[b] += t;
         }
     }
+
+    /* Again depth = 4 and length = 16 so lid = 0 to 7 case as an example
+        d = 4 will have none
+        d = 3 will have 7
+        d = 2 will have 3 7
+        d = 1 will have 1 3 5 7
+        d = 0 will have 0 1 2 3 4 5 6 7
+
+        1st round: data[15] <-> data [7]
+                    data[15] += data[7]
+        2nd round: data[15] <-> data[11]    data[7] <-> data[3]
+                    data[15] += data[11]     data[7] += data[3]
+        3rd round: data[15] <-> data[13]    data[11] <-> data[9]    data[7] <-> data[5]    data[3] <-> data[1]
+                    data[15] += data[13]     data[11] += data[9]     data[7] += data[5]     data[3] += data[1]
+        4nd round: data[15] <-> data[14]    data[13] <-> data[12]   data[11] <-> data[10]  data[9] <-> data[8] ...
+                    data[15] += data[14]     data[13] += data[12]    data[11] += data[10]   data[9] += data[8]  ...
+
+        let say the data is directly coming from the upsweep
+        then we would got (depicted as the original data index):
+        0 + ... + 15
+        0 + 0 + ... + 15
+        0 + 1 + 0 + ... + 15
+        ...
+        0 + 1 + 2 + ... + 7 + 0 + ... + 15
+        0 + ... + 15 + 0 + ... + 15
+    */
 }
+
+/* Scan */
+// inline void scan (__local int *data, int length) {
+
+//     int lid = get_local_id (0);
+//     int lane = (lid * 2) + 1;
+
+//     upsweep (data, length);
+
+//     if (lane == (length - 1))
+//             data[lane] = 0;
+
+//     downsweep (data, length);
+//     return ;
+// }
 
 /*
  * Assumes:
@@ -376,32 +443,3 @@ __kernel void compactKernel (
     compact_tuple(input, goffsets, flags, output, &pivot, left);
     compact_tuple(input, goffsets, flags, output, &pivot, right);
 }
-
-/*
- * Adapted from https://dournac.org/info/gpu_sum_reduction
- */
-  __kernel void sumGPU ( __global const int *input, 
-                         __global int *partialSums,
-                         __local int *localSums)
- {
-    uint local_id = get_local_id(0);
-    uint group_size = get_local_size(0);
-
-    // Copy from global to local memory
-    localSums[local_id] = input[get_global_id(0)];
-
-    // Loop for computing localSums : divide WorkGroup into 2 parts
-    for (uint stride = group_size/2; stride>0; stride /=2)
-        {
-        // Waiting for each 2x2 addition into given workgroup
-        barrier(CLK_LOCAL_MEM_FENCE);
-
-        // Add elements 2 by 2 between local_id and local_id + stride
-        if (local_id < stride)
-            localSums[local_id] += localSums[local_id + stride];
-        }
-
-    // Write result into partialSums[nWorkGroups]
-    if (local_id == 0)
-        partialSums[get_group_id(0)] = localSums[0];
- }     

@@ -31,8 +31,8 @@ static cl_mem input_mem = NULL;
 static cl_mem flags_mem = NULL;
 static cl_mem goffsets_mem = NULL;
 static cl_mem partitions_mem = NULL;
-static cl_mem num_mem = NULL;
 static cl_mem output_mem = NULL;
+static cl_mem count_mem = NULL;
 
 static int batch_size = 0;
 static int const tuple_size = 32; /* byte */ 
@@ -190,7 +190,7 @@ void create_kernel_input() {
     /* arg:input */
     input_mem = clCreateBuffer(
         context, 
-        CL_MEM_READ_ONLY, 
+        CL_MEM_READ_WRITE, 
         batch_size * tuple_size * sizeof(unsigned char), 
         NULL, 
         &error);
@@ -247,7 +247,7 @@ void create_kernel_output() {
 
     output_mem = clCreateBuffer(
         context, 
-        CL_MEM_WRITE_ONLY, 
+        CL_MEM_READ_WRITE, 
         batch_size * tuple_size * sizeof(unsigned char), 
         NULL, 
         &error);
@@ -345,6 +345,32 @@ void set_kernel_args(cl_kernel kernel_) {
 		exit (1);
 	}
 
+}
+
+void read_count(int group_size, int * count) {
+    cl_int error = 0;
+
+    int * partitions = (int *) malloc(group_size * sizeof(int));
+
+    error = clEnqueueReadBuffer(
+        config->command_queue[0], 
+        partitions_mem, 
+        CL_TRUE, 
+        0, 
+        group_size * sizeof(int), 
+        partitions, 
+        0, NULL, NULL);
+    if (error != CL_SUCCESS) {
+		fprintf(stderr, "error: fail to read count\n");
+		exit (1);
+	}
+
+    *count = 0;
+    for (int i=0; i<group_size; i++) {
+        *count += partitions[i];
+    }
+
+    printf("Current group size: %d and count : %d\n", group_size, *count);
 }
 
 /* Below are public functions */
@@ -460,11 +486,12 @@ void gpu_set_kernel() {
 }
 
 void gpu_exec() {
-    const size_t local_item_size = 64; /* minimum threads per group */
-    const size_t global_item_size = batch_size / tuple_per_thread;
+    size_t local_item_size = 64; /* minimum threads per group */
+    size_t global_item_size = batch_size / tuple_per_thread;
 
     for (int k=0; k<config->kernel.count; k++) {
         cl_int error = 0;
+
         error = clEnqueueNDRangeKernel(
             config->command_queue[0],
             kernel[k],
@@ -489,6 +516,60 @@ void gpu_exec() {
         if (error != CL_SUCCESS) {
             fprintf(stderr, "error: fail to enqueue the compact kernel with error(%d): %s\n", error, getErrorMessage(error));
             exit(1);
+        }
+
+        clFinish(config->command_queue[0]);
+
+        if (config->kernel.count > 1 /* && k < config->kernel.count-1 */) {
+
+            // count output
+            // call a reduce kernel (could reuse the compact kernel)
+            int count = 0;
+            read_count(global_item_size/local_item_size, &count);
+
+            // make a copy of output
+            // copy output to input
+            cl_int error = 0;
+
+            /* Copy the input buffer on the host to the memory buffer on device */
+            unsigned char * copy = (unsigned char *) malloc(sizeof(unsigned char) * tuple_size * count);
+
+            error = clEnqueueReadBuffer(
+                config->command_queue[0], 
+                output_mem, 
+                CL_TRUE, 
+                0, 
+                count * tuple_size * sizeof(unsigned char), 
+                copy, 
+                0, NULL, NULL);
+            if (error != CL_SUCCESS) {
+                fprintf(stderr, "error: fail to read count\n");
+                exit (1);
+            }
+
+            clFinish(config->command_queue[0]);
+
+            error = clEnqueueWriteBuffer(
+                config->command_queue[0], 
+                input_mem, 
+                CL_TRUE,         /* blocking write */
+                0, 
+                count * tuple_size * sizeof(unsigned char), 
+                copy,            /* pointer to data in the host memeory */
+                0, NULL, NULL);  /* event related */
+            if (error != CL_SUCCESS) {
+                fprintf(stderr, "error: failed to enqueue write buffer command\n", NULL);
+                exit(1);
+            }
+
+            clFinish(config->command_queue[0]);
+
+            if (copy) {
+                free(copy);
+            }
+
+            // run again
+            global_item_size = count / tuple_per_thread;
         }
     }
 

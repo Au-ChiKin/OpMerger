@@ -40,7 +40,7 @@ void run_processing_gpu(tuple_t * buffer, int size, int * result, int * output_s
             break;
         case SEPARATE_SELECT: 
             fprintf(stdout, "========== Running sepaerate select test ===========\n");
-            gpu_init("filters_separate.cl", BUFFER_SIZE, 2); 
+            gpu_init("filters_separate.cl", BUFFER_SIZE, 3); 
             break;
         default: 
             break; 
