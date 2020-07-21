@@ -2,10 +2,9 @@
 *
 * SELECT *
 * FROM S1
-* WHERE S1.1 < 50 AND S1.2 = 1 AND S1.3 > 50
+* WHERE S1.1 < 128/2 AND S1.2 = 1 AND S1.3 >= 128/4
 * 
-* This attempt is to apply these predicates one after one as if they are
-* different operators
+* This attempt is to apply these predicates together
 */
 
 #pragma OPENCL EXTENSION cl_khr_global_int32_base_atomics: enable
@@ -398,3 +397,32 @@ __kernel void compactKernel (
     compact_tuple(input, goffsets, flags, output, &pivot, left);
     compact_tuple(input, goffsets, flags, output, &pivot, right);
 }
+
+/*
+ * Adapted from https://dournac.org/info/gpu_sum_reduction
+ */
+  __kernel void sumGPU ( __global const int *input, 
+                         __global int *partialSums,
+                         __local int *localSums)
+ {
+    uint local_id = get_local_id(0);
+    uint group_size = get_local_size(0);
+
+    // Copy from global to local memory
+    localSums[local_id] = input[get_global_id(0)];
+
+    // Loop for computing localSums : divide WorkGroup into 2 parts
+    for (uint stride = group_size/2; stride>0; stride /=2)
+        {
+        // Waiting for each 2x2 addition into given workgroup
+        barrier(CLK_LOCAL_MEM_FENCE);
+
+        // Add elements 2 by 2 between local_id and local_id + stride
+        if (local_id < stride)
+            localSums[local_id] += localSums[local_id + stride];
+        }
+
+    // Write result into partialSums[nWorkGroups]
+    if (local_id == 0)
+        partialSums[get_group_id(0)] = localSums[0];
+ }     
