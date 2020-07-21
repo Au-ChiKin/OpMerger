@@ -72,30 +72,6 @@ inline int selectf1 (__global input_t *input) {
 inline int selectf2 (__global input_t * input) {return 1;}
 inline int selectf3 (__global input_t * input) {return 1;}
 
-/* Simplified version of merged select */
-__kernel void selectf1_sim (__global input_t * input, __global int * num, __global int * output) {
-    int gid = get_global_id(0);
-    int value = 1;
-
-    if (gid < 0 || gid >= *num) {
-        // TODO: to exit properly
-    } else {
-        /* if attribute < 128/2? */
-        int attribute_value = input[gid].tuple._1;
-        value = value & (attribute_value < 128 / 2);
-
-        /* if attribute != 0? */
-        attribute_value = input[gid].tuple._2;
-        value = value & (attribute_value != 0);
-
-        /* if attribute >= 128/4? */
-        attribute_value = input[gid].tuple._3;
-        value = value & (attribute_value >= 128 / 4);
-
-        output[gid] = value;
-    }
-}
-
 /* Scan based on the implementation of [...] */
 
 /*

@@ -54,33 +54,6 @@ typedef union {
 	uchar16 vectors[OUTPUT_VECTOR_SIZE];
 } output_t;
 
-// predicate1 : column1 < 50 
-__kernel void selectf1_sim (__global input_t * input, __global int * num, __global int * output) {
-	int gid = get_global_id(0);
-        int value = 1;
-	int attribute_value = input[gid].tuple._1;;
-	value = value & (attribute_value < 128 / 2); // if attribute != 0?
-	output[gid] = value;
-}
-
-// predicate2 : column2 == 1
-__kernel void selectf2_sim (__global input_t * input, __global int * num, __global int * output) {
-	int gid = get_global_id(0);
-        int value = 1;
-	int attribute_value = input[gid].tuple._2;
-	value = value & (attribute_value != 0); // if attribute != 0?
-	output[gid] &= value;
-}
-
-// predicate3 : column3 > 50
-__kernel void selectf3_sim (__global input_t * input, __global int * num, __global int * output) {
-	int gid = get_global_id(0);
-        int value = 1;
-	int attribute_value = input[gid].tuple._3;
-	value = value & (attribute_value >= 128 / 4); // if attribute != 0?
-	output[gid] &= value;
-}
-
 inline int selectf1 (__global input_t *input) {
     int value = 1;
     /* if attribute < 128/2? */

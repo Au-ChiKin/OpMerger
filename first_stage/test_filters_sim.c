@@ -1,7 +1,7 @@
 /* 
  * The main logic to run the experiment of merged operators
  */
-#include "gpu.h"
+#include "gpu_sim.h"
 #include "tuple.h"
 
 #include <stdio.h>
@@ -34,23 +34,19 @@ void run_processing_gpu(tuple_t * buffer, int size, int * result, int * output_s
     switch (mode) {
         case MERGED_SELECT: 
             fprintf(stdout, "========== Running merged select test ===========\n");
-            gpu_init("filters_merged.cl", BUFFER_SIZE, 1); 
+            gpu_init("filters_merged_sim.cl", BUFFER_SIZE, 1); 
             break;
         case SEPARATE_SELECT: 
             fprintf(stdout, "========== Running sepaerate select test ===========\n");
-            gpu_init("filters_separate.cl", BUFFER_SIZE, 2); 
+            gpu_init("filters_separate_sim.cl", BUFFER_SIZE, 3); 
             break;
         default: 
             break; 
     }
 
-    gpu_set_kernel();
+    gpu_set_kernel_sim(buffer, result);
 
-    gpu_read_input(buffer);
-    
-    gpu_exec();
-
-    gpu_write_output(result);
+    gpu_exec_sim(result);
 
     *output_size = size;
     for (int i=0; i<size; i++) {
