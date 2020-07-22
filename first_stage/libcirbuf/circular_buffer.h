@@ -43,6 +43,8 @@ int circular_buf_put2(cbuf_handle_t cbuf, uint8_t data);
 /// Returns 0 on success, -1 if the buffer is empty
 int circular_buf_get(cbuf_handle_t cbuf, uint8_t * data);
 
+int circular_buf_read(cbuf_handle_t cbuf, uint8_t * data);
+
 /// Returns true if the buffer is empty
 bool circular_buf_empty(cbuf_handle_t cbuf);
 

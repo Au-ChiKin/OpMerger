@@ -31,18 +31,21 @@ void set_test_case(char const * mname, enum test_cases * mode);
 void parse_arguments(int argc, char * argv[], enum test_cases * mode);
 void write_input_buffer(cbuf_handle_t buffer);
 
-int circular_buf_put_bytes(cbuf_handle_t cbuf, uint8_t data);
-int circular_buf_get(cbuf_handle_t cbuf, uint8_t * data);
+void circular_buf_put_bytes(cbuf_handle_t cbuf, uint8_t * data, int bytes);
+int circular_buf_read_bytes(cbuf_handle_t cbuf, uint8_t * data, int bytes);
 
-void run_processing_gpu(tuple_t * buffer, int size, int * result, int * output_size, enum test_cases mode) {
+void run_processing_gpu(cbuf_handle_t buffer, int size, int * result, int * output_size, enum test_cases mode) {
+    input_t * batch = (input_t *) malloc(size * sizeof(tuple_t));
+    circular_buf_read_bytes(buffer, batch->vectors, size * TUPLE_SIZE);
+
     switch (mode) {
         case MERGED_SELECT: 
             fprintf(stdout, "========== Running merged select test ===========\n");
-            gpu_init("filters_merged.cl", BUFFER_SIZE, 1); 
+            gpu_init("filters_merged.cl", size, 1); 
             break;
         case SEPARATE_SELECT: 
             fprintf(stdout, "========== Running sepaerate select test ===========\n");
-            gpu_init("filters_separate.cl", BUFFER_SIZE, 3); 
+            gpu_init("filters_separate.cl", size, 3); 
             break;
         default: 
             break; 
@@ -50,18 +53,18 @@ void run_processing_gpu(tuple_t * buffer, int size, int * result, int * output_s
 
     gpu_set_kernel();
 
-    gpu_read_input(buffer);
+    gpu_read_input(batch);
     
-    gpu_exec();
+        gpu_exec();
 
-    gpu_write_output(result);
+        gpu_write_output(result);
 
-    *output_size = size;
-    for (int i=0; i<size; i++) {
-        if (!result[i]) {
-            *output_size -= 1;
+        *output_size = size;
+        for (int i=0; i<size; i++) {
+            if (!result[i]) {
+                *output_size -= 1;
+            }
         }
-    }
 
     gpu_free();
 }
@@ -71,9 +74,7 @@ void run_processing_cpu(cbuf_handle_t buffer, int size, tuple_t * result, int * 
     for (int i = 0; i < size; i++) {
         /* get one tuple */
         input_t * tuple = (input_t *) malloc(sizeof(input_t));
-        for (int j=0; j<TUPLE_SIZE; j++) {
-            circular_buf_get(buffer, &(tuple->vectors[j]));
-        }
+        circular_buf_read_bytes(buffer, tuple->vectors, TUPLE_SIZE);
 
         /* apply predicates */
         int value = 1;
@@ -133,7 +134,7 @@ int main(int argc, char * argv[]) {
             results[i] = 1;
         }
 
-        // run_processing_gpu(cbuf, BUFFER_SIZE, results, &results_size, mode);
+        run_processing_gpu(cbuf, BUFFER_SIZE, results, &results_size, mode);
 
         printf("[GPU] The output from gpu is %d\n", results_size);
     }
@@ -178,9 +179,7 @@ void write_input_buffer(cbuf_handle_t buffer) {
         cur += 1;
 
         // byte by byte
-        for (int i=0; i<TUPLE_SIZE; i++) {
-            circular_buf_put(buffer, data.vectors[i]);
-        }
+        circular_buf_put_bytes(buffer, data.vectors, TUPLE_SIZE);
     }
 }
 
@@ -252,4 +251,24 @@ void parse_arguments(int argc, char * argv[], enum test_cases * mode) {
             printf("no arguments left to process\n");
         }
     }
+}
+
+void circular_buf_put_bytes(cbuf_handle_t cbuf, uint8_t * data, int bytes) {
+
+    for (int j=0; j<bytes; j++) {
+        circular_buf_put(cbuf, data[j]);
+    }
+}
+
+int circular_buf_read_bytes(cbuf_handle_t cbuf, uint8_t * data, int bytes) {
+    int r = 0;
+
+    for (int j=0; j<bytes; j++) {
+        r = circular_buf_read(cbuf, &(data[j]));
+        if (r == -1) {
+            return r;
+        }
+    }
+
+    return r;
 }
