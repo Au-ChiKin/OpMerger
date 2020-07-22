@@ -370,7 +370,7 @@ void read_count(int group_size, int * count) {
         *count += partitions[i];
     }
 
-    printf("Current group size: %d and count : %d\n", group_size, *count);
+    // printf("Current group size: %d and count : %d\n", group_size, *count);
 }
 
 /* Below are public functions */

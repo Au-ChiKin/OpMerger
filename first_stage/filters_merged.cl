@@ -68,10 +68,6 @@ inline int selectf1 (__global input_t *input) {
     return value;
 }
 
-/* studs */
-inline int selectf2 (__global input_t * input) {return 1;}
-inline int selectf3 (__global input_t * input) {return 1;}
-
 /* Scan based on the implementation of [...] */
 
 /*

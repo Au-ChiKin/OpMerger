@@ -28,15 +28,14 @@ enum test_cases {
 };
 
 void set_test_case(char const * mname, enum test_cases * mode);
-void parse_arguments(int argc, char * argv[], enum test_cases * mode);
+void parse_arguments(int argc, char * argv[], enum test_cases * mode, int * work_load);
 void write_input_buffer(cbuf_handle_t buffer);
 
 void circular_buf_put_bytes(cbuf_handle_t cbuf, uint8_t * data, int bytes);
 int circular_buf_read_bytes(cbuf_handle_t cbuf, uint8_t * data, int bytes);
 
-void run_processing_gpu(cbuf_handle_t buffer, int size, int * result, int * output_size, enum test_cases mode) {
+void run_processing_gpu(cbuf_handle_t buffer, int size, int * result, int load, enum test_cases mode) {
     input_t * batch = (input_t *) malloc(size * sizeof(tuple_t));
-    circular_buf_read_bytes(buffer, batch->vectors, size * TUPLE_SIZE);
 
     switch (mode) {
         case MERGED_SELECT: 
@@ -53,18 +52,23 @@ void run_processing_gpu(cbuf_handle_t buffer, int size, int * result, int * outp
 
     gpu_set_kernel();
 
-    gpu_read_input(batch);
+    // TODO: cicular buffer should only return the pointer to the underline buffer
+    circular_buf_read_bytes(buffer, batch->vectors, size * TUPLE_SIZE);
+    for (int l=0; l<load; l++) {
+        gpu_read_input(batch);
     
         gpu_exec();
 
         gpu_write_output(result);
 
-        *output_size = size;
+        int output_size = size;
         for (int i=0; i<size; i++) {
             if (!result[i]) {
-                *output_size -= 1;
+                output_size -= 1;
             }
         }
+        // printf("Batch %d output size is: %d\n", l, output_size);
+    }
 
     gpu_free();
 }
@@ -100,9 +104,10 @@ void run_processing_cpu(cbuf_handle_t buffer, int size, tuple_t * result, int * 
 
 int main(int argc, char * argv[]) {
 
+    int work_load = 1; // default to be 1MB
     enum test_cases mode = MERGED_SELECT;
 
-    parse_arguments(argc, argv, &mode);
+    parse_arguments(argc, argv, &mode, &work_load);
 
     // TODO: Create a buffer of tuples with a circular buffer
     // 32768 x 32 = 1MB
@@ -134,7 +139,7 @@ int main(int argc, char * argv[]) {
             results[i] = 1;
         }
 
-        run_processing_gpu(cbuf, BUFFER_SIZE, results, &results_size, mode);
+        run_processing_gpu(cbuf, BUFFER_SIZE, results, work_load, mode);
 
         printf("[GPU] The output from gpu is %d\n", results_size);
     }
@@ -196,16 +201,16 @@ void set_test_case(char const * mname, enum test_cases * mode) {
     return;
 }
 
-void parse_arguments(int argc, char * argv[], enum test_cases * mode) {
+void parse_arguments(int argc, char * argv[], enum test_cases * mode, int * work_load) {
 	extern char *optarg;
 	extern int optind;
 	int c, err = 0; 
     int debug = 0;
-	int mflag=0;
+	int lflag=0, mflag=0;
 	char *mname = "merged-select";
-	static char usage[] = "usage: %s [-d] -m test-case\n";
+	static char usage[] = "usage: %s [-d] -m test-case [-l work-load-in-bytes]\n";
 
-	while ((c = getopt(argc, argv, "dm:")) != -1) {
+	while ((c = getopt(argc, argv, "dm:l:")) != -1) {
 		switch (c) {
             case 'd':
                 debug = 1;
@@ -218,6 +223,10 @@ void parse_arguments(int argc, char * argv[], enum test_cases * mode) {
                     // TODO: Move this error detection to outsied of the loop
                     fprintf(stderr, "Mode \"%s\" has not yet been defined\n", mname);
                 }
+                break;
+            case 'l':
+                lflag = 1;
+                *work_load = atoi(optarg);
                 break;
             case '?':
                 err = 1;
