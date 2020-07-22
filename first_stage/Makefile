@@ -10,7 +10,9 @@ ifeq ($(UNAME),Linux)
 	CFLAGS += -I/usr/local/cuda/include
 	LDLIBS += -lOpenCL
 else
+ifeq ($(UNAME),Darwin)
 	LDLIBS += -framework OpenCL
+endif
 endif
 
 # Environmrnt

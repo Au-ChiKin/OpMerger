@@ -28,9 +28,9 @@ void gpu_set_kernel();
 
 void gpu_read_input(void const * data);
 
-void gpu_exec();
+int gpu_exec();
 
-void gpu_write_output(void * output);
+void gpu_write_output(void * output, int tuple_num);
 
 void gpu_free ();
 

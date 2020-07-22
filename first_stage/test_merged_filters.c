@@ -36,17 +36,11 @@ void run_processing_gpu(cbuf_handle_t buffer, int size, int * result, int load, 
     for (int l=0; l<load; l++) {
         gpu_read_input(batch);
     
-        gpu_exec();
+        int count = gpu_exec();
 
-        gpu_write_output(result);
+        gpu_write_output(result, count);
 
-        int output_size = size;
-        for (int i=0; i<size; i++) {
-            if (!result[i]) {
-                output_size -= 1;
-            }
-        }
-        // printf("Batch %d output size is: %d\n", l, output_size);
+        printf("[GPU] Batch %d output size is: %d\n", l, count);
     }
 
     gpu_free();
@@ -115,8 +109,6 @@ int main(int argc, char * argv[]) {
         }
 
         run_processing_gpu(cbuf, BUFFER_SIZE, results, work_load, mode);
-
-        printf("[GPU] The output from gpu is %d\n", results_size);
     }
 
     free(buffer);

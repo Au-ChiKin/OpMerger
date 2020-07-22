@@ -32,7 +32,6 @@ static cl_mem flags_mem = NULL;
 static cl_mem goffsets_mem = NULL;
 static cl_mem partitions_mem = NULL;
 static cl_mem output_mem = NULL;
-static cl_mem count_mem = NULL;
 
 static int batch_size = 0;
 static int const tuple_size = 32; /* byte */ 
@@ -278,16 +277,15 @@ void gpu_read_input(void const * data) {
     dbg("[GPU] Succeed to read input\n", NULL);
 }
 
-void gpu_write_output(void * output) {
+void gpu_write_output(void * output, int tuple_num) {
     cl_int error = 0;
 
     error = clEnqueueReadBuffer(
         config->command_queue[0], 
-        flags_mem, 
+        output_mem, 
         CL_TRUE, 
         0, 
-        // batch_size * tuple_size * sizeof(unsigned char), 
-        batch_size * sizeof(int), 
+        tuple_num * tuple_size * sizeof(unsigned char), 
         output, 
         0, NULL, NULL);
 }
@@ -485,9 +483,11 @@ void gpu_set_kernel() {
     dbg("[GPU] Set kernel succeed!\n");
 }
 
-void gpu_exec() {
+int gpu_exec() {
     size_t local_item_size = 64; /* minimum threads per group */
     size_t global_item_size = batch_size / tuple_per_thread;
+
+    int count = 0;
 
     for (int k=0; k<config->kernel.count; k++) {
         cl_int error = 0;
@@ -520,15 +520,12 @@ void gpu_exec() {
 
         clFinish(config->command_queue[0]);
 
-        if (config->kernel.count > 1 /* && k < config->kernel.count-1 */) {
+        // count output by suming partitions
+        read_count(global_item_size/local_item_size, &count);
 
-            // count output
-            // call a reduce kernel (could reuse the compact kernel)
-            int count = 0;
-            read_count(global_item_size/local_item_size, &count);
+        if (config->kernel.count > 1 && k < config->kernel.count-1) {
 
             // make a copy of output
-            // copy output to input
             cl_int error = 0;
 
             /* Copy the input buffer on the host to the memory buffer on device */
@@ -549,6 +546,7 @@ void gpu_exec() {
 
             clFinish(config->command_queue[0]);
 
+            // copy the created copy to input
             error = clEnqueueWriteBuffer(
                 config->command_queue[0], 
                 input_mem, 
@@ -568,12 +566,14 @@ void gpu_exec() {
                 free(copy);
             }
 
-            // run again
+            // run again with new item size
             global_item_size = count / tuple_per_thread;
         }
     }
 
     dbg("[GPU] Running kernel finishes!\n", NULL);
+
+    return count;
 }
 
 void gpu_free () {
