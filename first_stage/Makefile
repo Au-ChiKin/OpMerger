@@ -20,7 +20,7 @@ VPATH    = $(OBJDIR)
 
 # Targets
 PROGS   = test_merged_filters 
-SRCS = gpu.c gpu_config.c test_merged_filters.c openclerrorcode.c
+SRCS = gpu.c gpu_config.c test_merged_filters.c openclerrorcode.c config.c
 
 # Submodules
 include ./libcirbuf/cirbuf.mk

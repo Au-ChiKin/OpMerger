@@ -7,32 +7,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
-#include <unistd.h>
-#include <string.h>
 
 #include "libcirbuf/circular_buffer.h"
+#include "config.h"
 
-#define BUFFER_SIZE 32768 /* in tuple */
-#define VALUE_RANGE 128
-
-/*
- * To add case:
- *     add one enum here and
- *     add coresponding string tag in set_test_case
- */
-enum test_cases {
-    CPU,
-    MERGED_SELECT, 
-    SEPARATE_SELECT,
-    ERROR
-};
-
-void set_test_case(char const * mname, enum test_cases * mode);
-void parse_arguments(int argc, char * argv[], enum test_cases * mode, int * work_load);
 void write_input_buffer(cbuf_handle_t buffer);
-
-void circular_buf_put_bytes(cbuf_handle_t cbuf, uint8_t * data, int bytes);
-int circular_buf_read_bytes(cbuf_handle_t cbuf, uint8_t * data, int bytes);
 
 void run_processing_gpu(cbuf_handle_t buffer, int size, int * result, int load, enum test_cases mode) {
     input_t * batch = (input_t *) malloc(size * sizeof(tuple_t));
@@ -109,10 +88,6 @@ int main(int argc, char * argv[]) {
 
     parse_arguments(argc, argv, &mode, &work_load);
 
-    // TODO: Create a buffer of tuples with a circular buffer
-    // 32768 x 32 = 1MB
-    // tuple_t buffer[BUFFER_SIZE];
-
     uint8_t * buffer  = malloc(BUFFER_SIZE * TUPLE_SIZE * sizeof(uint8_t));
     cbuf_handle_t cbuf = circular_buf_init(buffer, BUFFER_SIZE * TUPLE_SIZE);
     write_input_buffer(cbuf);
@@ -150,7 +125,6 @@ int main(int argc, char * argv[]) {
     return 0;
 }
 
-// TODO: Fill the buffer according to parameters
 void write_input_buffer(cbuf_handle_t buffer) {
     input_t data;
 
@@ -188,96 +162,3 @@ void write_input_buffer(cbuf_handle_t buffer) {
     }
 }
 
-void set_test_case(char const * mname, enum test_cases * mode) {
-    if (strcmp(mname, "merged-select") == 0) {
-        *mode = MERGED_SELECT; 
-    } else if (strcmp(mname, "separate-select") == 0) {
-        *mode = SEPARATE_SELECT;
-    } else if (strcmp(mname, "cpu") == 0) {
-        *mode = CPU;
-    } else {
-        *mode = ERROR;
-    }
-    return;
-}
-
-void parse_arguments(int argc, char * argv[], enum test_cases * mode, int * work_load) {
-	extern char *optarg;
-	extern int optind;
-	int c, err = 0; 
-    int debug = 0;
-	int lflag=0, mflag=0;
-	char *mname = "merged-select";
-	static char usage[] = "usage: %s [-d] -m test-case [-l work-load-in-bytes]\n";
-
-	while ((c = getopt(argc, argv, "dm:l:")) != -1) {
-		switch (c) {
-            case 'd':
-                debug = 1;
-                break;
-            case 'm':
-                mflag = 1;
-                mname = optarg;
-                set_test_case(mname, mode);
-                if (*mode == ERROR) {
-                    // TODO: Move this error detection to outsied of the loop
-                    fprintf(stderr, "Mode \"%s\" has not yet been defined\n", mname);
-                }
-                break;
-            case 'l':
-                lflag = 1;
-                *work_load = atoi(optarg);
-                break;
-            case '?':
-                err = 1;
-                break;
-		}
-    }
-	if (mflag == 0) {	/* -m was mandatory */
-		fprintf(stderr, "%s: missing -m option\n", argv[0]);
-		fprintf(stderr, usage, argv[0]);
-		exit(1);
-	} else if ((optind) > argc) {	
-		/* need at least one argument (change +1 to +2 for two, etc. as needeed) */
-
-		fprintf(stderr, "optind = %d, argc = %d\n", optind, argc);
-		fprintf(stderr, "%s: missing test case name\n", argv[0]);
-		fprintf(stderr, usage, argv[0]);
-		exit(1);
-	} else if (err) {
-		fprintf(stderr, usage, argv[0]);
-		exit(1);
-	}
-    if (debug) {
-        /* see what we have */
-        printf("debug = %d\n", debug);
-        printf("mflag = %d\n", mflag);
-        
-        if (optind < argc)	/* these are the arguments after the command-line options */
-            for (; optind < argc; optind++)
-                printf("argument: \"%s\"\n", argv[optind]);
-        else {
-            printf("no arguments left to process\n");
-        }
-    }
-}
-
-void circular_buf_put_bytes(cbuf_handle_t cbuf, uint8_t * data, int bytes) {
-
-    for (int j=0; j<bytes; j++) {
-        circular_buf_put(cbuf, data[j]);
-    }
-}
-
-int circular_buf_read_bytes(cbuf_handle_t cbuf, uint8_t * data, int bytes) {
-    int r = 0;
-
-    for (int j=0; j<bytes; j++) {
-        r = circular_buf_read(cbuf, &(data[j]));
-        if (r == -1) {
-            return r;
-        }
-    }
-
-    return r;
-}

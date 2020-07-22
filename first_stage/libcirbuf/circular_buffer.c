@@ -165,4 +165,22 @@ int circular_buf_read(cbuf_handle_t cbuf, uint8_t * data)
     return r;
 }
 
+void circular_buf_put_bytes(cbuf_handle_t cbuf, uint8_t * data, int bytes) {
 
+    for (int j=0; j<bytes; j++) {
+        circular_buf_put(cbuf, data[j]);
+    }
+}
+
+int circular_buf_read_bytes(cbuf_handle_t cbuf, uint8_t * data, int bytes) {
+    int r = 0;
+
+    for (int j=0; j<bytes; j++) {
+        r = circular_buf_read(cbuf, &(data[j]));
+        if (r == -1) {
+            return r;
+        }
+    }
+
+    return r;
+}

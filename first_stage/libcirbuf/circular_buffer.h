@@ -57,4 +57,7 @@ size_t circular_buf_capacity(cbuf_handle_t cbuf);
 /// Returns the current number of elements in the buffer
 size_t circular_buf_size(cbuf_handle_t cbuf);
 
+void circular_buf_put_bytes(cbuf_handle_t cbuf, uint8_t * data, int bytes);
+int circular_buf_read_bytes(cbuf_handle_t cbuf, uint8_t * data, int bytes);
+
 #endif // CIRCULAR_BUFFER_H
