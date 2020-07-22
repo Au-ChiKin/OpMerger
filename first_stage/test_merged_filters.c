@@ -13,7 +13,6 @@
 #include "libcirbuf/circular_buffer.h"
 
 #define BUFFER_SIZE 32768 /* in tuple */
-#define TUPLE_SIZE 32
 #define VALUE_RANGE 128
 
 /*
@@ -30,7 +29,10 @@ enum test_cases {
 
 void set_test_case(char const * mname, enum test_cases * mode);
 void parse_arguments(int argc, char * argv[], enum test_cases * mode);
-void write_input_buffer(tuple_t * buffer);
+void write_input_buffer(cbuf_handle_t buffer);
+
+int circular_buf_put_bytes(cbuf_handle_t cbuf, uint8_t data);
+int circular_buf_get(cbuf_handle_t cbuf, uint8_t * data);
 
 void run_processing_gpu(tuple_t * buffer, int size, int * result, int * output_size, enum test_cases mode) {
     switch (mode) {
@@ -64,28 +66,33 @@ void run_processing_gpu(tuple_t * buffer, int size, int * result, int * output_s
     gpu_free();
 }
 
-void run_processing_cpu(tuple_t * buffer, int size, tuple_t * result, int * output_size) {
-    /* if not using gpu */
+void run_processing_cpu(cbuf_handle_t buffer, int size, tuple_t * result, int * output_size) {
     *output_size = 0;
     for (int i = 0; i < size; i++) {
         /* get one tuple */
-        tuple_t * tuple = buffer + i;
+        input_t * tuple = (input_t *) malloc(sizeof(input_t));
+        for (int j=0; j<TUPLE_SIZE; j++) {
+            circular_buf_get(buffer, &(tuple->vectors[j]));
+        }
 
         /* apply predicates */
         int value = 1;
-	    int attribute_value = tuple->i1;
+	    int attribute_value = tuple->tuple.i1;
+        printf("attr1: %d\n", attribute_value);
 	    value = value & (attribute_value < VALUE_RANGE/2); /* if attribute < 50? */
 
-	    attribute_value = tuple->i2;
+	    attribute_value = tuple->tuple.i2;
+        printf("attr2: %d\n", attribute_value);
 	    value = value & (attribute_value != 0); /* if attribute != 0? */
 
-	    attribute_value = tuple->i3;
+	    attribute_value = tuple->tuple.i3;
+        printf("attr3: %d\n", attribute_value);
 	    value = value & (attribute_value >= VALUE_RANGE/4); /* if attribute > 25? */
 
         /* output the tuple if valid */
         if (value) {
             *output_size += 1;
-            result[*output_size] = *tuple;
+            result[*output_size] = tuple->tuple;
         }
     }
 }
@@ -98,9 +105,11 @@ int main(int argc, char * argv[]) {
 
     // TODO: Create a buffer of tuples with a circular buffer
     // 32768 x 32 = 1MB
-    tuple_t buffer[BUFFER_SIZE];
-    write_input_buffer(buffer);
+    // tuple_t buffer[BUFFER_SIZE];
 
+    uint8_t * buffer  = malloc(BUFFER_SIZE * TUPLE_SIZE * sizeof(uint8_t));
+    cbuf_handle_t cbuf = circular_buf_init(buffer, BUFFER_SIZE * TUPLE_SIZE);
+    write_input_buffer(cbuf);
 
     /* output the result size */
     /*
@@ -115,7 +124,7 @@ int main(int argc, char * argv[]) {
     tuple_t results_tuple[BUFFER_SIZE];
 
     if (mode == CPU) {
-        run_processing_cpu(buffer, BUFFER_SIZE, results_tuple, &results_size);
+        run_processing_cpu(cbuf, BUFFER_SIZE, results_tuple, &results_size);
         
         printf("[CPU] The output from cpu is %d\n\n", results_size);
     } else {
@@ -124,44 +133,54 @@ int main(int argc, char * argv[]) {
             results[i] = 1;
         }
 
-        run_processing_gpu(buffer, BUFFER_SIZE, results, &results_size, mode);
+        // run_processing_gpu(cbuf, BUFFER_SIZE, results, &results_size, mode);
 
         printf("[GPU] The output from gpu is %d\n", results_size);
     }
+
+    free(buffer);
+    circular_buf_free(cbuf);
 
     return 0;
 }
 
 // TODO: Fill the buffer according to parameters
-void write_input_buffer(tuple_t * buffer) {
+void write_input_buffer(cbuf_handle_t buffer) {
+    input_t data;
+
     int value = 0;
     bool flipper = false;
     int cur = 0;
     while (cur < BUFFER_SIZE) {
         // #0
-        buffer[cur].time_stamp = 1;
+        data.tuple.time_stamp = 1;
 
         // #1
-        buffer[cur].i1 = value;
+        data.tuple.i1 = value;
 
         // #2
         if (flipper) {
-          buffer[cur].i2 = 0;
+          data.tuple.i2 = 0;
         } else {
-          buffer[cur].i2 = 1;
+          data.tuple.i2 = 1;
         }
         flipper = !flipper;
 
         // #3
-        buffer[cur].i3 = value; 
+        data.tuple.i3 = value; 
 
         // #4 #5 #6
-        buffer[cur].i4 = 1;
-        buffer[cur].i5 = 1;
-        buffer[cur].i6 = 1;
+        data.tuple.i4 = 1;
+        data.tuple.i5 = 1;
+        data.tuple.i6 = 1;
 
         value = (value + 1) % VALUE_RANGE;
         cur += 1;
+
+        // byte by byte
+        for (int i=0; i<TUPLE_SIZE; i++) {
+            circular_buf_put(buffer, data.vectors[i]);
+        }
     }
 }
 
