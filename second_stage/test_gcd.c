@@ -12,7 +12,11 @@
 #include "libcirbuf/circular_buffer.h"
 #include "config.h"
 
+/* Input data of interest from files */
 void read_input_buffers(cbuf_handle_t cbufs [], int buffer_num);
+
+/* Print out 10 tuples for debug */
+void print_10_tuples(cbuf_handle_t cbufs []);
 
 void run_processing_gpu(cbuf_handle_t buffer, int size, int * result, int load, enum test_cases mode) {
     input_t * batch = (input_t *) malloc(size * sizeof(tuple_t));
@@ -70,17 +74,7 @@ int main(int argc, char * argv[]) {
     }
     read_input_buffers(cbufs, task_num);
 
-    for (int i=0; i<10; i++) {
-        input_t tuple;
-        circular_buf_read_bytes(cbufs[0], tuple.vectors, TUPLE_SIZE);
 
-        printf("Tuple %ld has %d %d %d %.2f\n", 
-            tuple.tuple.time_stamp, 
-            tuple.tuple.event_type,
-            tuple.tuple.category,
-            tuple.tuple.priority,
-            tuple.tuple.cpu);
-    }
 
     /* output the result size */
     /*
@@ -115,7 +109,20 @@ int main(int argc, char * argv[]) {
     return 0;
 }
 
-/* input data of interest from files */
+void print_10_tuples(cbuf_handle_t cbufs []) {
+    for (int i=0; i<10; i++) {
+        input_t tuple;
+        circular_buf_read_bytes(cbufs[0], tuple.vectors, TUPLE_SIZE);
+
+        printf("Tuple %ld has %d %d %d %.2f\n", 
+            tuple.tuple.time_stamp, 
+            tuple.tuple.event_type,
+            tuple.tuple.category,
+            tuple.tuple.priority,
+            tuple.tuple.cpu);
+    }
+}
+
 void read_input_buffers(cbuf_handle_t cbufs [], int buffer_num) {
     // int extraBytes = 5120 * TUPLE_SIZE; // for?
 
