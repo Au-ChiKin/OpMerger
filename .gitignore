@@ -2,5 +2,12 @@
 **/*.o 
 **/*.d
 
-#executable
+# executable
 **/obj/test_merged_filters
+
+# data
+datasets/google-cluster-data/categories.txt
+datasets/google-cluster-data/cpu-utilisation.txt
+datasets/google-cluster-data/event-types.txt
+datasets/google-cluster-data/norm-event-types.txt
+datasets/google-cluster-data/priorities.txt
