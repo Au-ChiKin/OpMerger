@@ -21,8 +21,8 @@ DEPDIR  := $(OBJDIR)/.deps
 VPATH    = $(OBJDIR)
 
 # Targets
-PROGS   = test_merged_filters 
-SRCS = gpu.c gpu_config.c test_merged_filters.c openclerrorcode.c config.c
+PROGS   = test_gcd 
+SRCS = gpu.c gpu_config.c test_gcd.c openclerrorcode.c config.c
 
 # Submodules
 include ./libcirbuf/cirbuf.mk
