@@ -82,19 +82,15 @@ int main(int argc, char * argv[]) {
             tuple.tuple.cpu);
     }
 
-    // // stud TODO remove them
-    // u_int8_t buffer;
-    // cbuf_handle_t cbuf;
-
-    // /* output the result size */
-    // /*
-    //  * 32768 tuples in total
-    //  * attr1 50% selectivity
-    //  * attr2 50% selectivity
-    //  * attr3 50% selectivity
-    //  * 
-    //  * output should be 32768 x (50%)^3 = 4096
-    //  */
+    /* output the result size */
+    /*
+     * 32768 tuples in total
+     * attr1 50% selectivity
+     * attr2 50% selectivity
+     * attr3 50% selectivity
+     * 
+     * output should be 32768 x (50%)^3 = 4096
+     */
     // int results_size = 0;
     // tuple_t results_tuple[BUFFER_SIZE];
 
@@ -111,8 +107,10 @@ int main(int argc, char * argv[]) {
     //     run_processing_gpu(cbuf, BUFFER_SIZE, results, work_load, mode);
     // }
 
-    // free(buffer);
-    // circular_buf_free(cbuf);
+    for (int i=0; i<task_num; i++) {
+        free(buffers[i]);
+        circular_buf_free(cbufs[i]);
+    }
 
     return 0;
 }
