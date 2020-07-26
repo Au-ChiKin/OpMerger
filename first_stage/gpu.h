@@ -26,11 +26,11 @@ void gpu_init (char const * filename, int size, int kernel_num);
 
 void gpu_set_kernel();
 
-void gpu_read_input(void const * data);
+long gpu_read_input(void const * data, bool profiling);
 
 int gpu_exec();
 
-void gpu_write_output(void * output, int tuple_num);
+long gpu_write_output(void * output, int tuple_num, bool profiling);
 
 void gpu_free ();
 

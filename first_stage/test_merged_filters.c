@@ -32,16 +32,25 @@ void run_processing_gpu(cbuf_handle_t buffer, int size, int * result, int load, 
     gpu_set_kernel();
 
     // TODO: cicular buffer should only return the pointer to the underline buffer
+    long start_time = 0;
+    long end_time = 0;
     circular_buf_read_bytes(buffer, batch->vectors, size * TUPLE_SIZE);
     for (int l=0; l<load; l++) {
-        gpu_read_input(batch);
+        long start = gpu_read_input(batch, true);
+        if (l == 0) {
+            start_time = start;
+        }
     
         int count = gpu_exec();
 
-        gpu_write_output(result, count);
+        long end = gpu_write_output(result, count, true);
+        if (l == load-1) {
+            end_time = end;
+        }
 
         printf("[GPU] Batch %d output size is: %d\n", l, count);
     }
+    printf("Total time consumption is: %ld ms\n", (end_time - start_time) / 1000000);
 
     gpu_free();
 }
@@ -77,7 +86,7 @@ void run_processing_cpu(cbuf_handle_t buffer, int size, tuple_t * result, int * 
 
 int main(int argc, char * argv[]) {
 
-    int work_load = 1; // default to be 1MB
+    int work_load = 1; // default to be 32768 * 32 = 1,048,576 bytes = 1024 KB = 1 MB
     enum test_cases mode = MERGED_SELECT;
 
     parse_arguments(argc, argv, &mode, &work_load);

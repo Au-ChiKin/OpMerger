@@ -257,39 +257,6 @@ void create_kernel_output() {
     dbg("[GPU] Succeed to create output buffer\n", NULL);
 }
 
-void gpu_read_input(void const * data) {
-    cl_int error = 0;
-
-    /* Copy the input buffer on the host to the memory buffer on device */
-    error = clEnqueueWriteBuffer(
-        config->command_queue[0], 
-        input_mem, 
-        CL_TRUE,         /* blocking write */
-        0, 
-        batch_size * tuple_size * sizeof(unsigned char), 
-        data,            /* data in the host memeory */
-        0, NULL, NULL);  /* event related */
-    if (error != CL_SUCCESS) {
-        fprintf(stderr, "error: failed to enqueue write buffer command\n", NULL);
-        exit(1);
-    }
-
-    dbg("[GPU] Succeed to read input\n", NULL);
-}
-
-void gpu_write_output(void * output, int tuple_num) {
-    cl_int error = 0;
-
-    error = clEnqueueReadBuffer(
-        config->command_queue[0], 
-        output_mem, 
-        CL_TRUE, 
-        0, 
-        tuple_num * tuple_size * sizeof(unsigned char), 
-        output, 
-        0, NULL, NULL);
-}
-
 void set_kernel_args(cl_kernel kernel_) {
     cl_int error = 0;
 
@@ -481,6 +448,69 @@ void gpu_set_kernel() {
     }
 
     dbg("[GPU] Set kernel succeed!\n");
+}
+
+long gpu_read_input(void const * data, bool profiling) {
+    cl_int error = 0;
+    cl_event perf_event;
+    cl_event * perf_event_p = NULL;
+    if (profiling) {
+        perf_event_p = &perf_event;
+    }
+
+    /* Copy the input buffer on the host to the memory buffer on device */
+    error = clEnqueueWriteBuffer(
+        config->command_queue[0], 
+        input_mem, 
+        CL_TRUE,         /* blocking write */
+        0, 
+        batch_size * tuple_size * sizeof(unsigned char), 
+        data,            /* data in the host memeory */
+        0, NULL, perf_event_p);  /* event related */
+    if (error != CL_SUCCESS) {
+        fprintf(stderr, "error: failed to enqueue write buffer command\n", NULL);
+        exit(1);
+    }
+
+    dbg("[GPU] Succeed to read input\n", NULL);
+
+    cl_ulong start = 0, end = 0;
+    if (profiling) {
+        
+        clWaitForEvents(1, perf_event_p);
+        
+        clGetEventProfilingInfo(perf_event, CL_PROFILING_COMMAND_START, sizeof(cl_ulong), &start, NULL);
+        clGetEventProfilingInfo(perf_event, CL_PROFILING_COMMAND_END, sizeof(cl_ulong), &end, NULL);
+    }
+    return start;
+}
+
+long gpu_write_output(void * output, int tuple_num, bool profiling) {
+    cl_int error = 0;
+    cl_event perf_event;
+    cl_event * perf_event_p = NULL;
+    if (profiling) {
+        perf_event_p = &perf_event;
+    }
+
+    error = clEnqueueReadBuffer(
+        config->command_queue[0], 
+        output_mem, 
+        CL_TRUE, 
+        0, 
+        tuple_num * tuple_size * sizeof(unsigned char), 
+        output, 
+        0, NULL, perf_event_p);
+
+    cl_ulong start = 0, end = 0;
+    if (profiling) {
+        
+        clWaitForEvents(1, perf_event_p);
+        
+        clGetEventProfilingInfo(perf_event, CL_PROFILING_COMMAND_START, sizeof(cl_ulong), &start, NULL);
+        clGetEventProfilingInfo(perf_event, CL_PROFILING_COMMAND_END, sizeof(cl_ulong), &end, NULL);
+    }
+    return end;
 }
 
 int gpu_exec() {
