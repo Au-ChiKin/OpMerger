@@ -7,14 +7,14 @@
 /* must match the input struct in kernel code */
 typedef struct tuple {
     /* 64 bytes in total */
-    long time_stamp;
-    long job_id;
-    long task_id;
-    long machine_id;
-    int user_id;
-    int event_type;
-    int category;
-    int priority;
+    long  time_stamp;
+    long  job_id;
+    long  task_id;
+    long  machine_id;
+    int   user_id;
+    int   event_type;
+    int   category;
+    int   priority;
     float cpu;
     float ram;
     float disk;
