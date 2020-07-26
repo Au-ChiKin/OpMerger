@@ -2,6 +2,8 @@
 #define __GPU_H_
 
 #include "gpu_config.h"
+
+#include <stdbool.h>
 // #include "openclerrorcode.h"
 
 // #include "outputbuffer.h"
