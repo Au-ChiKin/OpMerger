@@ -450,7 +450,7 @@ void gpu_set_kernel() {
     dbg("[GPU] Set kernel succeed!\n");
 }
 
-long gpu_read_input(void const * data, bool profiling) {
+void gpu_read_input(void const * data, bool profiling, long * start, long * end) {
     cl_int error = 0;
     cl_event perf_event;
     cl_event * perf_event_p = NULL;
@@ -474,18 +474,23 @@ long gpu_read_input(void const * data, bool profiling) {
 
     dbg("[GPU] Succeed to read input\n", NULL);
 
-    cl_ulong start = 0, end = 0;
+    cl_ulong cl_start = 0, cl_end = 0;
     if (profiling) {
         
         clWaitForEvents(1, perf_event_p);
         
-        clGetEventProfilingInfo(perf_event, CL_PROFILING_COMMAND_START, sizeof(cl_ulong), &start, NULL);
-        clGetEventProfilingInfo(perf_event, CL_PROFILING_COMMAND_END, sizeof(cl_ulong), &end, NULL);
+        clGetEventProfilingInfo(perf_event, CL_PROFILING_COMMAND_START, sizeof(cl_ulong), &cl_start, NULL);
+        clGetEventProfilingInfo(perf_event, CL_PROFILING_COMMAND_END, sizeof(cl_ulong), &cl_end, NULL);
     }
-    return start;
+    if (start) {
+        *start = cl_start;
+    }
+    if (end) {
+        *end = cl_end;
+    }
 }
 
-long gpu_write_output(void * output, int tuple_num, bool profiling) {
+void gpu_write_output(void * output, int tuple_num, bool profiling, long * start, long * end) {
     cl_int error = 0;
     cl_event perf_event;
     cl_event * perf_event_p = NULL;
@@ -502,15 +507,20 @@ long gpu_write_output(void * output, int tuple_num, bool profiling) {
         output, 
         0, NULL, perf_event_p);
 
-    cl_ulong start = 0, end = 0;
+    cl_ulong cl_start = 0, cl_end = 0;
     if (profiling) {
         
         clWaitForEvents(1, perf_event_p);
         
-        clGetEventProfilingInfo(perf_event, CL_PROFILING_COMMAND_START, sizeof(cl_ulong), &start, NULL);
-        clGetEventProfilingInfo(perf_event, CL_PROFILING_COMMAND_END, sizeof(cl_ulong), &end, NULL);
+        clGetEventProfilingInfo(perf_event, CL_PROFILING_COMMAND_START, sizeof(cl_ulong), &cl_start, NULL);
+        clGetEventProfilingInfo(perf_event, CL_PROFILING_COMMAND_END, sizeof(cl_ulong), &cl_end, NULL);
     }
-    return end;
+    if (start) {
+        *start = cl_start;
+    }
+    if (end) {
+        *end = cl_end;
+    }
 }
 
 int gpu_exec() {

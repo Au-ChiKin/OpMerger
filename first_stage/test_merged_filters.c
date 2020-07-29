@@ -34,23 +34,29 @@ void run_processing_gpu(cbuf_handle_t buffer, int size, int * result, int load, 
     // TODO: cicular buffer should only return the pointer to the underline buffer
     long start_time = 0;
     long end_time = 0;
+    long start, end;
+    long read_time = 0, write_time = 0;
     circular_buf_read_bytes(buffer, batch->vectors, size * TUPLE_SIZE);
     for (int l=0; l<load; l++) {
-        long start = gpu_read_input(batch, true);
+        gpu_read_input(batch, true, &start, &end);
         if (l == 0) {
             start_time = start;
         }
+        read_time += end - start;
     
         int count = gpu_exec();
 
-        long end = gpu_write_output(result, count, true);
+        gpu_write_output(result, count, true, &start, &end);
         if (l == load-1) {
             end_time = end;
         }
+        write_time += end - start;
 
         printf("[GPU] Batch %d output size is: %d\n", l, count);
     }
     printf("Total time consumption is: %ld ms\n", (end_time - start_time) / 1000000);
+    printf("Read time consumption is: %ld ms\n", read_time / 1000000);
+    printf("Write time consumption is: %ld ms\n", write_time / 1000000);
 
     gpu_free();
 }
