@@ -30,7 +30,7 @@ void gpu_set_kernel();
 
 void gpu_read_input(void const * data, bool profiling, long * start, long * end);
 
-int gpu_exec();
+int gpu_exec(bool profiling, long * inter_time);
 
 void gpu_write_output(void * output, int tuple_num, bool profiling, long * start, long * end);
 

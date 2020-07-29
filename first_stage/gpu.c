@@ -523,7 +523,7 @@ void gpu_write_output(void * output, int tuple_num, bool profiling, long * start
     }
 }
 
-int gpu_exec() {
+int gpu_exec(bool profiling, long * inter_time) {
     size_t local_item_size = 64; /* minimum threads per group */
     size_t global_item_size = batch_size / tuple_per_thread;
 
@@ -567,6 +567,11 @@ int gpu_exec() {
 
             // make a copy of output
             cl_int error = 0;
+            cl_event perf_event;
+            cl_event * perf_event_p = NULL;
+            if (profiling) {
+                perf_event_p = &perf_event;
+            }
 
             /* Copy the input buffer on the host to the memory buffer on device */
             unsigned char * copy = (unsigned char *) malloc(sizeof(unsigned char) * tuple_size * count);
@@ -578,13 +583,23 @@ int gpu_exec() {
                 0, 
                 count * tuple_size * sizeof(unsigned char), 
                 copy, 
-                0, NULL, NULL);
+                0, NULL, perf_event_p);
             if (error != CL_SUCCESS) {
                 fprintf(stderr, "error: fail to read count\n");
                 exit (1);
             }
+            if (profiling) {
+                cl_ulong cl_start = 0, cl_end = 0;
+                
+                clWaitForEvents(1, perf_event_p);
+                
+                clGetEventProfilingInfo(perf_event, CL_PROFILING_COMMAND_START, sizeof(cl_ulong), &cl_start, NULL);
+                clGetEventProfilingInfo(perf_event, CL_PROFILING_COMMAND_END, sizeof(cl_ulong), &cl_end, NULL);
 
-            clFinish(config->command_queue[0]);
+                *inter_time += cl_end - cl_start;
+            }
+
+            clFinish(config->command_queue[0]); // read and write to the same buffer
 
             // copy the created copy to input
             error = clEnqueueWriteBuffer(
@@ -594,10 +609,20 @@ int gpu_exec() {
                 0, 
                 count * tuple_size * sizeof(unsigned char), 
                 copy,            /* pointer to data in the host memeory */
-                0, NULL, NULL);  /* event related */
+                0, NULL, perf_event_p);  /* event related */
             if (error != CL_SUCCESS) {
                 fprintf(stderr, "error: failed to enqueue write buffer command\n", NULL);
                 exit(1);
+            }
+            if (profiling) {
+                cl_ulong cl_start = 0, cl_end = 0;
+                
+                clWaitForEvents(1, perf_event_p);
+                
+                clGetEventProfilingInfo(perf_event, CL_PROFILING_COMMAND_START, sizeof(cl_ulong), &cl_start, NULL);
+                clGetEventProfilingInfo(perf_event, CL_PROFILING_COMMAND_END, sizeof(cl_ulong), &cl_end, NULL);
+
+                *inter_time += cl_end - cl_start;
             }
 
             clFinish(config->command_queue[0]);

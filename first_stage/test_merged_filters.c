@@ -35,7 +35,7 @@ void run_processing_gpu(cbuf_handle_t buffer, int size, int * result, int load, 
     long start_time = 0;
     long end_time = 0;
     long start, end;
-    long read_time = 0, write_time = 0;
+    long read_time = 0, write_time = 0, inter_time = 0;
     circular_buf_read_bytes(buffer, batch->vectors, size * TUPLE_SIZE);
     for (int l=0; l<load; l++) {
         gpu_read_input(batch, true, &start, &end);
@@ -44,7 +44,7 @@ void run_processing_gpu(cbuf_handle_t buffer, int size, int * result, int load, 
         }
         read_time += end - start;
     
-        int count = gpu_exec();
+        int count = gpu_exec(&inter_time, &inter_time);
 
         gpu_write_output(result, count, true, &start, &end);
         if (l == load-1) {
@@ -57,6 +57,7 @@ void run_processing_gpu(cbuf_handle_t buffer, int size, int * result, int load, 
     printf("Total time consumption is: %ld ms\n", (end_time - start_time) / 1000000);
     printf("Read time consumption is: %ld ms\n", read_time / 1000000);
     printf("Write time consumption is: %ld ms\n", write_time / 1000000);
+    printf("Inter-query copy time consumption is: %ld ms\n", inter_time / 1000000);
 
     gpu_free();
 }
