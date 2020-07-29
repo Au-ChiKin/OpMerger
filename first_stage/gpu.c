@@ -455,6 +455,10 @@ void gpu_read_input(void const * data, bool profiling, long * start, long * end)
     cl_event perf_event;
     cl_event * perf_event_p = NULL;
     if (profiling) {
+        if (!start || !end) {
+            fprintf(stderr, "error: profiling is on so pointers to start and end should be passed\n", NULL);
+            exit(1);
+        }
         perf_event_p = &perf_event;
     }
 
@@ -481,11 +485,8 @@ void gpu_read_input(void const * data, bool profiling, long * start, long * end)
         
         clGetEventProfilingInfo(perf_event, CL_PROFILING_COMMAND_START, sizeof(cl_ulong), &cl_start, NULL);
         clGetEventProfilingInfo(perf_event, CL_PROFILING_COMMAND_END, sizeof(cl_ulong), &cl_end, NULL);
-    }
-    if (start) {
+        
         *start = cl_start;
-    }
-    if (end) {
         *end = cl_end;
     }
 }
@@ -495,6 +496,10 @@ void gpu_write_output(void * output, int tuple_num, bool profiling, long * start
     cl_event perf_event;
     cl_event * perf_event_p = NULL;
     if (profiling) {
+        if (!start || !end) {
+            fprintf(stderr, "error: profiling is on so pointers to start and end should be passed\n", NULL);
+            exit(1);
+        }
         perf_event_p = &perf_event;
     }
 
@@ -514,11 +519,8 @@ void gpu_write_output(void * output, int tuple_num, bool profiling, long * start
         
         clGetEventProfilingInfo(perf_event, CL_PROFILING_COMMAND_START, sizeof(cl_ulong), &cl_start, NULL);
         clGetEventProfilingInfo(perf_event, CL_PROFILING_COMMAND_END, sizeof(cl_ulong), &cl_end, NULL);
-    }
-    if (start) {
+        
         *start = cl_start;
-    }
-    if (end) {
         *end = cl_end;
     }
 }
