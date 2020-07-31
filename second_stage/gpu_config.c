@@ -94,19 +94,19 @@ void gpu_config_setOutput (gpu_config_p q, int ndx, int size,
 void gpu_config_free (gpu_config_p config) {
 
 	int i;
-	if (config) { // TODO Remove comment
+	if (config) {
 		/* Free input(s) */
-		// for (i = 0; i < query->kernelInput.count; i++)
-			// freeInputBuffer (query->kernelInput.inputs[i], query->command_queue[0]); 
+		for (i = 0; i < config->kernelInput.count; i++)
+			freeInputBuffer (config->kernelInput.inputs[i], config->command_queue[0]); 
 		/* Free output(s) */
-		// for (i = 0; i < query->kernelOutput.count; i++)
-			// freeOutputBuffer (query->kernelOutput.outputs[i], query->command_queue[0]);
+		for (i = 0; i < config->kernelOutput.count; i++)
+			freeOutputBuffer (config->kernelOutput.outputs[i], config->command_queue[0]);
 		/* Free kernel(s) */
-		// for (i = 0; i < config->kernel.count; i++) {
-		// 	clReleaseKernel (config->kernel.kernels[i]->kernel[0]);
-		// 	clReleaseKernel (config->kernel.kernels[i]->kernel[1]);
-		// 	free (config->kernel.kernels[i]);
-		// }
+		for (i = 0; i < config->kernel.count; i++) {
+			clReleaseKernel (config->kernel.kernels[i]->kernel[0]);
+			clReleaseKernel (config->kernel.kernels[i]->kernel[1]);
+			free (config->kernel.kernels[i]);
+		}
 		/* Release command queues */
 		if (config->command_queue[0])
 			clReleaseCommandQueue(config->command_queue[0]);
