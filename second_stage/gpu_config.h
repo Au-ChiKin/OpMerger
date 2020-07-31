@@ -4,10 +4,8 @@
 #include "../clib/utils.h"
 
 #include "../clib/debug.h"
-
-/* We do not want to use them for now since they are too complicated */
-// #include "../clib/inputbuffer.h"
-// #include "../clib/outputbuffer.h"
+#include "gpu_input_buffer.h"
+#include "gpu_output_buffer.h"
 
 #ifdef __APPLE__
 #include <OpenCL/opencl.h>
@@ -17,12 +15,12 @@
 
 typedef struct gpu_kernel_input {
 	int count;
-	// inputBufferP inputs [MAX_INPUTS]; // TODO
+	input_buffer_p inputs [MAX_INPUTS];
 } gpu_kernel_input_t;
 
 typedef struct gpu_kernel_output {
 	int count;
-	// outputBufferP outputs [MAX_OUTPUTS]; // TODO
+	output_buffer_p outputs [MAX_OUTPUTS];
 } gpu_kernel_output_t;
 
 typedef struct kernel *kernel_p;
