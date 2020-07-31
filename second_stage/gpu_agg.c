@@ -16,8 +16,8 @@ static cl_platform_id platform = NULL;
 static cl_device_id device = NULL;
 static cl_context context = NULL;
 
-static int QUERY_NUM;
-static int freeIndex;
+static int query_num;
+static int free_index;
 static gpu_query_p queries [MAX_QUERIES];
 
 // static int D;
@@ -32,17 +32,116 @@ static gpu_query_p queries [MAX_QUERIES];
 void callback_setKernelAggregate (cl_kernel, gpu_config_p, int *, long *);
 
 
+static void set_platform () {
+    int error = 0;
+	cl_uint count = 0;
+
+	error = clGetPlatformIDs (
+        1,           // entry number of &platform
+        &platform,   // on return, the platform id
+        &count);     // on return, the number of platform
+	if (error != CL_SUCCESS) {
+		fprintf(stderr, "opencl error (%d): %s\n", error, getErrorMessage(error));
+		exit (1);
+	}
+	dbg("[GPU] Obtained 1/%u platforms available\n", count);
+	return;
+}
+
+static void set_device () {
+	int error = 0;
+	cl_uint count = 0;
+
+	error = clGetDeviceIDs (
+        platform,             // platform ID
+        CL_DEVICE_TYPE_GPU,   // look only for GPUs
+        1,                    // return an ID for only one GPU &device_id
+        &device,              // on return, the device ID
+        &count);              // on return, the number of devices
+	if (error != CL_SUCCESS) {
+		fprintf(stderr, "opencl error (%d): %s\n", error, getErrorMessage(error));
+		exit (1);
+	}
+	dbg("[GPU] Obtained 1/%u devices available\n", count);
+	return;
+}
+
+static void get_deviceInfo () {
+
+	cl_int error = 0;
+
+	cl_uint value = 0;
+	size_t max_work_group = 0;
+	size_t max_work_item[3];
+	char extensions [2048];
+	char name [256];
+
+	error = 0;
+	error |= clGetDeviceInfo (device, CL_DEVICE_MEM_BASE_ADDR_ALIGN, sizeof (cl_uint), &value,         NULL);
+	error |= clGetDeviceInfo (device, CL_DEVICE_EXTENSIONS,                      2048, &extensions[0], NULL);
+	error |= clGetDeviceInfo (device, CL_DEVICE_NAME,                            2048, &name[0],       NULL);
+	error |= clGetDeviceInfo (device, CL_DEVICE_MAX_WORK_GROUP_SIZE, sizeof (size_t),  &max_work_group,NULL);
+	error |= clGetDeviceInfo (device, CL_DEVICE_MAX_WORK_ITEM_SIZES, 3*sizeof (size_t),&max_work_item, NULL);
+
+	if (error != CL_SUCCESS) {
+		fprintf(stderr, "opencl error (%d): %s\n", error, getErrorMessage(error));
+		exit (1);
+	}
+	fprintf(stdout, "[GPU] GPU name: %s\n", name);
+	fprintf(stdout, "[GPU] GPU supported extensions are: %s\n", extensions);
+	fprintf(stdout, "[GPU] GPU memory addresses are %u bits aligned\n", value);
+	fprintf(stdout, "[GPU] GPU maximum work group size is %zu\n", max_work_group);
+	fprintf(stdout, "[GPU] GPU maximum work item size for the first dimentsion is %zu\n", max_work_item[0]);
+
+	return ;
+}
+
+static void set_context () {
+	int error = 0;
+	context = clCreateContext (
+		0,        // properties
+		1,        // the number of devices in the devices parameter
+		&device,  // a pointer to the list of device IDs from clGetDeviceIDs
+		NULL,     // a pointer to an error notice callback function (if any)
+		NULL,     // data to pass as a param to the callback function
+		&error);  // on return, points to a result code
+	if (! context) {
+		fprintf(stderr, "[GPU] opencl error (%d): %s\n", error, getErrorMessage(error));
+		exit (1);
+	}
+	return ;
+}
+
+void gpu_init (int _queries) {
+
+	set_platform ();
+
+	set_device ();
+	get_deviceInfo ();
+	
+    set_context ();
+    
+	query_num = _queries;
+	free_index = 0;
+	for (int i = 0; i < MAX_QUERIES; i++)
+		queries[i] = NULL;
+
+	return;
+}
+
+
 int gpu_set_kernel (int qid, int ndx /* kernel index */,
 	const char *name,
 	void (*callback)(cl_kernel, gpu_config_p, int *, long *),
 	int * args1, long * args2) {
 
-	if (qid < 0 || qid >= QUERY_NUM) {
+	if (qid < 0 || qid >= query_num) {
 		fprintf(stderr, "error: query index [%d] out of bounds\n", qid);
 		exit (1);
 	}
 	gpu_query_p p = queries[qid];
-	return gpu_query_setKernel (p, ndx, name, callback, args1, args2);
+	// return gpu_query_setKernel (p, ndx, name, callback, args1, args2);
+	return 0;
 }
 
 void gpu_set_kernel_aggregate(int qid, int * args1, long * args2) {
@@ -62,7 +161,7 @@ void gpu_set_kernel_aggregate(int qid, int * args1, long * args2) {
 	gpu_set_kernel (qid, 7, "aggregatePendingWindowsKernel",  &callback_setKernelAggregate, args1, args2);
 	gpu_set_kernel (qid, 8, "packKernel",                     &callback_setKernelAggregate, args1, args2);
 	
-	return 0;
+	return;
 }
 
 void callback_setKernelAggregate (cl_kernel kernel, gpu_config_p config, int *args1, long *args2) {
