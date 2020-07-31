@@ -31,79 +31,13 @@
 
 #include "libcirbuf/circular_buffer.h"
 #include "config.h"
+#include "aggregation.h"
 
 /* Input data of interest from files */
 void read_input_buffers(cbuf_handle_t cbufs [], int buffer_num);
 
 /* Print out 10 tuples for debug */
 void print_10_tuples(cbuf_handle_t cbufs []);
-
-#define MAX_SOURCE_SIZE (0x100000)
-char * read_source(char * filename) {
-    FILE *file_p;
-    char * source_str;
-    size_t source_size;
-    cl_int error = 0;
-
-    /* Load kernel source */
-    file_p = fopen(filename, "rb");
-    if (!file_p) {
-        fprintf(stderr, "Failed to load kernel.\n");
-        exit(1);
-    }
-    source_str = (char*)malloc(MAX_SOURCE_SIZE);
-    source_size = fread( source_str, 1, MAX_SOURCE_SIZE, file_p);
-    fclose(file_p);
-
-	if (error != CL_SUCCESS) {
-		fprintf(stderr, "opencl error (%d): %s\n", error, getErrorMessage(error));
-		exit (1);
-	}
-    dbg("[MAIN] Loaded kernel source length of %zu bytes\n", source_size);
-
-    return source_str;
-}
-
-void aggregation(int batch_size, int tuple_size) {
-    char * source = read_source("aggregation_gen.cl");
-    gpu_get_query(source, 9, 1, 9);
-
-    gpu_set_input(0, 0, batch_size * tuple_size);
-
-    int window_pointers_size = 4 * 1024 /* SystemConf.PARTIAL_WINDOWS */;
-    gpu_set_output(0, 0, window_pointers_size, 0, 1, 0, 0, 1);
-    gpu_set_output(0, 1, window_pointers_size, 0, 1, 0, 0, 1);
-
-    int failed_flags_size = 4 * batch_size; /* One int per tuple */
-    gpu_set_output(0, 2, failed_flags_size, 1, 1, 0, 0, 1);
-
-    int offset_size = 16; /* The size of two longs */
-    gpu_set_output(0, 3, offset_size, 0, 1, 0, 0, 1);
-
-    int window_counts_size = 24; /* 4 integers, +1 that is the complete windows mark, +1 that is the mark */
-    // windowCounts = new UnboundedQueryBuffer (-1, windowCountsSize, false);
-    gpu_set_output(0, 4, window_counts_size, 0, 0, 1, 0, 1);
-
-    /* Set partial window results */
-    int outputSize = 1024 * 1024; /* SystemConf.UNBOUNDED_BUFFER_SIZE */
-    gpu_set_output(0, 5, outputSize, 1, 0, 0, 1, 1);
-    gpu_set_output(0, 6, outputSize, 1, 0, 0, 1, 1);
-    gpu_set_output(0, 7, outputSize, 1, 0, 0, 1, 1);
-    gpu_set_output(0, 8, outputSize, 1, 0, 0, 1, 1);
-
-    int args1[6];
-    args1[0] = batch_size; /* batch size in tuples*/
-    args1[1] = batch_size * tuple_size; /* batch size in bytes*/
-    args1[2] = outputSize;
-    args1[3] = 1024 * 1024; /* SystemConf.HASH_TABLE_SIZE */
-    args1[4] = 1024; /* SystemConf.PARTIAL_WINDOWS */
-    args1[5] = 8; /* keyLength * numberOfThreadsPerGroup; cache size; for group by */
-
-    long args2[2];
-    args2[0] = 0; /* Previous pane id */
-    args2[0] = 0; /* Start offset */
-    gpu_set_kernel_aggregate(0, args1, args2); // TODO: remove comments after create buffers
-}
 
 void run_processing_gpu(cbuf_handle_t buffers [], int size, int * result, int load, enum test_cases mode) {
     input_t * batch = (input_t *) malloc(size * sizeof(tuple_t));
