@@ -2,8 +2,6 @@
 #define CONFIG_H
 
 #define BUFFER_SIZE 16384 /* in tuple */
-#define VALUE_RANGE 128
-
 
 /*
  * To add case:

@@ -12,7 +12,7 @@
 #include <CL/cl.h>
 #endif
 
-#define FILE_TAG "[gpu_context]"
+#define FILE_TAG "[gpu_config]"
 #define error_print(format, ...) fprintf(stderr, FILE_TAG format, __VA_ARGS__)
 
 /*
@@ -110,18 +110,18 @@ void gpu_config_free (gpu_config_p config) {
 	}
 }
 
-// void gpu_context_setOutput (gpu_context_p q, int ndx, int size,
+void gpu_config_setOutput (gpu_config_p q, int ndx, int size,
 
-// 	int writeOnly, int doNotMove, int bearsMark, int readEvent, int ignoreMark) {
+	int writeOnly, int doNotMove, int bearsMark, int readEvent, int ignoreMark) {
 
-// 	q->kernelOutput.outputs[ndx] =
-// 			getOutputBuffer (q->context, q->queue[0], size, writeOnly, doNotMove, bearsMark, readEvent, ignoreMark);
-// }
+	q->kernelOutput.outputs[ndx] =
+			getOutputBuffer (q->context, q->command_queue[0], size, writeOnly, doNotMove, bearsMark, readEvent, ignoreMark);
+}
 
-// void gpu_context_setKernel (gpu_context_p q,
+// void gpu_config_setKernel (gpu_config_p q,
 // 	int ndx,
 // 	const char *name,
-// 	void (*callback)(cl_kernel, gpu_context_p, int *, long *),
+// 	void (*callback)(cl_kernel, gpu_config_p, int *, long *),
 // 	int *args1, long *args2) {
 
 // 	int i;
@@ -139,8 +139,8 @@ void gpu_config_free (gpu_config_p config) {
 // 	return;
 // }
 
-// void gpu_context_configureKernel (gpu_context_p q,
-// 	void (*callback)(cl_kernel, gpu_context_p, int *, long *),
+// void gpu_config_configureKernel (gpu_config_p q,
+// 	void (*callback)(cl_kernel, gpu_config_p, int *, long *),
 // 	int *args1, long *args2) {
 
 // 	int i;

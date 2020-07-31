@@ -16,8 +16,8 @@
 #include <unistd.h>
 #include <sched.h>
 
-// static int gpu_query_exec_1 (gpuQueryP, size_t *, size_t *, queryOperatorP, JNIEnv *, jobject); /* w/o  pipelining */
-// static int gpu_query_exec_2 (gpuQueryP, size_t *, size_t *, queryOperatorP, JNIEnv *, jobject); /* with pipelining */
+// static int gpu_query_exec_1 (gpu_query_p, size_t *, size_t *, queryOperatorP, JNIEnv *, jobject); /* w/o  pipelining */
+// static int gpu_query_exec_2 (gpu_query_p, size_t *, size_t *, queryOperatorP, JNIEnv *, jobject); /* with pipelining */
 
 gpu_query_p gpu_query_new (int qid, cl_device_id device, cl_context context, const char *source,
 	int _kernels, int _inputs, int _outputs) {
@@ -99,7 +99,7 @@ gpu_query_p gpu_query_new (int qid, cl_device_id device, cl_context context, con
 	return query;
 }
 
-// void gpu_query_setResultHandler (gpuQueryP q, resultHandlerP handler) {
+// void gpu_query_setResultHandler (gpu_query_p q, resultHandlerP handler) {
 // 	if (! q)
 // 		return ;
 // 	q->handler = handler;
@@ -129,20 +129,20 @@ int gpu_query_setInput (gpu_query_p query, int input_id, int size) {
 	return 0;
 }
 
-// int gpu_query_setOutput (gpuQueryP q, int ndx, int size, int writeOnly, int doNotMove, int bearsMark, int readEvent, int ignoreMark) {
-// 	if (! q)
-// 		return -1;
-// 	if (ndx < 0 || ndx > q->contexts[0]->kernelOutput.count) {
-// 		fprintf(stderr, "error: output buffer index [%d] out of bounds\n", ndx);
-// 		exit (1);
-// 	}
-// 	int i;
-// 	for (i = 0; i < NCONTEXTS; i++)
-// 		gpu_context_setOutput (q->contexts[i], ndx, size, writeOnly, doNotMove, bearsMark, readEvent, ignoreMark);
-// 	return 0;
-// }
+int gpu_query_setOutput (gpu_query_p q, int ndx, int size, int writeOnly, int doNotMove, int bearsMark, int readEvent, int ignoreMark) {
+	if (! q)
+		return -1;
+	if (ndx < 0 || ndx > q->configs[0]->kernelOutput.count) {
+		fprintf(stderr, "error: output buffer index [%d] out of bounds\n", ndx);
+		exit (1);
+	}
+	int i;
+	for (i = 0; i < NCONTEXTS; i++)
+		gpu_config_setOutput (q->configs[i], ndx, size, writeOnly, doNotMove, bearsMark, readEvent, ignoreMark);
+	return 0;
+}
 
-// int gpu_query_setKernel (gpuQueryP q,
+// int gpu_query_setKernel (gpu_query_p q,
 // 	int ndx,
 // 	const char * name,
 // 	void (*callback)(cl_kernel, gpuContextP, int *, long *),
@@ -151,18 +151,18 @@ int gpu_query_setInput (gpu_query_p query, int input_id, int size) {
 // 	if (! q)
 // 		return -1;
 
-// 	if (ndx < 0 || ndx > q->contexts[0]->kernel.count) {
+// 	if (ndx < 0 || ndx > q->configs[0]->kernel.count) {
 // 		fprintf(stderr, "error: kernel index [%d] out of bounds\n", ndx);
 // 		exit (1);
 // 	}
 // 	int i;
 // 	for (i = 0; i < NCONTEXTS; i++) {
-// 		gpu_context_setKernel (q->contexts[i], ndx, name, callback, args1, args2);
+// 		gpu_context_setKernel (q->configs[i], ndx, name, callback, args1, args2);
 // 	}
 // 	return 0;
 // }
 
-// gpuContextP gpu_context_switch (gpuQueryP p) {
+// gpuContextP gpu_context_switch (gpu_query_p p) {
 // 	if (! p) {
 // 		fprintf (stderr, "error: null query\n");
 // 		return NULL;
@@ -179,7 +179,7 @@ int gpu_query_setInput (gpu_query_p query, int input_id, int size) {
 // 	return p->contexts[next];
 // }
 
-// int gpu_query_exec (gpuQueryP q, size_t *threads, size_t *threadsPerGroup, queryOperatorP operator, JNIEnv *env, jobject obj) {
+// int gpu_query_exec (gpu_query_p q, size_t *threads, size_t *threadsPerGroup, queryOperatorP operator, JNIEnv *env, jobject obj) {
 	
 // 	if (! q)
 // 		return -1;
@@ -192,7 +192,7 @@ int gpu_query_setInput (gpu_query_p query, int input_id, int size) {
 // }
 
 // /* */
-// static int gpu_query_exec_1 (gpuQueryP q, size_t *threads, size_t *threadsPerGroup, queryOperatorP operator, JNIEnv *env, jobject obj) {
+// static int gpu_query_exec_1 (gpu_query_p q, size_t *threads, size_t *threadsPerGroup, queryOperatorP operator, JNIEnv *env, jobject obj) {
 	
 // 	gpuContextP p = gpu_context_switch (q);
 	
@@ -218,7 +218,7 @@ int gpu_query_setInput (gpu_query_p query, int input_id, int size) {
 // 	return 0;
 // }
 
-// static int gpu_query_exec_2 (gpuQueryP q, size_t *threads, size_t *threadsPerGroup, queryOperatorP operator, JNIEnv *env, jobject obj) {
+// static int gpu_query_exec_2 (gpu_query_p q, size_t *threads, size_t *threadsPerGroup, queryOperatorP operator, JNIEnv *env, jobject obj) {
 	
 // 	gpuContextP p = gpu_context_switch (q);
 	

@@ -166,6 +166,15 @@ int gpu_set_input  (int qid, int input_id, int size) {
 	return gpu_query_setInput (query, input_id, size);
 }
 
+int gpu_set_output (int qid, int ndx, int size, int writeOnly, int doNotMove, int bearsMark, int readEvent, int ignoreMark) {
+	if (qid < 0 || qid >= query_num) {
+		fprintf(stderr, "error: query index [%d] out of bounds\n", qid);
+		exit (1);
+	}
+	gpu_query_p p = queries[qid];
+	return gpu_query_setOutput(p, ndx, size, writeOnly, doNotMove, bearsMark, readEvent, ignoreMark);
+}
+
 int gpu_set_kernel (int qid, int ndx /* kernel index */,
 	const char *name,
 	void (*callback)(cl_kernel, gpu_config_p, int *, long *),

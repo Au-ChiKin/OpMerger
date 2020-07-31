@@ -22,7 +22,7 @@ VPATH    = $(OBJDIR)
 
 # Targets
 PROGS   = test_gcd
-GPU_LIB = gpu_agg.c gpu_config.c gpu_query.c gpu_input_buffer.c
+GPU_LIB = gpu_agg.c gpu_config.c gpu_query.c gpu_input_buffer.c gpu_output_buffer.c
 SRCS = test_gcd.c openclerrorcode.c config.c $(GPU_LIB)
 
 # Submodules
