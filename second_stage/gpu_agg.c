@@ -129,6 +129,19 @@ void gpu_init (int _queries) {
 	return;
 }
 
+void gpu_free () {
+	int error = 0;
+
+	for (int i = 0; i < MAX_QUERIES; i++)
+		if (queries[i])
+			// gpu_query_free (queries[i]);
+	if (context)
+		error = clReleaseContext (context);
+	if (error != CL_SUCCESS)
+		fprintf(stderr, "error: failed to free context\n");
+	
+	return;
+}
 
 int gpu_set_kernel (int qid, int ndx /* kernel index */,
 	const char *name,

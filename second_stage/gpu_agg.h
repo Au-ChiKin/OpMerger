@@ -20,4 +20,7 @@ void callback_setKernelAggregate (cl_kernel kernel, gpu_config_p context, int *a
 /* Initialise OpenCL device */
 void gpu_init(int query_num);
 
+/* Release gpu memory */
+void gpu_free();
+
 #endif
