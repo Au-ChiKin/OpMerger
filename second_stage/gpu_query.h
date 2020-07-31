@@ -3,8 +3,6 @@
 
 #include "gpu_config.h"
 
-#include "gpu.h"
-
 typedef struct gpu_query *gpu_query_p;
 typedef struct gpu_query {
 	
@@ -16,7 +14,7 @@ typedef struct gpu_query {
 	
 	// resultHandlerP handler;
 
-	// int ndx; // TODO figure out what is the funcitonality of it
+	int ndx; // which config this query is currently using
 	gpu_config_p configs [NCONTEXTS]; /* keeps the configuration for a device that runs this query */
 
 } gpu_query_t;
@@ -43,7 +41,7 @@ int gpu_query_setKernel (gpu_query_p,
 		void (*callback)(cl_kernel, gpu_config_p, int *, long *),
 		int *, long *);
 
-/* Execute task */
-// int gpu_query_exec (gpu_query_p, size_t *, size_t *, queryOperatorP, JNIEnv *, jobject);
+/* Process batch */
+int gpu_query_exec (gpu_query_p, size_t *, size_t *, query_operator_p);
 
 #endif /* __GPU_QUERY_H_ */

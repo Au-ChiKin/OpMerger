@@ -148,3 +148,195 @@ void gpu_config_setKernel (gpu_config_p query,
 // 		(*callback) (q->kernel.kernels[i]->kernel[0], q, args1, args2);
 // 	return;
 // }
+
+// void gpu_context_flush (gpu_config_p q) {
+// 	int error = 0;
+// 	error |= clFlush (q->queue[0]);
+// 	error |= clFlush (q->queue[1]);
+// 	if (error != CL_SUCCESS) {
+// 		fprintf(stderr, "opencl error (%d): %s (%s)\n", error, getErrorMessage(error), __FUNCTION__);
+// 		exit (1);
+// 	}
+// }
+
+// void gpu_context_finish (gpu_config_p q) {
+// 	if (q->scheduled < 1)
+// 		return;
+// 	/* There are tasks scheduled */
+// 	int error = 0;
+// 	error |= clFinish (q->queue[0]);
+// 	error |= clFinish (q->queue[1]);
+// 	if (error != CL_SUCCESS) {
+// 		fprintf(stderr, "opencl error (%d): %s (%s), q=%d @%p\n", error, getErrorMessage(error), __FUNCTION__, q->qid, q);
+// 		exit (1);
+// 	}
+// }
+
+// void gpu_context_submitKernel (gpu_config_p q, size_t *threads, size_t *threadsPerGroup) {
+// 	int i;
+// 	int error = 0;
+// 	/* Execute */
+// 	for (i = 0; i < q->kernel.count; i++) {
+// 		dbg("[DBG] submit kernel %d: %10zu threads %10zu threads/group\n", i, threads[i], threadsPerGroup[i]);
+// #ifdef GPU_PROFILE
+// 		error |= clEnqueueNDRangeKernel (
+// 			q->queue[0],
+// 			q->kernel.kernels[i]->kernel[0],
+// 			1,
+// 			NULL,
+// 			&(threads[i]),
+// 			&(threadsPerGroup[i]),
+// 			0, NULL, &(q->exec_event[i]));
+// #else
+// 		error |= clEnqueueNDRangeKernel (
+// 			q->queue[0],
+// 			q->kernel.kernels[i]->kernel[0],
+// 			1,
+// 			NULL,
+// 			&(threads[i]),
+// 			&(threadsPerGroup[i]),
+// 			0, NULL, NULL);
+// #endif
+// 	}
+
+// 	if (error != CL_SUCCESS) {
+// 		fprintf(stderr, "opencl error (%d): %s (%s)\n", error, getErrorMessage(error), __FUNCTION__);
+// 		exit (1);
+// 	}
+
+// 	return;
+// }
+
+// void gpu_context_moveOutputBuffers (gpu_config_p q) {
+// 	int i;
+// 	int error = 0;
+// 	/* Read */
+// 	for (i = 0; i < q->kernelOutput.count; i++) {
+
+// 		if (q->kernelOutput.outputs[i]->doNotMove && (! q->kernelOutput.outputs[i]->bearsMark))
+// 			continue;
+
+// 		if (q->kernelOutput.outputs[i]->readEvent) {
+// 			error |= clEnqueueReadBuffer (
+// 				q->queue[0],
+// 				q->kernelOutput.outputs[i]->device_buffer,
+// 				CL_FALSE,
+// 				0,
+// 				q->kernelOutput.outputs[i]->size,
+// 				q->kernelOutput.outputs[i]->mapped_buffer,
+// #ifdef GPU_PROFILE
+// 				0, NULL, &(q->read_event));
+// #else
+// 				0, NULL, NULL);
+// #endif
+// 		} else {
+// 			error |= clEnqueueReadBuffer (
+// 				q->queue[0],
+// 				q->kernelOutput.outputs[i]->device_buffer,
+// 				CL_FALSE,
+// 				0,
+// 				q->kernelOutput.outputs[i]->size,
+// 				q->kernelOutput.outputs[i]->mapped_buffer,
+// 				0, NULL, NULL);
+// 		}
+// 	}
+
+// 	if (error != CL_SUCCESS) {
+// 		fprintf(stderr, "opencl error (%d): %s (%s)\n",
+// 			error, getErrorMessage(error), __FUNCTION__);
+// 		exit (1);
+// 	}
+
+// 	q->readCount += 1;
+// 	q->scheduled = 1;
+
+// 	return;
+// }
+
+void gpu_context_writeInput (gpu_config_p q,
+	void (*callback)(gpu_config_p, int, int),
+	int qid) {
+
+	int idx;
+	for (idx = 0; idx < q->kernelInput.count; idx++)
+		(*callback) (q, qid, idx);
+	return;
+}
+
+/* 1/08 TODO: understand the functionality of mapped buffer */
+void gpu_context_moveInputBuffers (gpu_config_p config) {
+	int i;
+	int error = 0;
+	/* Write */
+	for (i = 0; i < config->kernelInput.count; i++) {
+		if (i == config->kernelInput.count - 1) { // last input buffer
+			error |= clEnqueueWriteBuffer (
+				config->command_queue[0],
+				config->kernelInput.inputs[i]->device_buffer,
+				CL_FALSE,
+				0,
+				config->kernelInput.inputs[i]->size,
+				config->kernelInput.inputs[i]->mapped_buffer,
+#ifdef GPU_PROFILE				
+				0, NULL, &(config->write_event));
+#else				
+				0, NULL, NULL);
+#endif
+		} else {
+			error |= clEnqueueWriteBuffer (
+				config->command_queue[0],
+				config->kernelInput.inputs[i]->device_buffer,
+				CL_FALSE,
+				0,
+				config->kernelInput.inputs[i]->size,
+				config->kernelInput.inputs[i]->mapped_buffer,
+				0, NULL, NULL);
+		}
+
+		if (error != CL_SUCCESS) {
+			fprintf(stderr, "opencl error (%d): %s (%s)\n", error, getErrorMessage(error), __FUNCTION__);
+			exit (1);
+		}
+	}
+
+	config->writeCount += 1;
+	config->scheduled = 1;
+
+	return;
+}
+
+// void gpu_context_readOutput (gpu_config_p q,
+// 	void (*callback)(gpu_config_p, JNIEnv *, jobject, int, int, int),
+// 	JNIEnv *env, jobject obj, int qid) {
+
+// 	int idx;
+// 	/* Find mark */
+// 	int mark = -1;
+// 	for (idx = 0; idx < q->kernelOutput.count; idx++) {
+// 		if (q->kernelOutput.outputs[idx]->bearsMark) {
+// 			dbg("[DBG] output %d bears mark\n", idx);
+// 			int N = q->kernelOutput.outputs[idx]->size / sizeof(int);
+// 			// dbg("[DBG] %d values\n", N);
+// 			int *values = (int *) (q->kernelOutput.outputs[idx]->mapped_buffer);
+// 			int j;
+// 			for (j = N - 1; j >= 0; j--) {
+// 				// dbg("[DBG] value[%6d] = %d\n", j, values[j]);
+// 				if (values[j] != 0) {
+// 					mark = values[j];
+// 					break;
+// 				}
+// 			}
+// 			dbg("[DBG] mark is %d\n", mark);
+// 			break;
+// 		}
+// 	}
+// 	// mark = -1;
+// 	// fprintf(stdout, "[DBG] mark is %10d\n", mark);
+// 	// fflush(stdout);
+
+// 	for (idx = 0; idx < q->kernelOutput.count; idx++)
+// 		(*callback) (q, env, obj, qid, idx, mark);
+
+// 	return;
+// }
+

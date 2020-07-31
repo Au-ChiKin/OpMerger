@@ -22,7 +22,7 @@ static int free_index;
 static gpu_query_p queries [MAX_QUERIES];
 
 // static int D;
-// static gpuContextP pipeline [MAX_DEPTH];
+// static gpu_config_p pipeline [MAX_DEPTH];
 
 // static jclass class;
 // static jmethodID writeMethod, readMethod;
@@ -190,6 +190,18 @@ int gpu_set_kernel (int qid, int ndx /* kernel index */,
 	}
 	gpu_query_p p = queries[qid];
 	return gpu_query_setKernel (p, ndx, name, callback, args1, args2);
+}
+
+int gpu_exec (int qid,
+	size_t *threads, size_t *threadsPerGroup,
+	query_operator_p operator) {
+
+	if (qid < 0 || qid >= query_num) {
+		fprintf(stderr, "error: query index [%d] out of bounds\n", qid);
+		exit (1);
+	}
+	gpu_query_p query = queries[qid];
+	return gpu_query_exec (query, threads, threadsPerGroup, operator);
 }
 
 void gpu_set_kernel_aggregate(int qid, int * args1, long * args2) {
@@ -393,4 +405,120 @@ void callback_setKernelReduce (cl_kernel kernel, gpu_config_p context, int *args
 	}
 
 	return;
+}
+
+void_execute_reduce(int qid, int * threads, int * threads_per_group, long * args2) {
+	int const kernel_num = 4;
+	for (int i=0; i<kernel_num; i++) {
+		dbg("[DBG] kernel %d: %10zu threads %10zu threads/group\n", i, threads[i], threads_per_group[i]);
+	}
+
+	/* Create and setup operator */
+	query_operator_p operator = (query_operator_p) malloc (sizeof(query_operator_t));
+	if (! operator) {
+		fprintf(stderr, "fatal error: out of memory\n");
+		exit(1);
+	}
+	operator->args1 = NULL;
+	operator->args2 = args2;
+	operator->configure = callback_configureReduce;
+	operator->writeInput = callback_writeInput;
+	operator->readOutput = callback_readOutput;
+	operator->execKernel = callback_execKernel;
+
+	gpu_exec(qid, threads, threads_per_group, operator);
+
+	/* Free operator */
+	if (operator)
+		free (operator);
+
+	/* Release Java arrays */
+	(*env)->ReleaseIntArrayElements (env, _t1, t1, JNI_ABORT);
+	(*env)->ReleaseIntArrayElements (env, _t2, t2, JNI_ABORT);
+
+	(*env)->ReleaseLongArrayElements(env, _args2, args2, JNI_ABORT);
+
+	return 0;
+}
+
+void callback_configureReduce (cl_kernel kernel, gpu_config_p context, int *args1, long *args2) {
+
+	(void) context;
+	(void)   args1;
+
+	long previousPaneId = args2[0];
+	long startOffset    = args2[1];
+
+	int error = 0;
+
+	/* Set constant arguments */
+	error |= clSetKernelArg (kernel, 3, sizeof(long), (void *) &previousPaneId);
+	error |= clSetKernelArg (kernel, 4, sizeof(long), (void *)    &startOffset);
+
+	if (error != CL_SUCCESS) {
+		fprintf(stderr, "opencl error (%d): %s\n", error, getErrorMessage(error));
+		exit (1);
+	}
+
+	return;
+}
+
+/* Data movement callbacks */
+
+void callback_writeInput (gpu_config_p context, int qid, int ndx) {
+
+	(*env)->CallVoidMethod (
+			env, obj, writeMethod,
+			qid,
+			ndx,
+			(long) (context->kernelInput.inputs[ndx]->mapped_buffer),
+			context->kernelInput.inputs[ndx]->size);
+
+	return ;
+}
+
+void callback_readOutput (gpu_config_p context, JNIEnv *env, jobject obj, int qid, int ndx, int mark) {
+	
+	if (context->kernelOutput.outputs[ndx]->doNotMove)
+		return;
+	
+	/* Use the mark */
+	int size;
+	if (mark >= 0 && (! context->kernelOutput.outputs[ndx]->ignoreMark))
+		size = mark;
+	 else
+		size = context->kernelOutput.outputs[ndx]->size;
+	
+	if (size > context->kernelOutput.outputs[ndx]->size) {
+		fprintf(stderr, "error: invalid mark for query's %d output buffer %d (marked %d bytes; size is %d bytes)\n",
+			qid, ndx, size, context->kernelOutput.outputs[ndx]->size);
+		exit(1);
+	}
+	
+	/* Copy data across the JNI boundary */
+	(*env)->CallVoidMethod (
+			env, obj, readMethod,
+			qid,
+			ndx,
+			(long) (context->kernelOutput.outputs[ndx]->mapped_buffer),
+			size);
+
+	return;
+}
+
+gpu_config_p callback_execKernel (gpu_config_p context) {
+	int i;
+	gpu_config_p p = pipeline[0];
+	#ifdef GPU_VERBOSE
+	if (! p)
+		dbg("[DBG] (null) callback_execKernel(%p) \n", context);
+	else
+		dbg("[DBG] %p callback_execKernel(%p)\n", p, context);
+	#endif
+	/* Shift */
+	for (i = 0; i < D - 1; i++) {
+		pipeline[i] = pipeline [i + 1];
+	}
+	pipeline[D - 1] = context;
+	return p;
 }

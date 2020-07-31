@@ -3,6 +3,21 @@
 
 #include "gpu_config.h"
 
+typedef struct query_operator *query_operator_p;
+typedef struct query_operator {
+
+	int  *args1;
+	long *args2;
+
+	void (*writeInput) (gpu_config_p, int, int);
+	void (*readOutput) (gpu_config_p, int, int, int);
+
+	void (*configure) (cl_kernel, gpu_config_p, int *, long *);
+
+	gpu_config_p (*execKernel) (gpu_config_p);
+
+} query_operator_t;
+
 /* call opencl api to create kernels */
 int gpu_set_kernel (int qid, int ndx,
 	const char *name,

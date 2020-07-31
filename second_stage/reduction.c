@@ -3,7 +3,7 @@
 #include "helpers.h"
 #include "gpu_agg.h"
 
-void reduction(int batch_size, int tuple_size) {
+void reduction_setup(int batch_size, int tuple_size) {
     char * source = read_source("reduce.cl");
     int qid = gpu_get_query(source, 4, 1, 5);
     
@@ -34,4 +34,50 @@ void reduction(int batch_size, int tuple_size) {
     args2[1] = 0; /* Batch start offset */
 
     gpu_set_kernel_reduce(0, args1, args2);
+}
+
+void reduction_process(u_int8_t * batch) {
+    
+    /* Set input */
+    
+    // IQueryBuffer inputBuffer = batch.getBuffer();
+    // int start = batch.getBufferStartPointer();
+    // int end   = batch.getBufferEndPointer();
+    
+    gpu_setInputBuffer(qid, 0, inputBuffer, start, end);
+    
+    /* Previous pane id, based on stream start pointer, s */
+    long args2[2];
+    args2[0] = -1;
+    long s = batch.getStreamStartPointer();
+    int  t = inputSchema.getTupleSize();
+    long p = batch.getWindowDefinition().getPaneSize();
+    if (batch.getStreamStartPointer() > 0) {
+        // TODO: support range based windows 
+        // if (batch.getWindowDefinition().isRangeBased()) {
+        //     int offset = start - t;
+        //     args2[0] = batch.getTimestamp(offset) / p;
+        // } else {
+            args2[0] = ((s / (long) t) / p) - 1;
+        // }
+    }
+    args2[1] = s;
+    
+    /* Set output for a previously executed operator */
+    
+    WindowBatch pipelinedBatch = gpu_shiftUp(batch);
+    
+    IOperatorCode pipelinedOperator = null; 
+    if (pipelinedBatch != null) {
+        pipelinedOperator = pipelinedBatch.getQuery().getMostUpstreamOperator().getGpuCode();
+        pipelinedOperator.configureOutput (qid);
+    }
+    
+    /* Execute */
+    gpu_executeReduce (qid, threads, threadsPerGroup, args2);
+    
+    if (pipelinedBatch != null)
+        pipelinedOperator.processOutput (qid, pipelinedBatch);
+    
+    // api.outputWindowBatchResult (pipelinedBatch);
 }

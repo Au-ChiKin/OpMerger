@@ -81,22 +81,18 @@ void gpu_config_setKernel (gpu_config_p,
 
 // void gpu_config_finish (gpu_config_p);
 
-// void gpu_config_moveInputBuffers (gpu_config_p);
-
 // void gpu_config_submitKernel (gpu_config_p, size_t *, size_t *);
 
 // void gpu_config_moveOutputBuffers (gpu_config_p);
 
-// void gpu_config_writeInput (gpu_config_p,
-// 		void (*callback)(gpu_config_p, JNIEnv *, jobject, int, int),
-// 		JNIEnv *,
-// 		jobject,
-// 		int);
+void gpu_config_writeInput (gpu_config_p,
+		void (*callback)(gpu_config_p, int, int),
+		int);
+
+void gpu_config_moveInputBuffers (gpu_config_p);
 
 // void gpu_config_readOutput (gpu_config_p,
-// 		void (*callback)(gpu_config_p, JNIEnv *, jobject, int, int, int),
-// 		JNIEnv *,
-// 		jobject,
+// 		void (*callback)(gpu_config_p, int, int, int),
 // 		int);
 
 #endif /* __GPU_CONFIG_H_ */

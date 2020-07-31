@@ -6,18 +6,20 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
+#include <unistd.h>
+#include <sched.h>
 #ifdef __APPLE__
 #include <OpenCL/opencl.h>
 #else
 #include <CL/cl.h>
 #endif
 
-#include <unistd.h>
-#include <sched.h>
+#include "gpu_agg.h"
 
-// static int gpu_query_exec_1 (gpu_query_p, size_t *, size_t *, queryOperatorP, JNIEnv *, jobject); /* w/o  pipelining */
-// static int gpu_query_exec_2 (gpu_query_p, size_t *, size_t *, queryOperatorP, JNIEnv *, jobject); /* with pipelining */
+/* w/o  pipelining */
+static int gpu_query_exec_1 (gpu_query_p, size_t *, size_t *, query_operator_p);
+/* with pipelining */
+static int gpu_query_exec_2 (gpu_query_p, size_t *, size_t *, query_operator_p); 
 
 gpu_query_p gpu_query_new (int qid, cl_device_id device, cl_context context, const char *source,
 	int _kernels, int _inputs, int _outputs) {
@@ -162,63 +164,61 @@ int gpu_query_setKernel (gpu_query_p query,
 	return 0;
 }
 
-// gpu_config_p gpu_config_switch (gpu_query_p p) {
-// 	if (! p) {
+// gpu_config_p gpu_switch_config(gpu_query_p query) {
+// 	if (! query) {
 // 		fprintf (stderr, "error: null query\n");
 // 		return NULL;
 // 	}
 // #ifdef GPU_VERBOSE
-// 	int current = (p->ndx) % NCONTEXTS;
+// 	int current = (query->ndx) % NCONTEXTS;
 // #endif
-// 	int next = (++p->ndx) % NCONTEXTS;
+// 	int next = (++query->ndx) % NCONTEXTS;
 // #ifdef GPU_VERBOSE
 // 	if (current >= 0)
 // 		dbg ("[DBG] switch from %d (%lld read(s), %lld write(s)) to context %d\n",
-// 			current, p->contexts[current]->readCount, p->contexts[current]->writeCount, next);
+// 			current, query->contexts[current]->readCount, query->contexts[current]->writeCount, next);
 // #endif
-// 	return p->contexts[next];
+// 	return query->configs[next];
 // }
 
-// int gpu_query_exec (gpu_query_p q, size_t *threads, size_t *threadsPerGroup, queryOperatorP operator, JNIEnv *env, jobject obj) {
+int gpu_query_exec (gpu_query_p query, size_t *threads, size_t *threadsPerGroup, query_operator_p operator) {
 	
-// 	if (! q)
-// 		return -1;
+	if (! query)
+		return -1;
 
-// 	if (NCONTEXTS == 1) {
-// 		return gpu_query_exec_1 (q, threads, threadsPerGroup, operator, env, obj);
-// 	} else {
-// 		return gpu_query_exec_2 (q, threads, threadsPerGroup, operator, env, obj);
-// 	}
-// }
+	if (NCONTEXTS == 1) {
+		return gpu_query_exec_1 (query, threads, threadsPerGroup, operator);
+	} else {
+		return gpu_query_exec_2 (query, threads, threadsPerGroup, operator);
+	}
+}
 
-// /* */
-// static int gpu_query_exec_1 (gpu_query_p q, size_t *threads, size_t *threadsPerGroup, queryOperatorP operator, JNIEnv *env, jobject obj) {
+static int gpu_query_exec_1 (gpu_query_p query, size_t *threads, size_t *threadsPerGroup, query_operator_p operator) {
 	
-// 	gpu_config_p p = gpu_config_switch (q);
+	// gpu_config_p config = gpu_switch_config(query);
+	/* There is only one config */
+	gpu_config_p config = query->configs[0];
+
+	/* Write input */
+	gpu_config_writeInput (config, operator->writeInput, query->qid);
+	gpu_config_moveInputBuffers (config);
 	
-// 	/* Write input */
-// 	gpu_config_writeInput (p, operator->writeInput, env, obj, q->qid);
+	/* execute */
+	if (operator->configure != NULL) {
+		gpu_config_configureKernel (config, operator->configure, operator->args1, operator->args2);
+	}
+	gpu_config_submitKernel (config, threads, threadsPerGroup);
 
-// 	gpu_config_moveInputBuffers (p);
-	
-// 	if (operator->configure != NULL) {
-// 		gpu_config_configureKernel (p, operator->configure, operator->args1, operator->args2);
-// 	}
+	/* output and clean up */
+	gpu_config_moveOutputBuffers (config);
+	gpu_config_flush (config);
+	gpu_config_finish(config);
+	gpu_config_readOutput (config, operator->readOutput, query->qid);
 
-// 	gpu_config_submitKernel (p, threads, threadsPerGroup);
+	return 0;
+}
 
-// 	gpu_config_moveOutputBuffers (p);
-
-// 	gpu_config_flush (p);
-	
-// 	gpu_config_finish(p);
-	
-// 	gpu_config_readOutput (p, operator->readOutput, env, obj, q->qid);
-
-// 	return 0;
-// }
-
-// static int gpu_query_exec_2 (gpu_query_p q, size_t *threads, size_t *threadsPerGroup, queryOperatorP operator, JNIEnv *env, jobject obj) {
+static int gpu_query_exec_2 (gpu_query_p q, size_t *threads, size_t *threadsPerGroup, query_operator_p operator) {
 	
 // 	gpu_config_p p = gpu_config_switch (q);
 	
@@ -267,5 +267,5 @@ int gpu_query_setKernel (gpu_query_p query,
 // 	}
 
 // 	return 0;
-// }
+}
 
