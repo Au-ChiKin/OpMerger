@@ -37,11 +37,11 @@ int gpu_query_setInput (gpu_query_p query, int input_id, int size);
 
 int gpu_query_setOutput (gpu_query_p, int, int, int, int, int, int, int);
 
-// int gpu_query_setKernel (gpu_query_p,
-// 		int,
-// 		const char *,
-// 		void (*callback)(cl_kernel, gpu_config_p, int *, long *),
-// 		int *, long *);
+int gpu_query_setKernel (gpu_query_p,
+		int,
+		const char *,
+		void (*callback)(cl_kernel, gpu_config_p, int *, long *),
+		int *, long *);
 
 /* Execute task */
 // int gpu_query_exec (gpu_query_p, size_t *, size_t *, queryOperatorP, JNIEnv *, jobject);

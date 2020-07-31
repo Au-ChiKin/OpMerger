@@ -118,26 +118,26 @@ void gpu_config_setOutput (gpu_config_p q, int ndx, int size,
 			getOutputBuffer (q->context, q->command_queue[0], size, writeOnly, doNotMove, bearsMark, readEvent, ignoreMark);
 }
 
-// void gpu_config_setKernel (gpu_config_p q,
-// 	int ndx,
-// 	const char *name,
-// 	void (*callback)(cl_kernel, gpu_config_p, int *, long *),
-// 	int *args1, long *args2) {
+void gpu_config_setKernel (gpu_config_p query,
+	int ndx,
+	const char *name,
+	void (*callback)(cl_kernel, gpu_config_p, int *, long *),
+	int *args1, long *args2) {
 
-// 	int i;
-// 	int error = 0;
-// 	q->kernel.kernels[ndx] = (aKernelP) malloc (sizeof(a_kernel_t));
-// 	for (i = 0; i < 2; i++) {
-// 		q->kernel.kernels[ndx]->kernel[i] = clCreateKernel (q->program, name, &error);
-// 		if (! q->kernel.kernels[ndx]->kernel[i]) {
-// 			fprintf(stderr, "opencl error (%d): %s (%s)\n", error, getErrorMessage(error), __FUNCTION__);
-// 			exit (1);
-// 		} else {
-// 			(*callback) (q->kernel.kernels[ndx]->kernel[i], q, args1, args2);
-// 		}
-// 	}
-// 	return;
-// }
+	int i;
+	int error = 0;
+	query->kernel.kernels[ndx] = (kernel_p) malloc (sizeof(kernel_t));
+	for (i = 0; i < 2; i++) {
+		query->kernel.kernels[ndx]->kernel[i] = clCreateKernel (query->program, name, &error);
+		if (! query->kernel.kernels[ndx]->kernel[i]) {
+			fprintf(stderr, "opencl error (%d): %s (%s)\n", error, getErrorMessage(error), __FUNCTION__);
+			exit (1);
+		} else {
+			(*callback) (query->kernel.kernels[ndx]->kernel[i], query, args1, args2);
+		}
+	}
+	return;
+}
 
 // void gpu_config_configureKernel (gpu_config_p q,
 // 	void (*callback)(cl_kernel, gpu_config_p, int *, long *),

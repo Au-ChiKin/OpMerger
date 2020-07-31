@@ -142,27 +142,27 @@ int gpu_query_setOutput (gpu_query_p q, int ndx, int size, int writeOnly, int do
 	return 0;
 }
 
-// int gpu_query_setKernel (gpu_query_p q,
-// 	int ndx,
-// 	const char * name,
-// 	void (*callback)(cl_kernel, gpuContextP, int *, long *),
-// 	int *args1, long *args2) {
+int gpu_query_setKernel (gpu_query_p query,
+	int kernel_id,
+	const char * name,
+	void (*callback)(cl_kernel, gpu_config_p, int *, long *),
+	int *args1, long *args2) {
 
-// 	if (! q)
-// 		return -1;
+	if (! query)
+		return -1;
 
-// 	if (ndx < 0 || ndx > q->configs[0]->kernel.count) {
-// 		fprintf(stderr, "error: kernel index [%d] out of bounds\n", ndx);
-// 		exit (1);
-// 	}
-// 	int i;
-// 	for (i = 0; i < NCONTEXTS; i++) {
-// 		gpu_context_setKernel (q->configs[i], ndx, name, callback, args1, args2);
-// 	}
-// 	return 0;
-// }
+	if (kernel_id < 0 || kernel_id > query->configs[0]->kernel.count) {
+		fprintf(stderr, "error: kernel index [%d] out of bounds\n", kernel_id);
+		exit (1);
+	}
+	int i;
+	for (i = 0; i < NCONTEXTS; i++) {
+		gpu_config_setKernel(query->configs[i], kernel_id, name, callback, args1, args2);
+	}
+	return 0;
+}
 
-// gpuContextP gpu_context_switch (gpu_query_p p) {
+// gpu_config_p gpu_config_switch (gpu_query_p p) {
 // 	if (! p) {
 // 		fprintf (stderr, "error: null query\n");
 // 		return NULL;
@@ -194,35 +194,35 @@ int gpu_query_setOutput (gpu_query_p q, int ndx, int size, int writeOnly, int do
 // /* */
 // static int gpu_query_exec_1 (gpu_query_p q, size_t *threads, size_t *threadsPerGroup, queryOperatorP operator, JNIEnv *env, jobject obj) {
 	
-// 	gpuContextP p = gpu_context_switch (q);
+// 	gpu_config_p p = gpu_config_switch (q);
 	
 // 	/* Write input */
-// 	gpu_context_writeInput (p, operator->writeInput, env, obj, q->qid);
+// 	gpu_config_writeInput (p, operator->writeInput, env, obj, q->qid);
 
-// 	gpu_context_moveInputBuffers (p);
+// 	gpu_config_moveInputBuffers (p);
 	
 // 	if (operator->configure != NULL) {
-// 		gpu_context_configureKernel (p, operator->configure, operator->args1, operator->args2);
+// 		gpu_config_configureKernel (p, operator->configure, operator->args1, operator->args2);
 // 	}
 
-// 	gpu_context_submitKernel (p, threads, threadsPerGroup);
+// 	gpu_config_submitKernel (p, threads, threadsPerGroup);
 
-// 	gpu_context_moveOutputBuffers (p);
+// 	gpu_config_moveOutputBuffers (p);
 
-// 	gpu_context_flush (p);
+// 	gpu_config_flush (p);
 	
-// 	gpu_context_finish(p);
+// 	gpu_config_finish(p);
 	
-// 	gpu_context_readOutput (p, operator->readOutput, env, obj, q->qid);
+// 	gpu_config_readOutput (p, operator->readOutput, env, obj, q->qid);
 
 // 	return 0;
 // }
 
 // static int gpu_query_exec_2 (gpu_query_p q, size_t *threads, size_t *threadsPerGroup, queryOperatorP operator, JNIEnv *env, jobject obj) {
 	
-// 	gpuContextP p = gpu_context_switch (q);
+// 	gpu_config_p p = gpu_config_switch (q);
 	
-// 	gpuContextP theOther = (operator->execKernel(p));
+// 	gpu_config_p theOther = (operator->execKernel(p));
 	
 // 	if (p == theOther) {
 // 		fprintf(stderr, "error: invalid pipelined query context switch\n");
@@ -232,10 +232,10 @@ int gpu_query_setOutput (gpu_query_p q, int ndx, int size, int writeOnly, int do
 // 	if (theOther) {
 
 // 		/* Wait for read event from previous query */
-// 		gpu_context_finish(theOther);
+// 		gpu_config_finish(theOther);
 		
 // #ifdef GPU_PROFILE
-// 		gpu_context_profileQuery (theOther);
+// 		gpu_config_profileQuery (theOther);
 // #endif
 
 // 		/* Configure and notify output result handler */
@@ -243,23 +243,23 @@ int gpu_query_setOutput (gpu_query_p q, int ndx, int size, int writeOnly, int do
 // 			result_handler_readOutput (q->handler, q->qid, theOther, operator->readOutput, obj);
 // 		} else {
 // 			/* Read output */
-// 			gpu_context_readOutput (theOther, operator->readOutput, env, obj, q->qid);
+// 			gpu_config_readOutput (theOther, operator->readOutput, env, obj, q->qid);
 // 		}
 // 	}
 	
-// 	gpu_context_writeInput (p, operator->writeInput, env, obj, q->qid);
+// 	gpu_config_writeInput (p, operator->writeInput, env, obj, q->qid);
 
-// 	gpu_context_moveInputBuffers (p);
+// 	gpu_config_moveInputBuffers (p);
 	
 // 	if (operator->configure != NULL) {
-// 		gpu_context_configureKernel (p, operator->configure, operator->args1, operator->args2);
+// 		gpu_config_configureKernel (p, operator->configure, operator->args1, operator->args2);
 // 	}
 	
-// 	gpu_context_submitKernel (p, threads, threadsPerGroup);
+// 	gpu_config_submitKernel (p, threads, threadsPerGroup);
 	
-// 	gpu_context_moveOutputBuffers (p);
+// 	gpu_config_moveOutputBuffers (p);
 	
-// 	gpu_context_flush (p);
+// 	gpu_config_flush (p);
 	
 // 	/* Wait until read output from other query context has finished */
 // 	if (theOther && q->handler) {

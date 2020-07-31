@@ -185,8 +185,7 @@ int gpu_set_kernel (int qid, int ndx /* kernel index */,
 		exit (1);
 	}
 	gpu_query_p p = queries[qid];
-	// return gpu_query_setKernel (p, ndx, name, callback, args1, args2); // TODO: remove comment
-	return 0;
+	return gpu_query_setKernel (p, ndx, name, callback, args1, args2);
 }
 
 void gpu_set_kernel_aggregate(int qid, int * args1, long * args2) {
@@ -210,7 +209,6 @@ void gpu_set_kernel_aggregate(int qid, int * args1, long * args2) {
 }
 
 void callback_setKernelAggregate (cl_kernel kernel, gpu_config_p config, int *args1, long *args2) {
-
 	int numberOfTuples = args1[0];
 
 	int numberOfInputBytes  = args1[1];
