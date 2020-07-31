@@ -57,5 +57,46 @@ gpu_config_p gpu_config(int query_id, cl_device_id device, cl_context context, c
 
 void gpu_config_free (gpu_config_p query);
 
+void gpu_config_setInput  (gpu_config_p, int, int);
+
+// void gpu_context_setOutput (gpu_config_p, int, int, int, int, int, int, int);
+
+// void gpu_context_setKernel (gpu_config_p,
+// 		int,
+// 		const char *,
+// 		void (*callback)(cl_kernel, gpu_config_p, int *, long *),
+// 		int *, long *);
+
+// void gpu_context_configureKernel (gpu_config_p,
+// 		void (*callback)(cl_kernel, gpu_config_p, int *, long *),
+// 		int *, long *);
+
+// void gpu_context_waitForReadEvent (gpu_config_p);
+
+// void gpu_context_waitForWriteEvent (gpu_config_p);
+
+// void gpu_context_profileQuery (gpu_config_p);
+
+// void gpu_context_flush (gpu_config_p);
+
+// void gpu_context_finish (gpu_config_p);
+
+// void gpu_context_moveInputBuffers (gpu_config_p);
+
+// void gpu_context_submitKernel (gpu_config_p, size_t *, size_t *);
+
+// void gpu_context_moveOutputBuffers (gpu_config_p);
+
+// void gpu_context_writeInput (gpu_config_p,
+// 		void (*callback)(gpu_config_p, JNIEnv *, jobject, int, int),
+// 		JNIEnv *,
+// 		jobject,
+// 		int);
+
+// void gpu_context_readOutput (gpu_config_p,
+// 		void (*callback)(gpu_config_p, JNIEnv *, jobject, int, int, int),
+// 		JNIEnv *,
+// 		jobject,
+// 		int);
 
 #endif /* __GPU_CONFIG_H_ */

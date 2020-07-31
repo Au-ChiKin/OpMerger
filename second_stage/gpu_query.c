@@ -79,7 +79,9 @@ gpu_query_p gpu_query_new (int qid, cl_device_id device, cl_context context, con
 		sizeof(msg), 
 		msg, 
 		&length);
-	fprintf(stderr, "%s (%zu chars)\n", msg, length);
+	if (length > /* Minimum output length */ 2) {
+		fprintf(stderr, "%s (%zu chars)\n", msg, length);
+	}
 	fflush (stderr);
 
 	if (error != CL_SUCCESS) {
@@ -114,18 +116,18 @@ void gpu_query_free (gpu_query_p query) {
 	}
 }
 
-// int gpu_query_setInput (gpuQueryP q, int ndx, int size) {
-// 	if (! q)
-// 		return -1;
-// 	if (ndx < 0 || ndx > q->contexts[0]->kernelInput.count) {
-// 		fprintf(stderr, "error: input buffer index [%d] out of bounds\n", ndx);
-// 		exit (1);
-// 	}
-// 	int i;
-// 	for (i = 0; i < NCONTEXTS; i++)
-// 		gpu_context_setInput (q->contexts[i], ndx, size);
-// 	return 0;
-// }
+int gpu_query_setInput (gpu_query_p query, int input_id, int size) {
+	if (! query)
+		return -1;
+	if (input_id < 0 || input_id > query->configs[0]->kernelInput.count) {
+		fprintf(stderr, "error: input buffer index [%d] out of bounds\n", input_id);
+		exit (1);
+	}
+	int i;
+	for (i = 0; i < NCONTEXTS; i++)
+		gpu_config_setInput (query->configs[i], input_id, size);
+	return 0;
+}
 
 // int gpu_query_setOutput (gpuQueryP q, int ndx, int size, int writeOnly, int doNotMove, int bearsMark, int readEvent, int ignoreMark) {
 // 	if (! q)

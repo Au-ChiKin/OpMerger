@@ -10,7 +10,7 @@ int gpu_set_kernel (int qid, int ndx,
 	int *args1, long *args2);
 
 /* set kernel for aggregate operator
- * args1:int[] 
+ * args1:int[] [0]tuples, inputSize, outputSize, tableSize, SystemConf.PARTIAL_WINDOWS, keyLength * numberOfThreadsPerGroup
  * args2:long[] [0]previous pane id, [1]input stream start pointer
  */ 
 void gpu_set_kernel_aggregate(int qid, int * _args1, long * _args2);

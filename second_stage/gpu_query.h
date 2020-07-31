@@ -33,7 +33,7 @@ void gpu_query_free (gpu_query_p query);
 /* Execute query in another context */
 // gpu_config_p gpu_context_switch (gpuQueryP);
 
-// int gpu_query_setInput (gpuQueryP, int, int);
+int gpu_query_setInput (gpu_query_p query, int input_id, int size);
 
 // int gpu_query_setOutput (gpuQueryP, int, int, int, int, int, int, int);
 

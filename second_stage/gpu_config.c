@@ -79,6 +79,11 @@ gpu_config_p gpu_config (
 	return config;
 }
 
+void gpu_config_setInput (gpu_config_p q, int ndx, int size) {
+
+	q->kernelInput.inputs[ndx] = getInputBuffer (q->context, q->command_queue[0], size);
+}
+
 void gpu_config_free (gpu_config_p config) {
 
 	int i;
@@ -104,3 +109,42 @@ void gpu_config_free (gpu_config_p config) {
 		free(config);
 	}
 }
+
+// void gpu_context_setOutput (gpu_context_p q, int ndx, int size,
+
+// 	int writeOnly, int doNotMove, int bearsMark, int readEvent, int ignoreMark) {
+
+// 	q->kernelOutput.outputs[ndx] =
+// 			getOutputBuffer (q->context, q->queue[0], size, writeOnly, doNotMove, bearsMark, readEvent, ignoreMark);
+// }
+
+// void gpu_context_setKernel (gpu_context_p q,
+// 	int ndx,
+// 	const char *name,
+// 	void (*callback)(cl_kernel, gpu_context_p, int *, long *),
+// 	int *args1, long *args2) {
+
+// 	int i;
+// 	int error = 0;
+// 	q->kernel.kernels[ndx] = (aKernelP) malloc (sizeof(a_kernel_t));
+// 	for (i = 0; i < 2; i++) {
+// 		q->kernel.kernels[ndx]->kernel[i] = clCreateKernel (q->program, name, &error);
+// 		if (! q->kernel.kernels[ndx]->kernel[i]) {
+// 			fprintf(stderr, "opencl error (%d): %s (%s)\n", error, getErrorMessage(error), __FUNCTION__);
+// 			exit (1);
+// 		} else {
+// 			(*callback) (q->kernel.kernels[ndx]->kernel[i], q, args1, args2);
+// 		}
+// 	}
+// 	return;
+// }
+
+// void gpu_context_configureKernel (gpu_context_p q,
+// 	void (*callback)(cl_kernel, gpu_context_p, int *, long *),
+// 	int *args1, long *args2) {
+
+// 	int i;
+// 	for (i = 0; i < q->kernel.count; i++)
+// 		(*callback) (q->kernel.kernels[i]->kernel[0], q, args1, args2);
+// 	return;
+// }
