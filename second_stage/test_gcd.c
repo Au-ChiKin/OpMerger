@@ -1,7 +1,27 @@
 /* 
  * The main logic to run the experiment of merged operators
+ * 
+ * Query:
+ * select timestamp, category, sum(cpu) as totalCpu
+ * from TaskEvents [range 60 slide 1]
+ * grop by category
+ * 
+ * Query 1: (aggregation)
+ * select others, category(aggregated), sum(cpu)
+ * from TaskEvents
+ * group by category
+ * output as TaskEvents1
+ *     input tuple 1 time + 11 attr
+ *     output tuple 1 time + 11 attr (but timestamp, cpu and category are different)
+ * 
+ * Query 2: (projection)
+ * select timestamp, category, sum(cpu) as totalCpu
+ * from TaskEvents
+ * group by category
+ *     input tuple 1 time + 11 attr (output from the first query)
+ *     output tuple 1 time + 2 attr
  */
-#include "gpu.h"
+#include "gpu_agg.h"
 #include "tuple.h"
 
 #include <stdio.h>
@@ -18,51 +38,121 @@ void read_input_buffers(cbuf_handle_t cbufs [], int buffer_num);
 /* Print out 10 tuples for debug */
 void print_10_tuples(cbuf_handle_t cbufs []);
 
-void run_processing_gpu(cbuf_handle_t buffer, int size, int * result, int load, enum test_cases mode) {
+#define MAX_SOURCE_SIZE (0x100000)
+char * read_source(char * filename) {
+    FILE *file_p;
+    char * source_str;
+    size_t source_size;
+    cl_int error = 0;
+
+    /* Load kernel source */
+    file_p = fopen(filename, "rb");
+    if (!file_p) {
+        fprintf(stderr, "Failed to load kernel.\n");
+        exit(1);
+    }
+    source_str = (char*)malloc(MAX_SOURCE_SIZE);
+    source_size = fread( source_str, 1, MAX_SOURCE_SIZE, file_p);
+    fclose(file_p);
+
+	if (error != CL_SUCCESS) {
+		fprintf(stderr, "opencl error (%d): %s\n", error, getErrorMessage(error));
+		exit (1);
+	}
+    dbg("[MAIN] Loaded kernel source length of %zu bytes\n", source_size);
+
+    return source_str;
+}
+
+void aggregation(int batch_size, int tuple_size) {
+    char * source = read_source("aggregation_gen.cl");
+    gpu_get_query(source, 9, 1, 9);
+
+    gpu_set_input(0, 0, batch_size * tuple_size);
+
+    int window_pointers_size = 4 * 1024 /* SystemConf.PARTIAL_WINDOWS */;
+    gpu_set_output(0, 0, window_pointers_size, 0, 1, 0, 0, 1);
+    gpu_set_output(0, 1, window_pointers_size, 0, 1, 0, 0, 1);
+
+    int failed_flags_size = 4 * batch_size; /* One int per tuple */
+    gpu_set_output(0, 2, failed_flags_size, 1, 1, 0, 0, 1);
+
+    int offset_size = 16; /* The size of two longs */
+    gpu_set_output(0, 3, offset_size, 0, 1, 0, 0, 1);
+
+    int window_counts_size = 24; /* 4 integers, +1 that is the complete windows mark, +1 that is the mark */
+    // windowCounts = new UnboundedQueryBuffer (-1, windowCountsSize, false);
+    gpu_set_output(0, 4, window_counts_size, 0, 0, 1, 0, 1);
+
+    /* Set partial window results */
+    int outputSize = 1024 * 1024; /* SystemConf.UNBOUNDED_BUFFER_SIZE */
+    gpu_set_output(0, 5, outputSize, 1, 0, 0, 1, 1);
+    gpu_set_output(0, 6, outputSize, 1, 0, 0, 1, 1);
+    gpu_set_output(0, 7, outputSize, 1, 0, 0, 1, 1);
+    gpu_set_output(0, 8, outputSize, 1, 0, 0, 1, 1);
+
+    int args1[6];
+    args1[0] = batch_size; /* batch size in tuples*/
+    args1[1] = batch_size * tuple_size; /* batch size in bytes*/
+    args1[2] = outputSize;
+    args1[3] = 1024 * 1024; /* SystemConf.HASH_TABLE_SIZE */
+    args1[4] = 1024; /* SystemConf.PARTIAL_WINDOWS */
+    args1[5] = 8; /* keyLength * numberOfThreadsPerGroup; cache size; for group by */
+
+    long args2[2];
+    args2[0] = 0; /* Previous pane id */
+    args2[0] = 0; /* Start offset */
+    gpu_set_kernel_aggregate(0, args1, args2); // TODO: remove comments after create buffers
+}
+
+void run_processing_gpu(cbuf_handle_t buffers [], int size, int * result, int load, enum test_cases mode) {
     input_t * batch = (input_t *) malloc(size * sizeof(tuple_t));
 
+    int const query_num = 1;
+    gpu_init(query_num);
+
     switch (mode) {
-        case MERGED_SELECT: 
-            fprintf(stdout, "========== Running merged select test ===========\n");
-            gpu_init("filters_merged.cl", size, 1); 
+        case MERGED_AGGREGATION: 
+            fprintf(stdout, "========== Running merged aggregation test ===========\n");
+            aggregation(16384, 64);
             break;
         case SEPARATE_SELECT: 
             fprintf(stdout, "========== Running sepaerate select test ===========\n");
-            gpu_init("filters_separate.cl", size, 3); 
+            gpu_init(1); 
             break;
         default: 
             break; 
     }
 
-    gpu_set_kernel();
-
-    // TODO: cicular buffer should only return the pointer to the underline buffer
-    circular_buf_read_bytes(buffer, batch->vectors, size * TUPLE_SIZE);
-    for (int l=0; l<load; l++) {
-        gpu_read_input(batch);
+    // // TODO: cicular buffer should only return the pointer to the underline buffer
+    // circular_buf_read_bytes(buffer, batch->vectors, size * TUPLE_SIZE);
+    // for (int l=0; l<load; l++) {
+    //     gpu_read_input(batch);
     
-        int count = gpu_exec();
+    //     int count = gpu_exec();
 
-        gpu_write_output(result, count);
+    //     gpu_write_output(result, count);
 
-        printf("[GPU] Batch %d output size is: %d\n", l, count);
-    }
+    //     printf("[GPU] Batch %d output size is: %d\n", l, count);
+    // }
 
     gpu_free();
 }
 
-void run_processing_cpu(cbuf_handle_t buffer, int size, tuple_t * result, int * output_size) {
-    *output_size = 0;
-    for (int i = 0; i < size; i++) {
-    }
-}
+// void run_processing_cpu(cbuf_handle_t buffer, int size, tuple_t * result, int * output_size) {
+//     *output_size = 0;
+//     for (int i = 0; i < size; i++) {
+//     }
+// }
 
 int main(int argc, char * argv[]) {
 
     int work_load = 1; // default to be 1MB
-    enum test_cases mode = MERGED_SELECT;
+    enum test_cases mode = MERGED_AGGREGATION;
 
     parse_arguments(argc, argv, &mode, &work_load);
+
+    /* Read input from files */
 
     /* 144370688 lines for each txt, 144370688 / BUFFER_SIZE is about 8812 */
     static int const task_num = 1; // 8812;
@@ -74,32 +164,23 @@ int main(int argc, char * argv[]) {
     }
     read_input_buffers(cbufs, task_num);
 
+    /* Start processing */
 
-
-    /* output the result size */
-    /*
-     * 32768 tuples in total
-     * attr1 50% selectivity
-     * attr2 50% selectivity
-     * attr3 50% selectivity
-     * 
-     * output should be 32768 x (50%)^3 = 4096
-     */
     // int results_size = 0;
     // tuple_t results_tuple[BUFFER_SIZE];
 
-    // if (mode == CPU) {
-    //     run_processing_cpu(cbuf, BUFFER_SIZE, results_tuple, &results_size);
+    if (mode == CPU) {
+        // run_processing_cpu(cbuf, BUFFER_SIZE, results_tuple, &results_size);
         
-    //     printf("[CPU] The output from cpu is %d\n\n", results_size);
-    // } else {
-    //     int results[BUFFER_SIZE];
-    //     for (int i=0; i<BUFFER_SIZE; i++) {
-    //         results[i] = 1;
-    //     }
+        // printf("[CPU] The output from cpu is %d\n\n", results_size);
+    } else {
+        int results[BUFFER_SIZE];
+        for (int i=0; i<BUFFER_SIZE; i++) {
+            results[i] = 0;
+        }
 
-    //     run_processing_gpu(cbuf, BUFFER_SIZE, results, work_load, mode);
-    // }
+        run_processing_gpu(cbufs, BUFFER_SIZE, results, work_load, mode);
+    }
 
     for (int i=0; i<task_num; i++) {
         free(buffers[i]);
@@ -145,7 +226,7 @@ void read_input_buffers(cbuf_handle_t cbufs [], int buffer_num) {
 
     FILE * files [4];
     for (int i=0; i<4; i++) {
-        printf("# loading file %s\n", filenames[i]);
+        printf("[MAIN] loading file %s\n", filenames[i]);
         files[i] = fopen(filenames[i], "r");
         if (!files[i]) {
             fprintf(stderr, "error: cannot open file %s\n", filenames[i]);
@@ -219,7 +300,7 @@ void read_input_buffers(cbuf_handle_t cbufs [], int buffer_num) {
     // Lets forget about the case when the buffers size is bigger than the avaliable tuples
 
     /* Fill in the extra lines */
-    // printf("# %d lines last buffer position at %d has remaining ? %5s (%d bytes)",
+    // printf("MAIN %d lines last buffer position at %d has remaining ? %5s (%d bytes)",
     //     line_num, 
     //     tupleIndex, 
     //     tupleIndex < BUFFER_SIZE - 1 ? "No" : "True", 
@@ -234,5 +315,5 @@ void read_input_buffers(cbuf_handle_t cbufs [], int buffer_num) {
         fclose(files[i]);
     }
 
-    printf("# finished loading files\n");
+    printf("[MAIN] finished loading files\n");
 }
