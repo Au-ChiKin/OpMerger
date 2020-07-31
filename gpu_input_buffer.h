@@ -15,10 +15,10 @@ typedef struct input_buffer {
 	void  *mapped_buffer;
 } input_buffer_t;
 
-// inputBufferP getInputBuffer (cl_context, cl_command_queue, int);
+input_buffer_p getInputBuffer (cl_context, cl_command_queue, int);
 
-// void freeInputBuffer (inputBufferP, cl_command_queue);
+void freeInputBuffer (input_buffer_p, cl_command_queue);
 
-// int getInputBufferSize (inputBufferP);
+int getInputBufferSize (input_buffer_p);
 
 #endif /* __INPUT_BUFFER_H_ */
