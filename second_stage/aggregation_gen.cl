@@ -6,7 +6,7 @@
 
 #pragma OPENCL EXTENSION cl_khr_byte_addressable_store: enable
 
-#include "/home/zijian/Saber/clib/templates/byteorder.h"
+#include "../clib/templates/byteorder.h"
 #define INPUT_VECTOR_SIZE 4
 #define OUTPUT_VECTOR_SIZE 1
 
@@ -48,6 +48,7 @@ typedef union {
 #define PANES_PER_SLIDE  1L
 #define PANE_SIZE        1L
 
+// What is this?
 typedef struct {
 	int mark;
 	int pad0;
@@ -63,6 +64,7 @@ typedef union {
 	uchar16 vectors[2];
 } intermediate_t;
 
+// What?
 typedef struct {
 	int key_1;
 } key_t __attribute__((aligned(1)));
@@ -172,6 +174,9 @@ inline int jenkinsHash (__local uchar *key, int length, int initValue) {
 	return c;
 }
 
+/* based on the value in window_ptrs_(start ptr) and _window_ptrs(end ptr), count the number of open, close, pending 
+ * and complete window
+ */
 __kernel void countWindowsKernel (
 	const int tuples,
 	const int inputBytes,
@@ -277,7 +282,7 @@ __kernel void aggregateClosingWindowsKernel (
 	__local int num_windows;
 	if (lid == 0)
 		num_windows = windowCounts[0];
-
+ 
 	barrier(CLK_LOCAL_MEM_FENCE);
 
 	int group_offset = lgs * sizeof(input_t);
@@ -897,6 +902,7 @@ __kernel void computeOffsetKernel (
 	return ;
 }
 
+/* Compute window (in the work group) start pointer window_ptr_ and end pointer _window_ptr */
 __kernel void computePointersKernel (
 	const int tuples,
 	const int inputBytes,
@@ -911,6 +917,7 @@ __kernel void computePointersKernel (
 	__global int *failed,
 	__global int *attempts,
 	__global long *offset, /* Temp. variable holding the window pointer offset and window counts */
+	                       /* offset[0] first window so default INT_MAX, offset[1] last window so default 0 */
 	__global int *windowCounts,
 	__global uchar* closingContents,
 	__global uchar* pendingContents,
@@ -927,12 +934,19 @@ __kernel void computePointersKernel (
 	long prevPaneId;
 
 	// Every thread is assigned a tuple
-#ifdef RANGE_BASED
+
+	// Set currPaneId
+#ifdef RANGE_BASED // Coresponding to range-based is row-based window, my guess is row-based counts how 
+                   // many rows, while number of tuples in a window is not fixed for range-based window
 	__global input_t *curr = (__global input_t *) &input[tid * sizeof(input_t)];
 	currPaneId = __bswap64(curr->tuple.t) / PANE_SIZE;
 #else
+	// location (which 2 bytes) of the first tuple of the batch + offset of the tuple belonging to this thread
+	// dividing input_t size gives tuples number
 	currPaneId = ((batchOffset + (tid * sizeof(input_t))) / sizeof(input_t)) / PANE_SIZE;
 #endif
+
+	// Set precPaneId
 	if (tid > 0) {
 #ifdef RANGE_BASED
 		__global input_t *prev = (__global input_t *) &input[(tid - 1) * sizeof(input_t)];
@@ -940,22 +954,22 @@ __kernel void computePointersKernel (
 #else
 		prevPaneId = ((batchOffset + ((tid - 1) * sizeof(input_t))) / sizeof(input_t)) / PANE_SIZE;
 #endif
-	} else {
+	} else { // First thread, set by argument
 		prevPaneId = previousPaneId;
 	}
 
-	long windowOffset = offset[0];
-	int index;
+	long windowOffset = offset[0]; // start ptr
+	int index; // local window id
 
 	if (prevPaneId < currPaneId) {
 		while (prevPaneId < currPaneId) {
 			paneId = prevPaneId + 1;
-			normalisedPaneId = paneId - PANES_PER_WINDOW;
+			normalisedPaneId = paneId - PANES_PER_WINDOW; // PaneId respect to a window, <0 open
 			// Check closing windows
 			if (normalisedPaneId >= 0 && normalisedPaneId % PANES_PER_SLIDE == 0) {
-				wid = normalisedPaneId / PANES_PER_SLIDE;
+				wid = normalisedPaneId / PANES_PER_SLIDE; // absolute window id, think about it
 				if (wid >= 0) {
-					index = convert_int_sat(wid - windowOffset);
+					index = convert_int_sat(wid - windowOffset); // (local) window id in the work group 
 					atom_max(&offset[1], (wid - windowOffset));
 					_window_ptrs[index] = tid * sizeof(input_t);
 				}
@@ -963,8 +977,8 @@ __kernel void computePointersKernel (
 			// Check opening windows
 			if (paneId % PANES_PER_SLIDE == 0) {
 				wid = paneId / PANES_PER_SLIDE;
-				index = convert_int_sat(wid - windowOffset);
-				atom_max(&offset[1], wid - windowOffset);
+				index = convert_int_sat(wid - windowOffset); // wid and windowOffset are long
+				atom_max(&offset[1], wid - windowOffset); // reset end_ptr if found a later position
 				window_ptrs_[index] = tid * sizeof(input_t);
 			}
 			prevPaneId += 1;
