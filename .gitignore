@@ -4,6 +4,7 @@
 
 # executable
 **/obj/test_merged_filters
+**/obj/test_gcd
 
 # data
 datasets/google-cluster-data/categories.txt
@@ -11,3 +12,6 @@ datasets/google-cluster-data/cpu-utilisation.txt
 datasets/google-cluster-data/event-types.txt
 datasets/google-cluster-data/norm-event-types.txt
 datasets/google-cluster-data/priorities.txt
+
+#vs code files
+.DS_Store
