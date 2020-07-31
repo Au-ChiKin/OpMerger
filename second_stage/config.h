@@ -10,7 +10,7 @@
  */
 enum test_cases {
     CPU,
-    MERGED_SELECT, 
+    MERGED_AGGREGATION, 
     SEPARATE_SELECT,
     ERROR
 };

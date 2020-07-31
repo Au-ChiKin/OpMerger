@@ -67,8 +67,8 @@ void parse_arguments(int argc, char * argv[], enum test_cases * mode, int * work
 }
 
 void set_test_case(char const * mname, enum test_cases * mode) {
-    if (strcmp(mname, "merged-select") == 0) {
-        *mode = MERGED_SELECT; 
+    if (strcmp(mname, "merged-aggregation") == 0) {
+        *mode = MERGED_AGGREGATION; 
     } else if (strcmp(mname, "separate-select") == 0) {
         *mode = SEPARATE_SELECT;
     } else if (strcmp(mname, "cpu") == 0) {
