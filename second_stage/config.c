@@ -11,7 +11,7 @@ void parse_arguments(int argc, char * argv[], enum test_cases * mode, int * work
 	int c, err = 0; 
     int debug = 0;
 	int lflag=0, mflag=0;
-	char *mname = "merged-select";
+	char *mname = "merged-aggregation";
 	static char usage[] = "usage: %s [-d] -m test-case [-l work-load-in-bytes]\n";
 
 	while ((c = getopt(argc, argv, "dm:l:")) != -1) {
@@ -69,8 +69,8 @@ void parse_arguments(int argc, char * argv[], enum test_cases * mode, int * work
 void set_test_case(char const * mname, enum test_cases * mode) {
     if (strcmp(mname, "merged-aggregation") == 0) {
         *mode = MERGED_AGGREGATION; 
-    } else if (strcmp(mname, "separate-select") == 0) {
-        *mode = SEPARATE_SELECT;
+    } else if (strcmp(mname, "merged-reduction") == 0) {
+        *mode = MERGED_REDUCTION;
     } else if (strcmp(mname, "cpu") == 0) {
         *mode = CPU;
     } else {

@@ -32,6 +32,7 @@
 #include "libcirbuf/circular_buffer.h"
 #include "config.h"
 #include "aggregation.h"
+#include "reduction.h"
 
 /* Input data of interest from files */
 void read_input_buffers(cbuf_handle_t cbufs [], int buffer_num);
@@ -50,9 +51,9 @@ void run_processing_gpu(cbuf_handle_t buffers [], int size, int * result, int lo
             fprintf(stdout, "========== Running merged aggregation test ===========\n");
             aggregation(16384, 64);
             break;
-        case SEPARATE_SELECT: 
+        case MERGED_REDUCTION: 
             fprintf(stdout, "========== Running sepaerate select test ===========\n");
-            gpu_init(1); 
+            reduction(16384, 64);
             break;
         default: 
             break; 

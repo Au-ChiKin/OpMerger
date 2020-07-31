@@ -30,7 +30,10 @@ static gpu_query_p queries [MAX_QUERIES];
 // static resultHandlerP resultHandler = NULL;
 
 /* Callback functions */
+
 void callback_setKernelAggregate (cl_kernel, gpu_config_p, int *, long *);
+
+void callback_setKernelReduce (cl_kernel kernel, gpu_config_p context, int *args1, long *args2);
 
 
 static void set_platform () {
@@ -307,5 +310,87 @@ void callback_setKernelAggregate (cl_kernel kernel, gpu_config_p config, int *ar
 		exit (1);
 	}
 	
+	return;
+}
+
+void gpu_set_kernel_reduce(int qid, int * args1, long * args2) {
+
+	/* Set kernel(s) */
+	gpu_set_kernel (qid, 0, "clearKernel",           &callback_setKernelReduce, args1, args2);
+	gpu_set_kernel (qid, 1, "computeOffsetKernel",   &callback_setKernelReduce, args1, args2);
+	gpu_set_kernel (qid, 2, "computePointersKernel", &callback_setKernelReduce, args1, args2);
+	gpu_set_kernel (qid, 3, "reduceKernel",          &callback_setKernelReduce, args1, args2);
+
+	return;
+}
+
+void callback_setKernelReduce (cl_kernel kernel, gpu_config_p context, int *args1, long *args2) {
+
+	int numberOfTuples = args1[0];
+	int numberOfBytes  = args1[1];
+
+	int maxNumberOfWindows = args1[2];
+
+	int cache_size = args1[3]; /* Local buffer memory size */
+
+	long previousPaneId = args2[0];
+	long startOffset    = args2[1];
+
+	int error = 0;
+
+	/* Set constant arguments */
+	error |= clSetKernelArg (kernel, 0, sizeof(int),  (void *)     &numberOfTuples);
+	error |= clSetKernelArg (kernel, 1, sizeof(int),  (void *)      &numberOfBytes);
+
+	error |= clSetKernelArg (kernel, 2, sizeof(int),  (void *) &maxNumberOfWindows);
+
+	error |= clSetKernelArg (kernel, 3, sizeof(long), (void *)     &previousPaneId);
+	error |= clSetKernelArg (kernel, 4, sizeof(long), (void *)        &startOffset);
+
+	/* Set I/O byte buffers */
+	error |= clSetKernelArg (
+			kernel,
+			5,
+			sizeof(cl_mem),
+			(void *) &(context->kernelInput.inputs[0]->device_buffer));
+
+	error |= clSetKernelArg (
+			kernel,
+			6,
+			sizeof(cl_mem),
+			(void *) &(context->kernelOutput.outputs[0]->device_buffer));
+
+	error |= clSetKernelArg (
+			kernel,
+			7,
+			sizeof(cl_mem),
+			(void *) &(context->kernelOutput.outputs[1]->device_buffer));
+
+	error |= clSetKernelArg (
+			kernel,
+			8,
+			sizeof(cl_mem),
+			(void *) &(context->kernelOutput.outputs[2]->device_buffer));
+
+	error |= clSetKernelArg (
+			kernel,
+			9,
+			sizeof(cl_mem),
+			(void *) &(context->kernelOutput.outputs[3]->device_buffer));
+
+	error |= clSetKernelArg (
+			kernel,
+			10,
+			sizeof(cl_mem),
+			(void *) &(context->kernelOutput.outputs[4]->device_buffer));
+
+	/* Set local memory */
+	error |= clSetKernelArg (kernel, 11, (size_t)  cache_size, (void *) NULL);
+
+	if (error != CL_SUCCESS) {
+		fprintf(stderr, "opencl error (%d): %s\n", error, getErrorMessage(error));
+		exit (1);
+	}
+
 	return;
 }

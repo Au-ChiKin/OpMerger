@@ -15,7 +15,11 @@ int gpu_set_kernel (int qid, int ndx,
  */ 
 void gpu_set_kernel_aggregate(int qid, int * _args1, long * _args2);
 
-void callback_setKernelAggregate (cl_kernel kernel, gpu_config_p context, int *args1, long *args2);
+/* set kernel for reduce operator
+ * args1:int[] [0]tuples, [1]inputSize, [2]SystemConf.PARTIAL_WINDOWS, [3]outputSize * numberOfThreadsPerGroup
+ * args2:long[] [0]previous pane id, [1]input stream start pointer
+ */ 
+void gpu_set_kernel_reduce(int qid, int * args1, long * args2);
 
 /* Initialise OpenCL device */
 void gpu_init(int query_num);

@@ -11,7 +11,7 @@
 enum test_cases {
     CPU,
     MERGED_AGGREGATION, 
-    SEPARATE_SELECT,
+    MERGED_REDUCTION,
     ERROR
 };
 
