@@ -10,6 +10,7 @@
 #include "gpu_query.h"
 #include "gpu_input_buffer.h"
 #include "gpu_output_buffer.h"
+#include "../clib/openclerrorcode.h"
 
 
 static cl_platform_id platform = NULL;
@@ -242,7 +243,6 @@ void callback_setKernelAggregate (cl_kernel kernel, gpu_config_p config, int *ar
 			7,
 			sizeof(cl_mem),
 			(void *) &(config->kernelInput.inputs[0]->device_buffer));
-	
 	
 	/* Set output buffers */
 	error |= clSetKernelArg (

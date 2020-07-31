@@ -84,6 +84,13 @@ void gpu_config_setInput (gpu_config_p q, int ndx, int size) {
 	q->kernelInput.inputs[ndx] = getInputBuffer (q->context, q->command_queue[0], size);
 }
 
+void gpu_config_setOutput (gpu_config_p q, int ndx, int size,
+	int writeOnly, int doNotMove, int bearsMark, int readEvent, int ignoreMark) {
+
+	q->kernelOutput.outputs[ndx] =
+			getOutputBuffer (q->context, q->command_queue[0], size, writeOnly, doNotMove, bearsMark, readEvent, ignoreMark);
+}
+
 void gpu_config_free (gpu_config_p config) {
 
 	int i;
@@ -110,13 +117,6 @@ void gpu_config_free (gpu_config_p config) {
 	}
 }
 
-void gpu_config_setOutput (gpu_config_p q, int ndx, int size,
-
-	int writeOnly, int doNotMove, int bearsMark, int readEvent, int ignoreMark) {
-
-	q->kernelOutput.outputs[ndx] =
-			getOutputBuffer (q->context, q->command_queue[0], size, writeOnly, doNotMove, bearsMark, readEvent, ignoreMark);
-}
 
 void gpu_config_setKernel (gpu_config_p query,
 	int ndx,

@@ -23,8 +23,10 @@ void gpu_init(int query_num);
 /* Creates and returns a new query */
 int gpu_get_query (const char *source, int _kernels, int _inputs, int _outputs);
 
+/* Creats a new input buffer */
 int gpu_set_input(int qid, int input_id, int size);
 
+/* Creats a new output buffer */
 int gpu_set_output(int qid, int ndx, int size, int writeOnly, int doNotMove, int bearsMark, int readEvent, int ignoreMark);
 
 /* Release gpu memory */
