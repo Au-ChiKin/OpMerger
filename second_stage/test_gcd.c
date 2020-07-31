@@ -58,26 +58,8 @@ void run_processing_gpu(cbuf_handle_t buffers [], int size, int * result, int lo
             break; 
     }
 
-    // // TODO: cicular buffer should only return the pointer to the underline buffer
-    // circular_buf_read_bytes(buffer, batch->vectors, size * TUPLE_SIZE);
-    // for (int l=0; l<load; l++) {
-    //     gpu_read_input(batch);
-    
-    //     int count = gpu_exec();
-
-    //     gpu_write_output(result, count);
-
-    //     printf("[GPU] Batch %d output size is: %d\n", l, count);
-    // }
-
     gpu_free();
 }
-
-// void run_processing_cpu(cbuf_handle_t buffer, int size, tuple_t * result, int * output_size) {
-//     *output_size = 0;
-//     for (int i = 0; i < size; i++) {
-//     }
-// }
 
 int main(int argc, char * argv[]) {
 
@@ -103,18 +85,12 @@ int main(int argc, char * argv[]) {
     // int results_size = 0;
     // tuple_t results_tuple[BUFFER_SIZE];
 
-    if (mode == CPU) {
-        // run_processing_cpu(cbuf, BUFFER_SIZE, results_tuple, &results_size);
-        
-        // printf("[CPU] The output from cpu is %d\n\n", results_size);
-    } else {
-        int results[BUFFER_SIZE];
-        for (int i=0; i<BUFFER_SIZE; i++) {
-            results[i] = 0;
-        }
-
-        run_processing_gpu(cbufs, BUFFER_SIZE, results, work_load, mode);
+    int results[BUFFER_SIZE];
+    for (int i=0; i<BUFFER_SIZE; i++) {
+        results[i] = 0;
     }
+
+    run_processing_gpu(cbufs, BUFFER_SIZE, results, work_load, mode);
 
     for (int i=0; i<task_num; i++) {
         free(buffers[i]);
