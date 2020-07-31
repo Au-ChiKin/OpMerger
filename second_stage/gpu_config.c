@@ -79,15 +79,28 @@ gpu_config_p gpu_config (
 	return config;
 }
 
-// void gpu_context_writeInput (gpuContextP q,
-// 	void (*callback)(gpuContextP, JNIEnv *, jobject, int, int),
-// 	JNIEnv *env, jobject obj, int qid) {
-// void gpu_context_writeInput (gpuContextP q,
-// 	void (*callback)(gpuContextP, JNIEnv *, jobject, int, int),
-// 	JNIEnv *env, jobject obj, int qid) {
+void gpu_config_free (gpu_config_p config) {
 
-// 	int idx;
-// 	for (idx = 0; idx < q->kernelInput.count; idx++)
-// 		(*callback) (q, env, obj, qid, idx);
-// 	return;
-// }
+	int i;
+	if (config) { // TODO Remove comment
+		/* Free input(s) */
+		// for (i = 0; i < query->kernelInput.count; i++)
+			// freeInputBuffer (query->kernelInput.inputs[i], query->command_queue[0]); 
+		/* Free output(s) */
+		// for (i = 0; i < query->kernelOutput.count; i++)
+			// freeOutputBuffer (query->kernelOutput.outputs[i], query->command_queue[0]);
+		/* Free kernel(s) */
+		// for (i = 0; i < config->kernel.count; i++) {
+		// 	clReleaseKernel (config->kernel.kernels[i]->kernel[0]);
+		// 	clReleaseKernel (config->kernel.kernels[i]->kernel[1]);
+		// 	free (config->kernel.kernels[i]);
+		// }
+		/* Release command queues */
+		if (config->command_queue[0])
+			clReleaseCommandQueue(config->command_queue[0]);
+		if (config->command_queue[1])
+			clReleaseCommandQueue(config->command_queue[1]);
+		/* Free object */
+		free(config);
+	}
+}

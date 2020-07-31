@@ -21,8 +21,9 @@ DEPDIR  := $(OBJDIR)/.deps
 VPATH    = $(OBJDIR)
 
 # Targets
-PROGS   = test_gcd 
-SRCS = gpu.c gpu_config.c test_gcd.c openclerrorcode.c config.c
+PROGS   = test_gcd
+GPU_LIB = gpu_agg.c gpu_config.c gpu_query.c
+SRCS = test_gcd.c openclerrorcode.c config.c $(GPU_LIB)
 
 # Submodules
 include ./libcirbuf/cirbuf.mk

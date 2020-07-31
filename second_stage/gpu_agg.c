@@ -129,12 +129,26 @@ void gpu_init (int _queries) {
 	return;
 }
 
+int gpu_get_query (const char *source, int _kernels, int _inputs, int _outputs) {
+	
+	int query_id = free_index++;
+	if (query_id < 0 || query_id >= query_num) {
+		fprintf(stderr, "error: query index [%d] out of bounds\n", query_id);
+		exit (1);
+	}
+	queries[query_id] = gpu_query_new (query_id, device, context, source, _kernels, _inputs, _outputs);
+	/* Set result handler */
+	// gpu_query_setResultHandler (queries[ndx], resultHandler); // TODO
+	
+	return query_id;
+}
+
 void gpu_free () {
 	int error = 0;
 
 	for (int i = 0; i < MAX_QUERIES; i++)
 		if (queries[i])
-			// gpu_query_free (queries[i]);
+			gpu_query_free (queries[i]);
 	if (context)
 		error = clReleaseContext (context);
 	if (error != CL_SUCCESS)
@@ -153,7 +167,7 @@ int gpu_set_kernel (int qid, int ndx /* kernel index */,
 		exit (1);
 	}
 	gpu_query_p p = queries[qid];
-	// return gpu_query_setKernel (p, ndx, name, callback, args1, args2);
+	// return gpu_query_setKernel (p, ndx, name, callback, args1, args2); // TODO: remove comment
 	return 0;
 }
 

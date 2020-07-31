@@ -55,6 +55,7 @@ typedef struct gpu_config {
 
 gpu_config_p gpu_config(int query_id, cl_device_id device, cl_context context, cl_program program, int _kernels, int _inputs, int _outputs);
 
+void gpu_config_free (gpu_config_p query);
 
 
 #endif /* __GPU_CONFIG_H_ */
