@@ -225,7 +225,7 @@ static int gpu_query_exec_1 (
 	/* output and clean up */
 	gpu_config_moveOutputBuffers (config, output_batches, addr_size);
 	gpu_config_flush (config);
-	// gpu_config_finish(config);
+	gpu_config_finish(config);
 
 	return 0;
 }

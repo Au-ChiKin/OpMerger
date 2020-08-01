@@ -193,18 +193,18 @@ void gpu_config_flush (gpu_config_p config) {
 	}
 }
 
-// void gpu_config_finish (gpu_config_p q) {
-// 	if (q->scheduled < 1)
-// 		return;
-// 	/* There are tasks scheduled */
-// 	int error = 0;
-// 	error |= clFinish (q->queue[0]);
-// 	error |= clFinish (q->queue[1]);
-// 	if (error != CL_SUCCESS) {
-// 		fprintf(stderr, "opencl error (%d): %s (%s), q=%d @%p\n", error, getErrorMessage(error), __FUNCTION__, q->qid, q);
-// 		exit (1);
-// 	}
-// }
+void gpu_config_finish (gpu_config_p config) {
+	if (config->scheduled < 1)
+		return;
+	/* There are tasks scheduled */
+	int error = 0;
+	error |= clFinish (config->command_queue[0]);
+	error |= clFinish (config->command_queue[1]);
+	if (error != CL_SUCCESS) {
+		fprintf(stderr, "opencl error (%d): %s (%s), config=%d @%p\n", error, getErrorMessage(error), __FUNCTION__, config->query_id, config);
+		exit (1);
+	}
+}
 
 void gpu_config_moveInputBuffers (gpu_config_p config, void ** host_addr, size_t addr_size) {
 	int i;
