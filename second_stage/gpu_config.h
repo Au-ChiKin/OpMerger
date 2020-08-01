@@ -92,7 +92,7 @@ void gpu_config_setKernel (gpu_config_p,
 /**
  * host_addr - an array of addresses to input batches
  **/ 
-void gpu_config_moveInputBuffers (gpu_config_p config, void ** host_addr);
+void gpu_config_moveInputBuffers (gpu_config_p config, void ** host_addr, size_t addr_size);
 
 // void gpu_config_readOutput (gpu_config_p,
 // 		void (*callback)(gpu_config_p, int, int, int),

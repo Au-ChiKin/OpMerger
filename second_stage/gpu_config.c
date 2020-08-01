@@ -263,7 +263,7 @@ void gpu_config_setKernel (gpu_config_p query,
 // 	return;
 // }
 
-void gpu_config_moveInputBuffers (gpu_config_p config, void ** host_addr) {
+void gpu_config_moveInputBuffers (gpu_config_p config, void ** host_addr, size_t addr_size) {
 	int i;
 	int error = 0;
 	/* Write */
@@ -275,7 +275,7 @@ void gpu_config_moveInputBuffers (gpu_config_p config, void ** host_addr) {
 				CL_FALSE,
 				0,
 				config->kernelInput.inputs[i]->size,
-				host_addr[i],
+				(void *) (host_addr + i * addr_size), /* TODO cast it to void * for now but we need a proper conversion */
 #ifdef GPU_PROFILE				
 				0, NULL, &(config->write_event));
 #else				
@@ -288,7 +288,7 @@ void gpu_config_moveInputBuffers (gpu_config_p config, void ** host_addr) {
 				CL_FALSE,
 				0,
 				config->kernelInput.inputs[i]->size,
-				host_addr[i],
+				(void *) (host_addr + i * addr_size),
 				0, NULL, NULL);
 		}
 

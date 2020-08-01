@@ -41,14 +41,20 @@ void read_input_buffers(cbuf_handle_t cbufs [], int buffer_num);
 /* Print out 10 tuples for debug */
 void print_10_tuples(cbuf_handle_t cbufs []);
 
-void run_processing_gpu(cbuf_handle_t buffers [], int size, int * result, int load, enum test_cases mode) {
-    u_int8_t * batch = (u_int8_t *) malloc(size * sizeof(tuple_t));
-    /* TODO copy data from buffers into this batch */
+void run_processing_gpu(
+    u_int8_t * buffers [], int buffer_size, int buffer_num, int tuple_size,
+    int * result, 
+    int load, enum test_cases mode) {
+    
+    u_int8_t * batch = buffers[0];
+    /* TODO extend the batch struct into a real memoery manager */
     batch_t wrapped_batch;
-    wrapped_batch.start = 0;
-    wrapped_batch.end = size;
-    wrapped_batch.buffer = batch;
-    wrapped_batch.pane_size = size; /* tumbling window for now */
+    {
+        wrapped_batch.start = 0;
+        wrapped_batch.end = buffer_size;
+        wrapped_batch.buffer = batch;
+        wrapped_batch.pane_size = buffer_size; /* tumbling window for now, use the whole buffer as a batch */
+    }
     batch_p input_batch = &wrapped_batch;
 
     int const query_num = 1;
@@ -65,7 +71,7 @@ void run_processing_gpu(cbuf_handle_t buffers [], int size, int * result, int lo
             /* TODO wrap in a general setup method */
             reduction_setup(16384, 64);
             /* TODO wrap in a general query process method */
-            // reduction_process(input_batch, 64 /* tuple_size */, 0);
+            reduction_process(input_batch, 64 /* tuple_size */, 0);
             break;
         default: 
             break; 
@@ -103,7 +109,10 @@ int main(int argc, char * argv[]) {
         results[i] = 0;
     }
 
-    run_processing_gpu(cbufs, BUFFER_SIZE, results, work_load, mode);
+    run_processing_gpu(
+        buffers, BUFFER_SIZE, task_num, TUPLE_SIZE, /* input */
+        results, /* output */
+        work_load, mode); /* configs */
 
     for (int i=0; i<task_num; i++) {
         free(buffers[i]);

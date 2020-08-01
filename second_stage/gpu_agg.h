@@ -54,6 +54,6 @@ void gpu_free();
 /* Execute operators*/
 
 /* Reduce */
-void gpu_execute_reduce(int qid, int * threads, int * threads_per_group, long * args2, void ** batch_addr);
+void gpu_execute_reduce(int qid, int * threads, int * threads_per_group, long * args2, void ** batch_addr, size_t addr_size);
 
 #endif

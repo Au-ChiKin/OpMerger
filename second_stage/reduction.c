@@ -95,7 +95,7 @@ void reduction_process(batch_p batch, int tuple_size, int qid) {
     gpu_execute_reduce(qid, 
         threads, threads_per_group, 
         args2, 
-        (void **) (batch->buffer + batch->start)); // passing the batch without deserialisation
+        (void **) (batch->buffer + batch->start), sizeof(u_int8_t)); // passing the batch without deserialisation
     
     /* TODO: output result */
     // if (pipelinedBatch != null)

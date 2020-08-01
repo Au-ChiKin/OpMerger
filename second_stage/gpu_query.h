@@ -43,6 +43,6 @@ int gpu_query_setKernel (gpu_query_p,
 		int *, long *);
 
 /* Process batch */
-int gpu_query_exec (gpu_query_p, size_t *, size_t *, query_operator_p, void ** batch_addr);
+int gpu_query_exec (gpu_query_p, size_t *, size_t *, query_operator_p, void ** batch_addr, size_t addr_size);
 
 #endif /* __GPU_QUERY_H_ */
