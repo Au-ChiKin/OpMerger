@@ -33,6 +33,7 @@
 #include "config.h"
 #include "aggregation.h"
 #include "reduction.h"
+#include "batch.h"
 
 /* Input data of interest from files */
 void read_input_buffers(cbuf_handle_t cbufs [], int buffer_num);
@@ -41,11 +42,19 @@ void read_input_buffers(cbuf_handle_t cbufs [], int buffer_num);
 void print_10_tuples(cbuf_handle_t cbufs []);
 
 void run_processing_gpu(cbuf_handle_t buffers [], int size, int * result, int load, enum test_cases mode) {
-    input_t * batch = (input_t *) malloc(size * sizeof(tuple_t));
+    u_int8_t * batch = (u_int8_t *) malloc(size * sizeof(tuple_t));
+    /* TODO copy data from buffers into this batch */
+    batch_t wrapped_batch;
+    wrapped_batch.start = 0;
+    wrapped_batch.end = size;
+    wrapped_batch.buffer = batch;
+    wrapped_batch.pane_size = size; /* tumbling window for now */
+    batch_p input_batch = &wrapped_batch;
 
     int const query_num = 1;
     gpu_init(query_num);
 
+    /* simplified query creation */
     switch (mode) {
         case MERGED_AGGREGATION: 
             fprintf(stdout, "========== Running merged aggregation test ===========\n");
@@ -53,7 +62,10 @@ void run_processing_gpu(cbuf_handle_t buffers [], int size, int * result, int lo
             break;
         case MERGED_REDUCTION: 
             fprintf(stdout, "========== Running sepaerate select test ===========\n");
-            reduction(16384, 64);
+            /* TODO wrap in a general setup method */
+            reduction_setup(16384, 64);
+            /* TODO wrap in a general query process method */
+            reduction_process(input_batch, 64 /* tuple_size */, 0);
             break;
         default: 
             break; 
