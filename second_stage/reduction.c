@@ -6,7 +6,7 @@
 #include "gpu_agg.h"
 
 #define KERNEL_NUM 4
-#define MAX_THREADS_PER_GROUP 256
+#define MAX_THREADS_PER_GROUP 256 /* Should be queried from the device */
 #define PARTIAL_WINDOWS 1024 * 1024 /* window limit in a batch */
 
 static size_t threads[KERNEL_NUM];
@@ -15,7 +15,12 @@ static size_t threads_per_group [KERNEL_NUM];
 void reduction_init(int batch_size) {
     for (int i=0; i<KERNEL_NUM; i++) {
         threads[i] = batch_size;
-        threads_per_group[i] = MAX_THREADS_PER_GROUP;
+
+        if (batch_size < MAX_THREADS_PER_GROUP) {
+            threads_per_group[i] = batch_size;
+        } else {
+            threads_per_group[i] = MAX_THREADS_PER_GROUP;
+        }
     }
 }
 
