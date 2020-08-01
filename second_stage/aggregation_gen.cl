@@ -886,7 +886,11 @@ __kernel void computeOffsetKernel (
 			if (normalisedPaneId >= 0 && normalisedPaneId % PANES_PER_SLIDE == 0) {
 				wid = normalisedPaneId / PANES_PER_SLIDE;
 				if (wid >= 0) {
-					atom_min(&offset[0], wid);
+#ifdef __APPLE__ /* build-in gpu does not support khr_int64_extended_atomics extension */ 
+                    atomic_min((__global int *) &offset[0], (int) wid);
+#else
+                    atom_min(&offset[0], wid);
+#endif
 					break;
 				}
 			}
@@ -970,7 +974,12 @@ __kernel void computePointersKernel (
 				wid = normalisedPaneId / PANES_PER_SLIDE; // absolute window id, think about it
 				if (wid >= 0) {
 					index = convert_int_sat(wid - windowOffset); // (local) window id in the work group 
-					atom_max(&offset[1], (wid - windowOffset));
+#ifdef __APPLE__
+                    atomic_max((__global int *) &offset[1], (int) (wid - windowOffset));
+#else
+                    atom_max(&offset[1], (wid - windowOffset));
+#endif
+
 					_window_ptrs[index] = tid * sizeof(input_t);
 				}
 			}
@@ -978,7 +987,12 @@ __kernel void computePointersKernel (
 			if (paneId % PANES_PER_SLIDE == 0) {
 				wid = paneId / PANES_PER_SLIDE;
 				index = convert_int_sat(wid - windowOffset); // wid and windowOffset are long
-				atom_max(&offset[1], wid - windowOffset); // reset end_ptr if found a later position
+#ifdef __APPLE__
+                    atomic_max((__global int *) &offset[1], (int) (wid - windowOffset));
+#else
+                    atom_max(&offset[1], (wid - windowOffset));
+#endif
+
 				window_ptrs_[index] = tid * sizeof(input_t);
 			}
 			prevPaneId += 1;
