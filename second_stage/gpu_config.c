@@ -206,62 +206,6 @@ void gpu_config_submitKernel (gpu_config_p query, size_t *threads, size_t *threa
 // 	}
 // }
 
-// void gpu_config_moveOutputBuffers (gpu_config_p q) {
-// 	int i;
-// 	int error = 0;
-// 	/* Read */
-// 	for (i = 0; i < q->kernelOutput.count; i++) {
-
-// 		if (q->kernelOutput.outputs[i]->doNotMove && (! q->kernelOutput.outputs[i]->bearsMark))
-// 			continue;
-
-// 		if (q->kernelOutput.outputs[i]->readEvent) {
-// 			error |= clEnqueueReadBuffer (
-// 				q->queue[0],
-// 				q->kernelOutput.outputs[i]->device_buffer,
-// 				CL_FALSE,
-// 				0,
-// 				q->kernelOutput.outputs[i]->size,
-// 				q->kernelOutput.outputs[i]->mapped_buffer,
-// #ifdef GPU_PROFILE
-// 				0, NULL, &(q->read_event));
-// #else
-// 				0, NULL, NULL);
-// #endif
-// 		} else {
-// 			error |= clEnqueueReadBuffer (
-// 				q->queue[0],
-// 				q->kernelOutput.outputs[i]->device_buffer,
-// 				CL_FALSE,
-// 				0,
-// 				q->kernelOutput.outputs[i]->size,
-// 				q->kernelOutput.outputs[i]->mapped_buffer,
-// 				0, NULL, NULL);
-// 		}
-// 	}
-
-// 	if (error != CL_SUCCESS) {
-// 		fprintf(stderr, "opencl error (%d): %s (%s)\n",
-// 			error, getErrorMessage(error), __FUNCTION__);
-// 		exit (1);
-// 	}
-
-// 	q->readCount += 1;
-// 	q->scheduled = 1;
-
-// 	return;
-// }
-
-// void gpu_config_writeInput (gpu_config_p config,
-// 	void (*callback)(gpu_config_p, int, int),
-// 	int qid) {
-
-// 	int idx;
-// 	for (idx = 0; idx < config->kernelInput.count; idx++)
-// 		(*callback) (config, qid, idx);
-// 	return;
-// }
-
 void gpu_config_moveInputBuffers (gpu_config_p config, void ** host_addr, size_t addr_size) {
 	int i;
 	int error = 0;
@@ -303,38 +247,50 @@ void gpu_config_moveInputBuffers (gpu_config_p config, void ** host_addr, size_t
 	return;
 }
 
-// void gpu_config_readOutput (gpu_config_p q,
-// 	void (*callback)(gpu_config_p, JNIEnv *, jobject, int, int, int),
-// 	JNIEnv *env, jobject obj, int qid) {
+void gpu_config_moveOutputBuffers (gpu_config_p config, void ** host_addr, size_t addr_size) {
+	int i;
+	int error = 0;
+	/* Read */
+	for (i = 0; i < config->kernelOutput.count; i++) {
 
-// 	int idx;
-// 	/* Find mark */
-// 	int mark = -1;
-// 	for (idx = 0; idx < q->kernelOutput.count; idx++) {
-// 		if (q->kernelOutput.outputs[idx]->bearsMark) {
-// 			dbg("[DBG] output %d bears mark\n", idx);
-// 			int N = q->kernelOutput.outputs[idx]->size / sizeof(int);
-// 			// dbg("[DBG] %d values\n", N);
-// 			int *values = (int *) (q->kernelOutput.outputs[idx]->mapped_buffer);
-// 			int j;
-// 			for (j = N - 1; j >= 0; j--) {
-// 				// dbg("[DBG] value[%6d] = %d\n", j, values[j]);
-// 				if (values[j] != 0) {
-// 					mark = values[j];
-// 					break;
-// 				}
-// 			}
-// 			dbg("[DBG] mark is %d\n", mark);
-// 			break;
-// 		}
-// 	}
-// 	// mark = -1;
-// 	// fprintf(stdout, "[DBG] mark is %10d\n", mark);
-// 	// fflush(stdout);
+		if (config->kernelOutput.outputs[i]->doNotMove && (! config->kernelOutput.outputs[i]->bearsMark))
+			continue;
 
-// 	for (idx = 0; idx < q->kernelOutput.count; idx++)
-// 		(*callback) (q, env, obj, qid, idx, mark);
+		if (config->kernelOutput.outputs[i]->readEvent) {
+			error |= clEnqueueReadBuffer (
+				config->command_queue[0],
+				config->kernelOutput.outputs[i]->device_buffer,
+				CL_FALSE,
+				0,
+				config->kernelOutput.outputs[i]->size,
+				(void *) (host_addr + i * addr_size), /* TODO cast it to void * for now but we need a proper conversion */
+#ifdef GPU_PROFILE
+				0, NULL, &(config->read_event));
+#else
+				0, NULL, NULL);
+#endif
+		} else {
+			error |= clEnqueueReadBuffer (
+				config->command_queue[0],
+				config->kernelOutput.outputs[i]->device_buffer,
+				CL_FALSE,
+				0,
+				config->kernelOutput.outputs[i]->size,
+				(void *) (host_addr + i * addr_size), /* TODO cast it to void * for now but we need a proper conversion */
+				0, NULL, NULL);
+		}
+	}
 
-// 	return;
-// }
+	if (error != CL_SUCCESS) {
+		fprintf(stderr, "opencl error (%d): %s (%s)\n",
+			error, getErrorMessage(error), __FUNCTION__);
+		exit (1);
+	}
+
+	config->readCount += 1;
+	config->scheduled = 1;
+
+	return;
+}
+
 

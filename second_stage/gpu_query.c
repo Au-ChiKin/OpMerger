@@ -15,7 +15,11 @@
 #endif
 
 /* w/o  pipelining */
-static int gpu_query_exec_1 (gpu_query_p, size_t *, size_t *, query_operator_p, void ** batch_addr, size_t addr_size);
+static int gpu_query_exec_1 (
+	gpu_query_p, 
+	size_t *, size_t *, 
+	query_operator_p, 
+	void ** input_batches, void ** output_batches, size_t addr_size);
 /* with pipelining */
 static int gpu_query_exec_2 (gpu_query_p, size_t *, size_t *, query_operator_p); 
 
@@ -179,26 +183,38 @@ int gpu_query_setKernel (gpu_query_p query,
 // 	return query->configs[next];
 // }
 
-int gpu_query_exec (gpu_query_p query, size_t *threads, size_t *threadsPerGroup, query_operator_p operator, void ** batch_addr, size_t addr_size) {
+int gpu_query_exec (
+	gpu_query_p query, 
+	size_t *threads, size_t *threadsPerGroup, 
+	query_operator_p operator, 
+	void ** input_batches, void ** output_batches, size_t addr_size) {
 	
 	if (! query)
 		return -1;
 
 	if (NCONTEXTS == 1) {
-		return gpu_query_exec_1 (query, threads, threadsPerGroup, operator, batch_addr, addr_size);
+		return gpu_query_exec_1 (
+			query, 
+			threads, threadsPerGroup, 
+			operator, 
+			input_batches, output_batches, addr_size);
 	} else {
 		return gpu_query_exec_2 (query, threads, threadsPerGroup, operator);
 	}
 }
 
-static int gpu_query_exec_1 (gpu_query_p query, size_t *threads, size_t *threadsPerGroup, query_operator_p operator, void ** batch_addr, size_t addr_size) {
+static int gpu_query_exec_1 (
+	gpu_query_p query, 
+	size_t *threads, size_t *threadsPerGroup, 
+	query_operator_p operator, 
+	void ** input_batches, void ** output_batches, size_t addr_size) {
 	
 	// gpu_config_p config = gpu_switch_config(query);
 	/* There is only one config */
 	gpu_config_p config = query->configs[0];
 
 	/* Write input */
-	gpu_config_moveInputBuffers (config, batch_addr, addr_size);
+	gpu_config_moveInputBuffers (config, input_batches, addr_size);
 	
 	/* execute */
 	if (operator->configure != NULL) {
@@ -207,7 +223,7 @@ static int gpu_query_exec_1 (gpu_query_p query, size_t *threads, size_t *threads
 	gpu_config_submitKernel (config, threads, threadsPerGroup);
 
 	// /* output and clean up */
-	// gpu_config_moveOutputBuffers (config);
+	gpu_config_moveOutputBuffers (config, output_batches, addr_size);
 	// gpu_config_flush (config);
 	// gpu_config_finish(config);
 	// gpu_config_readOutput (config, operator->readOutput, query->qid);

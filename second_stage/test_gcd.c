@@ -57,6 +57,16 @@ void run_processing_gpu(
     }
     batch_p input_batch = &wrapped_batch;
 
+    u_int8_t * output_buf = (u_int8_t *) malloc(BUFFER_SIZE * TUPLE_SIZE * sizeof(u_int8_t));
+    batch_t wrapped_output;
+    {
+        wrapped_output.start = 0;
+        wrapped_output.end = buffer_size;
+        wrapped_output.buffer = output_buf;
+        wrapped_output.pane_size = buffer_size; /* tumbling window for now, use the whole buffer as a batch */
+    }
+    batch_p output = &wrapped_output;
+
     int const query_num = 1;
     gpu_init(query_num);
 
@@ -72,7 +82,7 @@ void run_processing_gpu(
             /* TODO wrap in a general setup method */
             reduction_setup(buffer_size, tuple_size);
             /* TODO wrap in a general query process method */
-            reduction_process(input_batch, tuple_size, 0);
+            reduction_process(input_batch, tuple_size, 0, output);
             break;
         default: 
             break; 

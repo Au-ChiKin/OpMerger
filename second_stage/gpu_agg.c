@@ -201,14 +201,14 @@ int gpu_set_kernel (int qid, int ndx /* kernel index */,
 int gpu_exec (int qid,
 	size_t *threads, size_t *threadsPerGroup,
 	query_operator_p operator,
-	void ** batch_addr, size_t addr_size) {
+	void ** input_batches, void ** output_batches, size_t addr_size) {
 
 	if (qid < 0 || qid >= query_num) {
 		fprintf(stderr, "error: query index [%d] out of bounds\n", qid);
 		exit (1);
 	}
 	gpu_query_p query = queries[qid];
-	return gpu_query_exec (query, threads, threadsPerGroup, operator, batch_addr, addr_size);
+	return gpu_query_exec (query, threads, threadsPerGroup, operator, input_batches, output_batches, addr_size);
 }
 
 void gpu_set_kernel_aggregate(int qid, int * args1, long * args2) {
@@ -414,7 +414,9 @@ void callback_setKernelReduce (cl_kernel kernel, gpu_config_p context, int *args
 	return;
 }
 
-void gpu_execute_reduce(int qid, size_t * threads, size_t * threads_per_group, long * args2, void ** batch_addr, size_t addr_size) {
+void gpu_execute_reduce(int qid, size_t * threads, size_t * threads_per_group, long * args2, 
+	void ** input_batches, void ** output_batches, size_t addr_size) {
+
 	int const kernel_num = 4;
 	for (int i=0; i<kernel_num; i++) {
 		dbg("[DBG] kernel %d: %10zu threads %10zu threads/group\n", i, threads[i], threads_per_group[i]);
@@ -432,7 +434,7 @@ void gpu_execute_reduce(int qid, size_t * threads, size_t * threads_per_group, l
 	operator->readOutput = callback_readOutput;
 	operator->execKernel = callback_execKernel;
 
-	gpu_exec(qid, threads, threads_per_group, operator, batch_addr, addr_size);
+	gpu_exec(qid, threads, threads_per_group, operator, input_batches, output_batches, addr_size);
 
 	/* Free operator */
 	if (operator)
