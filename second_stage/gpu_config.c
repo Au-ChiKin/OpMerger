@@ -183,15 +183,15 @@ void gpu_config_submitKernel (gpu_config_p query, size_t *threads, size_t *threa
 	return;
 }
 
-// void gpu_config_flush (gpu_config_p q) {
-// 	int error = 0;
-// 	error |= clFlush (q->queue[0]);
-// 	error |= clFlush (q->queue[1]);
-// 	if (error != CL_SUCCESS) {
-// 		fprintf(stderr, "opencl error (%d): %s (%s)\n", error, getErrorMessage(error), __FUNCTION__);
-// 		exit (1);
-// 	}
-// }
+void gpu_config_flush (gpu_config_p config) {
+	int error = 0;
+	error |= clFlush (config->command_queue[0]);
+	error |= clFlush (config->command_queue[1]);
+	if (error != CL_SUCCESS) {
+		fprintf(stderr, "opencl error (%d): %s (%s)\n", error, getErrorMessage(error), __FUNCTION__);
+		exit (1);
+	}
+}
 
 // void gpu_config_finish (gpu_config_p q) {
 // 	if (q->scheduled < 1)

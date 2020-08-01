@@ -73,11 +73,8 @@ void gpu_config_setKernel (gpu_config_p,
 
 // void gpu_config_profileQuery (gpu_config_p);
 
-// void gpu_config_flush (gpu_config_p);
 
 // void gpu_config_finish (gpu_config_p);
-
-
 
 /**
  * host_addr - an array of addresses to input batches
@@ -100,5 +97,7 @@ void gpu_config_submitKernel (gpu_config_p, size_t *, size_t *);
  * Move output to host 
  */ 
 void gpu_config_moveOutputBuffers (gpu_config_p config, void ** host_addr, size_t addr_size);
+
+void gpu_config_flush (gpu_config_p);
 
 #endif /* __GPU_CONFIG_H_ */
