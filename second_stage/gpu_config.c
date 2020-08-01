@@ -139,15 +139,15 @@ void gpu_config_setKernel (gpu_config_p query,
 	return;
 }
 
-// void gpu_config_configureKernel (gpu_config_p q,
-// 	void (*callback)(cl_kernel, gpu_config_p, int *, long *),
-// 	int *args1, long *args2) {
+void gpu_config_configureKernel (gpu_config_p q,
+	void (*callback)(cl_kernel, gpu_config_p, int *, long *),
+	int *args1, long *args2) {
 
-// 	int i;
-// 	for (i = 0; i < q->kernel.count; i++)
-// 		(*callback) (q->kernel.kernels[i]->kernel[0], q, args1, args2);
-// 	return;
-// }
+	int i;
+	for (i = 0; i < q->kernel.count; i++)
+		(*callback) (q->kernel.kernels[i]->kernel[0], q, args1, args2);
+	return;
+}
 
 // void gpu_context_flush (gpu_config_p q) {
 // 	int error = 0;

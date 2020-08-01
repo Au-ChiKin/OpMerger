@@ -441,9 +441,10 @@ void gpu_execute_reduce(int qid, int * threads, int * threads_per_group, long * 
 	return;
 }
 
-void callback_configureReduce (cl_kernel kernel, gpu_config_p context, int *args1, long *args2) {
+void callback_configureReduce (cl_kernel kernel, gpu_config_p config, int *args1, long *args2) {
 
-	(void) context;
+	/* For reduce, they are NULL */
+	(void) config;
 	(void)   args1;
 
 	long previousPaneId = args2[0];
