@@ -75,15 +75,15 @@ int getOutputBufferSize (output_buffer_p b) {
 
 void freeOutputBuffer (output_buffer_p b, cl_command_queue queue) {
 	if (b) {
-		if (b->mapped_buffer)
-			clEnqueueUnmapMemObject (
-				queue,
-				b->pinned_buffer,
-				(void *) b->mapped_buffer,
-				0, NULL, NULL); /* Zero dependencies */
+		// if (b->mapped_buffer)
+		// 	clEnqueueUnmapMemObject (
+		// 		queue,
+		// 		b->pinned_buffer,
+		// 		(void *) b->mapped_buffer,
+		// 		0, NULL, NULL); /* Zero dependencies */
 
-		if (b->pinned_buffer)
-			clReleaseMemObject(b->pinned_buffer);
+		// if (b->pinned_buffer)
+		// 	clReleaseMemObject(b->pinned_buffer);
 
 		if (b->device_buffer)
 			clReleaseMemObject(b->device_buffer);
