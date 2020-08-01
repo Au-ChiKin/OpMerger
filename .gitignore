@@ -15,3 +15,6 @@ datasets/google-cluster-data/priorities.txt
 
 #vs code files
 .DS_Store
+
+# local tmp files
+second_stage/scripts.c
