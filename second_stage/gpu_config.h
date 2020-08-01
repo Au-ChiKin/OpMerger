@@ -91,7 +91,7 @@ void gpu_config_setKernel (gpu_config_p,
 void gpu_config_moveInputBuffers (gpu_config_p config, void ** host_addr, size_t addr_size);
 
 /**
- * 
+ * Sets non-variable arguments for kernels
  **/
 void gpu_config_configureKernel (gpu_config_p,
 		void (*callback)(cl_kernel, gpu_config_p, int *, long *),
