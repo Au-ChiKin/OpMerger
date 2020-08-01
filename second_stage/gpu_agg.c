@@ -414,7 +414,7 @@ void callback_setKernelReduce (cl_kernel kernel, gpu_config_p context, int *args
 	return;
 }
 
-void gpu_execute_reduce(int qid, int * threads, int * threads_per_group, long * args2, void ** batch_addr, size_t addr_size) {
+void gpu_execute_reduce(int qid, size_t * threads, size_t * threads_per_group, long * args2, void ** batch_addr, size_t addr_size) {
 	int const kernel_num = 4;
 	for (int i=0; i<kernel_num; i++) {
 		dbg("[DBG] kernel %d: %10zu threads %10zu threads/group\n", i, threads[i], threads_per_group[i]);
