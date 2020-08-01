@@ -3,6 +3,19 @@
 #include "helpers.h"
 #include "gpu_agg.h"
 
+#define KERNEL_NUM 4
+#define MAX_THREADS_PER_GROUP 256
+
+static int threads[KERNEL_NUM];
+static int threads_per_group [KERNEL_NUM];
+
+void reduction_init(int tuple_size) {
+    for (int i=0; i<KERNEL_NUM; i++) {
+        threads[i] = tuple_size;
+        threads_per_group[i] = MAX_THREADS_PER_GROUP;
+    }
+}
+
 void reduction_setup(int batch_size, int tuple_size) {
     char * source = read_source("reduce.cl");
     int qid = gpu_get_query(source, 4, 1, 5);
@@ -36,7 +49,7 @@ void reduction_setup(int batch_size, int tuple_size) {
     gpu_set_kernel_reduce(0, args1, args2);
 }
 
-void reduction_process(u_int8_t * batch) {
+void reduction_process(batch_p batch, int tuple_size, int qid) {
     
     /* Set input */
     
@@ -44,40 +57,49 @@ void reduction_process(u_int8_t * batch) {
     // int start = batch.getBufferStartPointer();
     // int end   = batch.getBufferEndPointer();
     
-    gpu_setInputBuffer(qid, 0, inputBuffer, start, end);
+    /* For setting start and end pointers in memory manager, no need for us */
+    // java_gpu_setInputBuffer(qid, /*bid*/ 0, inputBuffer, start, end);
     
-    /* Previous pane id, based on stream start pointer, s */
     long args2[2];
-    args2[0] = -1;
-    long s = batch.getStreamStartPointer();
-    int  t = inputSchema.getTupleSize();
-    long p = batch.getWindowDefinition().getPaneSize();
-    if (batch.getStreamStartPointer() > 0) {
-        // TODO: support range based windows 
-        // if (batch.getWindowDefinition().isRangeBased()) {
-        //     int offset = start - t;
-        //     args2[0] = batch.getTimestamp(offset) / p;
-        // } else {
-            args2[0] = ((s / (long) t) / p) - 1;
-        // }
-    }
-    args2[1] = s;
+    {
+        /* Previous pane id, based on stream start pointer, s */
+        args2[0] = -1;
+        long s = batch->start;
+        int  t = tuple_size;
+        long p = batch->pane_size;
+        if (batch->start > 0) {
+            // TODO: support range based windows 
+            // if (batch.getWindowDefinition().isRangeBased()) {
+            //     int offset = start - t;
+            //     args2[0] = batch.getTimestamp(offset) / p;
+            // } else {
+                args2[0] = ((s / (long) t) / p) - 1;
+            // }
+        }
     
+        args2[1] = s;
+    }
+    
+    /* TODO: support pipelined operators */
     /* Set output for a previously executed operator */
     
-    WindowBatch pipelinedBatch = gpu_shiftUp(batch);
+    // WindowBatch pipelinedBatch = gpu_shiftUp(batch);
     
-    IOperatorCode pipelinedOperator = null; 
-    if (pipelinedBatch != null) {
-        pipelinedOperator = pipelinedBatch.getQuery().getMostUpstreamOperator().getGpuCode();
-        pipelinedOperator.configureOutput (qid);
-    }
+    // IOperatorCode pipelinedOperator = null; 
+    // if (pipelinedBatch != null) {
+    //     pipelinedOperator = pipelinedBatch.getQuery().getMostUpstreamOperator().getGpuCode();
+    //     pipelinedOperator.configureOutput (qid);
+    // }
     
     /* Execute */
-    gpu_executeReduce (qid, threads, threadsPerGroup, args2);
+    gpu_execute_reduce(qid, 
+        threads, threads_per_group, 
+        args2, 
+        (void **) (batch->buffer + batch->start)); // passing the batch without deserialisation
     
-    if (pipelinedBatch != null)
-        pipelinedOperator.processOutput (qid, pipelinedBatch);
+    /* TODO: output result */
+    // if (pipelinedBatch != null)
+    //     pipelinedOperator.processOutput (qid, pipelinedBatch);
     
     // api.outputWindowBatchResult (pipelinedBatch);
 }
