@@ -11,34 +11,34 @@
 #define OUTPUT_VECTOR_SIZE 1
 
 typedef struct {
-	long t;
-	long _1;
-	long _2;
-	long _3;
-	int _4;
-	int _5;
-	int _6;
-	int _7;
-	float _8;
-	float _9;
-	float _10;
-	int _11;
+    long t;
+    long _1;
+    long _2;
+    long _3;
+    int _4;
+    int _5;
+    int _6;
+    int _7;
+    float _8;
+    float _9;
+    float _10;
+    int _11;
 } input_tuple_t __attribute__((aligned(1)));
 
 typedef union {
-	input_tuple_t tuple;
-	uchar16 vectors[INPUT_VECTOR_SIZE];
+    input_tuple_t tuple;
+    uchar16 vectors[INPUT_VECTOR_SIZE];
 } input_t;
 
 typedef struct {
-	long t;
-	int _1;
-	float _2;
+    long t; /* timestamp */
+    float _1; /* sum */
+    int _2; /* ??? */
 } output_tuple_t __attribute__((aligned(1)));
 
 typedef union {
-	output_tuple_t tuple;
-	uchar16 vectors[OUTPUT_VECTOR_SIZE];
+    output_tuple_t tuple;
+    uchar16 vectors[OUTPUT_VECTOR_SIZE];
 } output_t;
 
 
@@ -46,365 +46,391 @@ typedef union {
 
 #define PANES_PER_WINDOW 1L
 #define PANES_PER_SLIDE  1L
-#define PANE_SIZE        1L
+#define PANE_SIZE        1024L
+
+inline void initf (__local output_t *p) {
+        p->tuple.t = 0;
+        p->tuple._1 = 0;
+        p->tuple._2 = 0;
+}
+
+inline void reducef (__local output_t *p, __global input_t *q) {
+        p->tuple.t = (p->tuple.t == 0) ? : q->tuple.t;
+        p->tuple._1 += __bswapfp(q->tuple._1);
+        p->tuple._2 += 1;
+}
+
+inline void cachef (__local output_t *p, __local output_t *q) {
+        q->vectors[0] = p->vectors[0];
+}
+
+inline void mergef (__local output_t *p, __local output_t *q) {
+        p->tuple._1 += q->tuple._1;
+        p->tuple._2 += q->tuple._2;
+}
+
+inline void copyf (__local output_t *p, __global output_t *q) {
+        q->vectors[0] = p->vectors[0];
+}
+
 
 __kernel void clearKernel (
 
-	const int tuples,
-	const int bytes,
+    const int tuples,
+    const int bytes,
 
-	const int max_windows,
+    const int max_windows,
 
-	const long previous_pane_id,
-	const long start_pointer,
+    const long previous_pane_id,
+    const long start_pointer,
 
-	__global const uchar *input,
-	__global       int   *window_start_pointers,
-	__global       int   *window_end_pointers,
-	__global       long  *offset,
-	__global       int   *window_counts,
-	__global       uchar *output,
-	__local        uchar *scratch
+    __global const uchar *input,
+    __global       int   *window_start_pointers,
+    __global       int   *window_end_pointers,
+    __global       long  *offset,
+    __global       int   *window_counts,
+    __global       uchar *output,
+    __local        uchar *scratch
 ) {
 
-	int tid = (int) get_global_id (0);
+    int tid = (int) get_global_id (0);
 
-	/* Thread 0 clears the offsets */
-	if (tid == 0) {
-		offset[0] = LONG_MAX;
-		offset[1] = 0;
-	}
+    /* Thread 0 clears the offsets */
+    if (tid == 0) {
+        offset[0] = LONG_MAX;
+        offset[1] = 0;
+    }
 
-	/* Initialise window counters: closing, pending, complete, opening, +1 */
-	if (tid < 5)
-		window_counts[tid] = 0;
+    /* Initialise window counters: closing, pending, complete, opening, +1 */
+    if (tid < 5)
+        window_counts[tid] = 0;
 
-	if (tid >= max_windows)
-		return;
+    if (tid >= max_windows)
+        return;
 
-	window_start_pointers [tid] = -1;
-	window_end_pointers [tid] = -1;
-	
-	return;
+    window_start_pointers [tid] = -1;
+    window_end_pointers [tid] = -1;
+
+    return;
 }
 
 __kernel void computeOffsetKernel (
 
-	const int tuples,
-	const int bytes,
+    const int tuples,
+    const int bytes,
 
-	const int max_windows,
+    const int max_windows,
 
-	const long previous_pane_id,
-	const long start_pointer,
+    const long previous_pane_id,
+    const long start_pointer,
 
-	__global const uchar *input,
-	__global       int   *window_start_pointers,
-	__global       int   *window_end_pointers,
-	__global       long  *offset,
-	__global       int   *window_counts,
-	__global       uchar *output,
-	__local        uchar *scratch
+    __global const uchar *input,
+    __global       int   *window_start_pointers,
+    __global       int   *window_end_pointers,
+    __global       long  *offset,
+    __global       int   *window_counts,
+    __global       uchar *output,
+    __local        uchar *scratch
 ) {
 
-	int tid = (int) get_global_id (0);
+    int tid = (int) get_global_id (0);
 
-	long wid;
-	long paneId, normalisedPaneId;
+    long wid;
+    long paneId, normalisedPaneId;
 
-	long currPaneId;
-	long prevPaneId;
+    long currPaneId;
+    long prevPaneId;
 
-	if (start_pointer == 0) {
-		if (tid == 0)
-			offset[0] = 0L;
-		return;
-	}
+    if (start_pointer == 0) {
+        if (tid == 0)
+            offset[0] = 0L;
+        return;
+    }
 
-	/* Every thread is assigned a tuple */
+    /* Every thread is assigned a tuple */
 
-	#ifdef RANGE_BASED
-	__global input_t *curr = (__global input_t *) &input[tid * sizeof(input_t)];
-	currPaneId = __bswap64(curr->tuple.t) / PANE_SIZE;
-	#else
-	currPaneId = ((start_pointer + (tid * sizeof(input_t))) / sizeof(input_t)) / PANE_SIZE;
-	#endif
+#ifdef RANGE_BASED
+    __global input_t *curr = (__global input_t *) &input[tid * sizeof(input_t)];
+    currPaneId = __bswap64(curr->tuple.t) / PANE_SIZE;
+#else
+    currPaneId = ((start_pointer + (tid * sizeof(input_t))) / sizeof(input_t)) / PANE_SIZE;
+#endif
 
-	if (tid > 0) {
+    if (tid > 0) {
 
-	#ifdef RANGE_BASED
-	__global input_t *prev = (__global input_t *) &input[(tid - 1) * sizeof(input_t)];
-	prevPaneId = __bswap64(prev->tuple.t) / PANE_SIZE;
-	#else
-	prevPaneId = ((start_pointer + ((tid - 1) * sizeof(input_t))) / sizeof(input_t)) / PANE_SIZE;
-	#endif
+#ifdef RANGE_BASED
+    __global input_t *prev = (__global input_t *) &input[(tid - 1) * sizeof(input_t)];
+    prevPaneId = __bswap64(prev->tuple.t) / PANE_SIZE;
+#else
+    prevPaneId = ((start_pointer + ((tid - 1) * sizeof(input_t))) / sizeof(input_t)) / PANE_SIZE;
+#endif
 
-	} else {
+    } else {
 
-		prevPaneId = previous_pane_id;
-	}
+        prevPaneId = previous_pane_id;
+    }
 
-	if (prevPaneId < currPaneId) {
+    if (prevPaneId < currPaneId) {
 
-		/* Compute offset based on the first closing window */
+        /* Compute offset based on the first closing window */
 
-		while (prevPaneId < currPaneId) {
+        while (prevPaneId < currPaneId) {
 
-			paneId = prevPaneId + 1;
+            paneId = prevPaneId + 1;
 
-			normalisedPaneId = paneId - PANES_PER_WINDOW;
+            normalisedPaneId = paneId - PANES_PER_WINDOW;
 
-			if (normalisedPaneId >= 0 && normalisedPaneId % PANES_PER_SLIDE == 0) {
+            if (normalisedPaneId >= 0 && normalisedPaneId % PANES_PER_SLIDE == 0) {
 
-				wid = normalisedPaneId / PANES_PER_SLIDE;
+                wid = normalisedPaneId / PANES_PER_SLIDE;
 
-				if (wid >= 0) {
+                if (wid >= 0) {
 
-					atom_min(&offset[0], wid);
-					break;
-				}
-			}
-			prevPaneId += 1;
-		}
-	}
+                    atom_min(&offset[0], wid);
+                    break;
+                }
+            }
+            prevPaneId += 1;
+        }
+    }
 
-	return;
+    return;
 }
 
 __kernel void computePointersKernel (
 
-	const int tuples,
-	const int bytes,
+    const int tuples,
+    const int bytes,
 
-	const int max_windows,
+    const int max_windows,
 
-	const long previous_pane_id,
-	const long start_pointer,
+    const long previous_pane_id,
+    const long start_pointer,
 
-	__global const uchar *input,
-	__global       int   *window_start_pointers,
-	__global       int   *window_end_pointers,
-	__global       long  *offset,
-	__global       int   *window_counts,
-	__global       uchar *output,
-	__local        uchar *scratch
+    __global const uchar *input,
+    __global       int   *window_start_pointers,
+    __global       int   *window_end_pointers,
+    __global       long  *offset,
+    __global       int   *window_counts,
+    __global       uchar *output,
+    __local        uchar *scratch
 ) {
 
-	int tid = (int) get_global_id (0);
+    int tid = (int) get_global_id (0);
 
-	long wid;
-	long paneId, normalisedPaneId;
+    long wid;
+    long paneId, normalisedPaneId;
 
-	long currPaneId;
-	long prevPaneId;
+    long currPaneId;
+    long prevPaneId;
 
-	/* Every thread is assigned a tuple */
+    /* Every thread is assigned a tuple */
 
-	#ifdef RANGE_BASED
-	__global input_t *curr = (__global input_t *) &input[tid * sizeof(input_t)];
-	currPaneId = __bswap64(curr->tuple.t) / PANE_SIZE;
-	#else
-	currPaneId = ((start_pointer + (tid * sizeof(input_t))) / sizeof(input_t)) / PANE_SIZE;
-	#endif
+#ifdef RANGE_BASED
+    __global input_t *curr = (__global input_t *) &input[tid * sizeof(input_t)];
+    currPaneId = __bswap64(curr->tuple.t) / PANE_SIZE;
+#else
+    currPaneId = ((start_pointer + (tid * sizeof(input_t))) / sizeof(input_t)) / PANE_SIZE;
+#endif
 
-	if (tid > 0) {
+    if (tid > 0) {
 
-	#ifdef RANGE_BASED
-	__global input_t *prev = (__global input_t *) &input[(tid - 1) * sizeof(input_t)];
-	prevPaneId = __bswap64(prev->tuple.t) / PANE_SIZE;
-	#else
-	prevPaneId = ((start_pointer + ((tid - 1) * sizeof(input_t))) / sizeof(input_t)) / PANE_SIZE;
-	#endif
+#ifdef RANGE_BASED
+    __global input_t *prev = (__global input_t *) &input[(tid - 1) * sizeof(input_t)];
+    prevPaneId = __bswap64(prev->tuple.t) / PANE_SIZE;
+#else
+    prevPaneId = ((start_pointer + ((tid - 1) * sizeof(input_t))) / sizeof(input_t)) / PANE_SIZE;
+#endif
 
-	} else {
+    } else {
 
-		prevPaneId = previous_pane_id;
-	}
+        prevPaneId = previous_pane_id;
+    }
 
-	long windowOffset = offset[0];
-	int index;
+    long windowOffset = offset[0];
+    int index;
 
-	if (prevPaneId < currPaneId) {
+    if (prevPaneId < currPaneId) {
 
-		while (prevPaneId < currPaneId) {
+        while (prevPaneId < currPaneId) {
 
-			paneId = prevPaneId + 1;
-			normalisedPaneId = paneId - PANES_PER_WINDOW;
+            paneId = prevPaneId + 1;
+            normalisedPaneId = paneId - PANES_PER_WINDOW;
 
-			/* Check for closing windows */
+            /* Check for closing windows */
 
-			if (normalisedPaneId >= 0 && normalisedPaneId % PANES_PER_SLIDE == 0) {
+            if (normalisedPaneId >= 0 && normalisedPaneId % PANES_PER_SLIDE == 0) {
 
-				wid = normalisedPaneId / PANES_PER_SLIDE;
+                wid = normalisedPaneId / PANES_PER_SLIDE;
 
-				if (wid >= 0) {
+                if (wid >= 0) {
 
-					index = convert_int_sat(wid - windowOffset);
+                    index = convert_int_sat(wid - windowOffset);
 
-					atom_max(&offset[1], (wid - windowOffset));
+                    atom_max(&offset[1], (wid - windowOffset));
 
-					window_end_pointers [index] = tid * sizeof(input_t);
-				}
-			}
+                    window_end_pointers [index] = tid * sizeof(input_t);
+                }
+            }
 
-			/* Check for opening windows */
+            /* Check for opening windows */
 
-			if (paneId % PANES_PER_SLIDE == 0) {
+            if (paneId % PANES_PER_SLIDE == 0) {
 
-				wid = paneId / PANES_PER_SLIDE;
+                wid = paneId / PANES_PER_SLIDE;
 
-				index = convert_int_sat(wid - windowOffset);
+                index = convert_int_sat(wid - windowOffset);
 
-				atom_max(&offset[1], wid - windowOffset);
+                atom_max(&offset[1], wid - windowOffset);
 
-				window_start_pointers [index] = tid * sizeof(input_t);
-			}
+                window_start_pointers [index] = tid * sizeof(input_t);
+            }
 
-			prevPaneId += 1;
-		}
-	}
+            prevPaneId += 1;
+        }
+    }
 
-	return;
+    return;
 }
 
 __kernel void reduceKernel (
 
-	const int tuples,
-	const int bytes,
+    const int tuples,
+    const int bytes,
 
-	const int max_windows,
+    const int max_windows,
 
-	const long previous_pane_id,
-	const long start_pointer,
+    const long previous_pane_id,
+    const long start_pointer,
 
-	__global const uchar *input,
-	__global       int   *window_start_pointers,
-	__global       int   *window_end_pointers,
-	__global       long  *offset,
-	__global       int   *window_counts,
-	__global       uchar *output,
-	__local        uchar *scratch
+    __global const uchar *input,
+    __global       int   *window_start_pointers,
+    __global       int   *window_end_pointers,
+    __global       long  *offset,
+    __global       int   *window_counts,
+    __global       uchar *output,
+    __local        uchar *scratch
 ) {
-	
-	int tid = (int) get_global_id  (0);
-	int lid = (int) get_local_id   (0);
-	int gid = (int) get_group_id   (0);
-	int lgs = (int) get_local_size (0); /* Local group size */
-	int nlg = (int) get_num_groups (0);
 
-	int group_offset = lgs * sizeof(input_t);
+    int tid = (int) get_global_id  (0);
+    int lid = (int) get_local_id   (0);
+    int gid = (int) get_group_id   (0);
+    int lgs = (int) get_local_size (0); /* Local group size */
+    int nlg = (int) get_num_groups (0);
 
-	__local int num_windows;
+    int group_offset = lgs * sizeof(input_t);
 
-	if (lid == 0)
-		num_windows = convert_int_sat(offset[1]);
+    __local int num_windows;
 
-	barrier(CLK_LOCAL_MEM_FENCE);
+    if (lid == 0)
+        num_windows = convert_int_sat(offset[1]);
 
-	if (tid == 0)
-		window_counts[4] = (num_windows + 1) * sizeof(output_t);
+    barrier(CLK_LOCAL_MEM_FENCE);
 
-	int wid = gid;
+    if (tid == 0)
+        window_counts[4] = (num_windows + 1) * sizeof(output_t);
 
-	/* A group may process more than one windows */
+    int wid = gid;
 
-	while (wid <= num_windows) {
+    /* A group may process more than one windows */
 
-		/* Window start and end pointers */
+    while (wid <= num_windows) {
 
-		int start = window_start_pointers [wid];
-		int end   = window_end_pointers [wid];
+        /* Window start and end pointers */
 
-		/* Check if a window is closing, opening, pending, or complete */
+        int start = window_start_pointers [wid];
+        int end   = window_end_pointers [wid];
 
-		if (start < 0 && end >= 0) {
+        /* Check if a window is closing, opening, pending, or complete */
 
-			/* A closing window; set start offset */
-			start = 0;
-			if (lid == 0)
-				atomic_inc(&window_counts[0]);
+        if (start < 0 && end >= 0) {
 
-		} else if (start >= 0 && end < 0) {
+            /* A closing window; set start offset */
+            start = 0;
+            if (lid == 0)
+                atomic_inc(&window_counts[0]);
 
-			/* An opening window; set end offset */
-			end = bytes;
-			if (lid == 0)
-				atomic_inc(&window_counts[3]);
+        } else if (start >= 0 && end < 0) {
 
-		} else if (start < 0 && end < 0) {
+            /* An opening window; set end offset */
+            end = bytes;
+            if (lid == 0)
+                atomic_inc(&window_counts[3]);
 
-			/* A pending window */
-			int old = atomic_cmpxchg(&window_counts[1], 0, 1);
-			if (old > 0) {
-				/* Compute pending windows once */
-				wid += nlg;
-				continue;
-			}
-			start = 0;
-			end = bytes;
+        } else if (start < 0 && end < 0) {
 
-		} else {
+            /* A pending window */
+            int old = atomic_cmpxchg(&window_counts[1], 0, 1);
+            if (old > 0) {
+                /* Compute pending windows once */
+                wid += nlg;
+                continue;
+            }
+            start = 0;
+            end = bytes;
 
-			/* A complete window */
-			if (lid == 0)
-				atomic_inc(&window_counts[2]);
-		}
+        } else {
 
-		if (start == end) {
+            /* A complete window */
+            if (lid == 0)
+                atomic_inc(&window_counts[2]);
+        }
 
-			/* Skip empty windows */
-			wid += nlg;
-			continue;
-		}
+        if (start == end) {
 
-		int idx = lid * sizeof(input_t) + start;
+            /* Skip empty windows */
+            wid += nlg;
+            continue;
+        }
 
-		__local output_t tuple;
-		initf (&tuple);
+        int idx = lid * sizeof(input_t) + start;
 
-		/* The sequential part */
-		while (idx < end && idx < bytes) {
+        __local output_t tuple;
+        initf (&tuple);
 
-			/* Get tuple from main memory */
-			__global input_t *p = (__global input_t *) &input[idx];
+        /* The sequential part */
+        while (idx < end && idx < bytes) {
 
-			reducef (&tuple, p);
+            /* Get tuple from main memory */
+            __global input_t *p = (__global input_t *) &input[idx];
 
-			idx += group_offset;
-		}
+            reducef (&tuple, p);
 
-		/* Write value to scratch memory */
-		__local output_t *cached_tuple = (__local output_t *) &scratch[lid * sizeof(output_t)];
-		cachef (&tuple, cached_tuple);
+            idx += group_offset;
+        }
 
-		barrier(CLK_LOCAL_MEM_FENCE);
+        /* Write value to scratch memory */
+        __local output_t *cached_tuple = (__local output_t *) &scratch[lid * sizeof(output_t)];
+        cachef (&tuple, cached_tuple);
 
-		/* Parallel reduction */
+        barrier(CLK_LOCAL_MEM_FENCE);
 
-		for (int pos = lgs / 2; pos > 0; pos = pos / 2) {
+        /* Parallel reduction */
 
-			if (lid < pos) {
+        for (int pos = lgs / 2; pos > 0; pos = pos / 2) {
 
-				__local output_t *mine  = (__local output_t *) &scratch[lid         * sizeof(output_t)];
-				__local output_t *other = (__local output_t *) &scratch[(lid + pos) * sizeof(output_t)];
+            if (lid < pos) {
 
-				mergef (mine, other);
-			}
+                __local output_t *mine  = (__local output_t *) &scratch[lid         * sizeof(output_t)];
+                __local output_t *other = (__local output_t *) &scratch[(lid + pos) * sizeof(output_t)];
 
-			barrier(CLK_LOCAL_MEM_FENCE);
-		}
+                mergef (mine, other);
+            }
 
-		/* Write result */
-		if (lid == 0) {
+            barrier(CLK_LOCAL_MEM_FENCE);
+        }
 
-			__local  output_t *cached = (__local  output_t *) &scratch[lid * sizeof(output_t)];
-			__global output_t *result = (__global output_t *) &output [wid * sizeof(output_t)];
+        /* Write result */
+        if (lid == 0) {
 
-			copyf (cached, result);
-		}
+            __local  output_t *cached = (__local  output_t *) &scratch[lid * sizeof(output_t)];
+            __global output_t *result = (__global output_t *) &output [wid * sizeof(output_t)];
 
-		/* Try next window */
-		wid += nlg;
-	}
-	return;
+            copyf (cached, result);
+        }
+
+        /* Try next window */
+        wid += nlg;
+    }
+    return;
 }
