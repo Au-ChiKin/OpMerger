@@ -77,7 +77,6 @@ void gpu_config_setKernel (gpu_config_p,
 
 // void gpu_config_finish (gpu_config_p);
 
-// void gpu_config_submitKernel (gpu_config_p, size_t *, size_t *);
 
 // void gpu_config_moveOutputBuffers (gpu_config_p);
 
@@ -96,6 +95,11 @@ void gpu_config_moveInputBuffers (gpu_config_p config, void ** host_addr, size_t
 void gpu_config_configureKernel (gpu_config_p,
 		void (*callback)(cl_kernel, gpu_config_p, int *, long *),
 		int *, long *);
+
+/**
+ *  Add kernels to command queues
+ **/
+void gpu_config_submitKernel (gpu_config_p, size_t *, size_t *);
 
 // void gpu_config_readOutput (gpu_config_p,
 // 		void (*callback)(gpu_config_p, int, int, int),

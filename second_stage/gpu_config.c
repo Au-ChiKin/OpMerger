@@ -149,7 +149,41 @@ void gpu_config_configureKernel (gpu_config_p q,
 	return;
 }
 
-// void gpu_context_flush (gpu_config_p q) {
+void gpu_config_submitKernel (gpu_config_p query, size_t *threads, size_t *threadsPerGroup) {
+	int i;
+	int error = 0;
+	/* Execute */
+	for (i = 0; i < query->kernel.count; i++) {
+		dbg("[DBG] submit kernel %d: %10zu threads %10zu threads/group\n", i, threads[i], threadsPerGroup[i]);
+#ifdef GPU_PROFILE
+		error |= clEnqueueNDRangeKernel (
+			query->command_queue[0],
+			query->kernel.kernels[i]->kernel[0],
+			1,
+			NULL,
+			&(threads[i]),
+			&(threadsPerGroup[i]),
+			0, NULL, &(query->exec_event[i]));
+#else
+		error |= clEnqueueNDRangeKernel (
+			query->command_queue[0],
+			query->kernel.kernels[i]->kernel[0],
+			1,
+			NULL,
+			&(threads[i]),
+			&(threadsPerGroup[i]),
+			0, NULL, NULL);
+#endif
+		clFinish(query->command_queue[0]);
+		if (error != CL_SUCCESS) {
+			fprintf(stderr, "opencl error (%d): %s (%s)\n", error, getErrorMessage(error), __FUNCTION__);
+			exit (1);
+		}
+	}
+	return;
+}
+
+// void gpu_config_flush (gpu_config_p q) {
 // 	int error = 0;
 // 	error |= clFlush (q->queue[0]);
 // 	error |= clFlush (q->queue[1]);
@@ -159,7 +193,7 @@ void gpu_config_configureKernel (gpu_config_p q,
 // 	}
 // }
 
-// void gpu_context_finish (gpu_config_p q) {
+// void gpu_config_finish (gpu_config_p q) {
 // 	if (q->scheduled < 1)
 // 		return;
 // 	/* There are tasks scheduled */
@@ -172,42 +206,7 @@ void gpu_config_configureKernel (gpu_config_p q,
 // 	}
 // }
 
-// void gpu_context_submitKernel (gpu_config_p q, size_t *threads, size_t *threadsPerGroup) {
-// 	int i;
-// 	int error = 0;
-// 	/* Execute */
-// 	for (i = 0; i < q->kernel.count; i++) {
-// 		dbg("[DBG] submit kernel %d: %10zu threads %10zu threads/group\n", i, threads[i], threadsPerGroup[i]);
-// #ifdef GPU_PROFILE
-// 		error |= clEnqueueNDRangeKernel (
-// 			q->queue[0],
-// 			q->kernel.kernels[i]->kernel[0],
-// 			1,
-// 			NULL,
-// 			&(threads[i]),
-// 			&(threadsPerGroup[i]),
-// 			0, NULL, &(q->exec_event[i]));
-// #else
-// 		error |= clEnqueueNDRangeKernel (
-// 			q->queue[0],
-// 			q->kernel.kernels[i]->kernel[0],
-// 			1,
-// 			NULL,
-// 			&(threads[i]),
-// 			&(threadsPerGroup[i]),
-// 			0, NULL, NULL);
-// #endif
-// 	}
-
-// 	if (error != CL_SUCCESS) {
-// 		fprintf(stderr, "opencl error (%d): %s (%s)\n", error, getErrorMessage(error), __FUNCTION__);
-// 		exit (1);
-// 	}
-
-// 	return;
-// }
-
-// void gpu_context_moveOutputBuffers (gpu_config_p q) {
+// void gpu_config_moveOutputBuffers (gpu_config_p q) {
 // 	int i;
 // 	int error = 0;
 // 	/* Read */
@@ -304,7 +303,7 @@ void gpu_config_moveInputBuffers (gpu_config_p config, void ** host_addr, size_t
 	return;
 }
 
-// void gpu_context_readOutput (gpu_config_p q,
+// void gpu_config_readOutput (gpu_config_p q,
 // 	void (*callback)(gpu_config_p, JNIEnv *, jobject, int, int, int),
 // 	JNIEnv *env, jobject obj, int qid) {
 

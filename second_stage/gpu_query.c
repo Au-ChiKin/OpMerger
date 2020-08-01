@@ -204,7 +204,7 @@ static int gpu_query_exec_1 (gpu_query_p query, size_t *threads, size_t *threads
 	if (operator->configure != NULL) {
 		gpu_config_configureKernel (config, operator->configure, operator->args1, operator->args2);
 	}
-	// gpu_config_submitKernel (config, threads, threadsPerGroup);
+	gpu_config_submitKernel (config, threads, threadsPerGroup);
 
 	// /* output and clean up */
 	// gpu_config_moveOutputBuffers (config);

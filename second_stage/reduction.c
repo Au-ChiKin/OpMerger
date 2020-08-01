@@ -1,17 +1,20 @@
 #include "reduction.h"
 
+#include <stdio.h>
+
 #include "helpers.h"
 #include "gpu_agg.h"
 
 #define KERNEL_NUM 4
 #define MAX_THREADS_PER_GROUP 256
+#define PARTIAL_WINDOWS 1024 * 1024 /* window limit in a batch */
 
 static size_t threads[KERNEL_NUM];
 static size_t threads_per_group [KERNEL_NUM];
 
-void reduction_init(int tuple_size) {
+void reduction_init(int batch_size) {
     for (int i=0; i<KERNEL_NUM; i++) {
-        threads[i] = tuple_size;
+        threads[i] = batch_size;
         threads_per_group[i] = MAX_THREADS_PER_GROUP;
     }
 }
@@ -22,7 +25,7 @@ void reduction_setup(int batch_size, int tuple_size) {
     
     gpu_set_input(qid, 0, batch_size * tuple_size);
     
-    int window_pointers_size = 4 * 1024; /* SystemConf.PARTIAL_WINDOWS */
+    int window_pointers_size = 4 * PARTIAL_WINDOWS;
     gpu_set_output(qid, 0, window_pointers_size, 0, 1, 0, 0, 1);
     gpu_set_output(qid, 1, window_pointers_size, 0, 1, 0, 0, 1);
     
@@ -33,20 +36,25 @@ void reduction_setup(int batch_size, int tuple_size) {
     // windowCounts = new UnboundedQueryBuffer (-1, windowCountsSize, false);
     gpu_set_output(qid, 3, window_counts_size, 0, 0, 1, 0, 1);
     
-    int outputSize = 1024 * 1024; /* SystemConf.UNBOUNDED_BUFFER_SIZE */
-    gpu_set_output(0, 4, outputSize, 1, 0, 0, 1, 0);
+    int outputSize = batch_size * tuple_size; /* SystemConf.UNBOUNDED_BUFFER_SIZE */
+    gpu_set_output(qid, 4, outputSize, 1, 0, 0, 1, 0);
     
     int args1 [4];
-    args1[0] = batch_size;
-    args1[1] = batch_size * tuple_size;
-    args1[2] = window_pointers_size;
-    args1[3] = 1024 * 1024; /* SystemConf.HASH_TABLE_SIZE */
+    args1[0] = batch_size; /* tuples */
+    args1[1] = batch_size * tuple_size; /* input size */
+    args1[2] = PARTIAL_WINDOWS; 
+    args1[3] = 16 * MAX_THREADS_PER_GROUP; /* local cache size */
+
+    fprintf(stderr, "args1 0: %d\n", args1[0]);
+    fprintf(stderr, "args1 1: %d\n", args1[1]);
+    fprintf(stderr, "args1 2: %d\n", args1[2]);
+    fprintf(stderr, "args1 3: %d\n", args1[3]);
 
     long args2 [2];
     args2[0] = 0; /* Previous pane id   */
     args2[1] = 0; /* Batch start offset */
 
-    gpu_set_kernel_reduce(0, args1, args2);
+    gpu_set_kernel_reduce(qid, args1, args2);
 }
 
 void reduction_process(batch_p batch, int tuple_size, int qid) {

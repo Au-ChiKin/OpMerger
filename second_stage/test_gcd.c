@@ -68,10 +68,11 @@ void run_processing_gpu(
             break;
         case MERGED_REDUCTION: 
             fprintf(stdout, "========== Running sepaerate select test ===========\n");
+            reduction_init(buffer_size);
             /* TODO wrap in a general setup method */
-            reduction_setup(16384, 64);
+            reduction_setup(buffer_size, tuple_size);
             /* TODO wrap in a general query process method */
-            reduction_process(input_batch, 64 /* tuple_size */, 0);
+            reduction_process(input_batch, tuple_size, 0);
             break;
         default: 
             break; 
