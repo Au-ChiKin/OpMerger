@@ -11,8 +11,8 @@ typedef struct input_buffer *input_buffer_p;
 typedef struct input_buffer {
 	int size;
 	cl_mem device_buffer;
-	cl_mem pinned_buffer;
-	void  *mapped_buffer;
+	// cl_mem pinned_buffer;
+	// void  *mapped_buffer;
 } input_buffer_t;
 
 input_buffer_p getInputBuffer (cl_context, cl_command_queue, int);

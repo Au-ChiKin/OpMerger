@@ -16,8 +16,8 @@ typedef struct output_buffer {
 	unsigned char readEvent;
 	unsigned char ignoreMark;
 	cl_mem device_buffer;
-	cl_mem pinned_buffer;
-	void  *mapped_buffer;
+	// cl_mem pinned_buffer;
+	// void  *mapped_buffer;
 } output_buffer_t;
 
 output_buffer_p getOutputBuffer (cl_context, cl_command_queue, int, int, int, int, int, int);

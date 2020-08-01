@@ -43,29 +43,29 @@ output_buffer_p getOutputBuffer (cl_context context, cl_command_queue queue, int
 		exit (1);
 	}
 	/* Allocate buffers */
-	p->pinned_buffer = clCreateBuffer (
-		context,
-		CL_MEM_READ_WRITE | CL_MEM_ALLOC_HOST_PTR,
-		p->size,
-		NULL,
-		&error);
-	if (! p->pinned_buffer) {
-		fprintf(stderr, "opencl error (%d): %s\n", error, getErrorMessage(error));
-		exit (1);
-	}
-	p->mapped_buffer = (void *) clEnqueueMapBuffer (
-		queue,
-		p->pinned_buffer,
-		CL_TRUE,
-		CL_MAP_READ,
-		0,
-		p->size,
-		0, NULL, NULL,
-		&error);
-	if (! p->mapped_buffer) {
-		fprintf(stderr, "opencl error (%d): %s\n", error, getErrorMessage(error));
-		exit (1);
-	}
+	// p->pinned_buffer = clCreateBuffer (
+	// 	context,
+	// 	CL_MEM_READ_WRITE | CL_MEM_ALLOC_HOST_PTR,
+	// 	p->size,
+	// 	NULL,
+	// 	&error);
+	// if (! p->pinned_buffer) {
+	// 	fprintf(stderr, "opencl error (%d): %s\n", error, getErrorMessage(error));
+	// 	exit (1);
+	// }
+	// p->mapped_buffer = (void *) clEnqueueMapBuffer (
+	// 	queue,
+	// 	p->pinned_buffer,
+	// 	CL_TRUE,
+	// 	CL_MAP_READ,
+	// 	0,
+	// 	p->size,
+	// 	0, NULL, NULL,
+	// 	&error);
+	// if (! p->mapped_buffer) {
+	// 	fprintf(stderr, "opencl error (%d): %s\n", error, getErrorMessage(error));
+	// 	exit (1);
+	// }
 	return p;
 }
 

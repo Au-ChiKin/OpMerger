@@ -28,31 +28,31 @@ input_buffer_p getInputBuffer (cl_context context, cl_command_queue queue, int s
 		fprintf(stderr, "opencl error (%d): %s\n", error, getErrorMessage(error));
 		exit (1);
 	}
-	/* Set p->pinned_memory */
-	p->pinned_buffer = clCreateBuffer (
-		context,
-		CL_MEM_READ_WRITE | CL_MEM_ALLOC_HOST_PTR,
-		p->size,
-		NULL,
-		&error);
-	if (! p->pinned_buffer) {
-		fprintf(stderr, "opencl error (%d): %s\n", error, getErrorMessage(error));
-		exit (1);
-	}
-	/* Set p->mapped_memory */
-	p->mapped_buffer = (void *) clEnqueueMapBuffer (
-		queue,
-		p->pinned_buffer,
-		CL_TRUE, /* Blocking */
-		CL_MAP_WRITE,
-		0,
-		p->size,
-		0, NULL, NULL, /* Zero dependencies */
-		&error);
-	if (! p->mapped_buffer) {
-		fprintf(stderr, "opencl error (%d): %s\n", error, getErrorMessage(error));
-		exit (1);
-	}
+	// /* Set p->pinned_memory */
+	// p->pinned_buffer = clCreateBuffer (
+	// 	context,
+	// 	CL_MEM_READ_WRITE | CL_MEM_ALLOC_HOST_PTR,
+	// 	p->size,
+	// 	NULL,
+	// 	&error);
+	// if (! p->pinned_buffer) {
+	// 	fprintf(stderr, "opencl error (%d): %s\n", error, getErrorMessage(error));
+	// 	exit (1);
+	// }
+	// /* Set p->mapped_memory */
+	// p->mapped_buffer = (void *) clEnqueueMapBuffer (
+	// 	queue,
+	// 	p->pinned_buffer,
+	// 	CL_TRUE, /* Blocking */
+	// 	CL_MAP_WRITE,
+	// 	0,
+	// 	p->size,
+	// 	0, NULL, NULL, /* Zero dependencies */
+	// 	&error);
+	// if (! p->mapped_buffer) {
+	// 	fprintf(stderr, "opencl error (%d): %s\n", error, getErrorMessage(error));
+	// 	exit (1);
+	// }
 	return p;
 }
 
