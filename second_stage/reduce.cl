@@ -186,7 +186,11 @@ __kernel void computeOffsetKernel (
 
                 if (wid >= 0) {
 
+#ifdef __APPLE__ /* build-in gpu does not support khr_int64_extended_atomics extension */ 
+                    atomic_min((__global int *) &offset[0], (int) wid);
+#else
                     atom_min(&offset[0], wid);
+#endif
                     break;
                 }
             }
@@ -267,7 +271,11 @@ __kernel void computePointersKernel (
 
                     index = convert_int_sat(wid - windowOffset);
 
+#ifdef __APPLE__
+                    atomic_max((__global int *) &offset[1], (int) (wid - windowOffset));
+#else
                     atom_max(&offset[1], (wid - windowOffset));
+#endif
 
                     window_end_pointers [index] = tid * sizeof(input_t);
                 }
@@ -281,7 +289,11 @@ __kernel void computePointersKernel (
 
                 index = convert_int_sat(wid - windowOffset);
 
-                atom_max(&offset[1], wid - windowOffset);
+#ifdef __APPLE__
+                    atomic_max((__global int *) &offset[1], (int) (wid - windowOffset));
+#else
+                    atom_max(&offset[1], (wid - windowOffset));
+#endif
 
                 window_start_pointers [index] = tid * sizeof(input_t);
             }
