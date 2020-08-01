@@ -14,10 +14,8 @@
 #include <CL/cl.h>
 #endif
 
-#include "gpu_agg.h"
-
 /* w/o  pipelining */
-static int gpu_query_exec_1 (gpu_query_p, size_t *, size_t *, query_operator_p);
+static int gpu_query_exec_1 (gpu_query_p, size_t *, size_t *, query_operator_p, void ** batch_addr);
 /* with pipelining */
 static int gpu_query_exec_2 (gpu_query_p, size_t *, size_t *, query_operator_p); 
 
@@ -181,39 +179,39 @@ int gpu_query_setKernel (gpu_query_p query,
 // 	return query->configs[next];
 // }
 
-int gpu_query_exec (gpu_query_p query, size_t *threads, size_t *threadsPerGroup, query_operator_p operator) {
+int gpu_query_exec (gpu_query_p query, size_t *threads, size_t *threadsPerGroup, query_operator_p operator, void ** batch_addr) {
 	
 	if (! query)
 		return -1;
 
 	if (NCONTEXTS == 1) {
-		return gpu_query_exec_1 (query, threads, threadsPerGroup, operator);
+		return gpu_query_exec_1 (query, threads, threadsPerGroup, operator, batch_addr);
 	} else {
 		return gpu_query_exec_2 (query, threads, threadsPerGroup, operator);
 	}
 }
 
-static int gpu_query_exec_1 (gpu_query_p query, size_t *threads, size_t *threadsPerGroup, query_operator_p operator) {
+static int gpu_query_exec_1 (gpu_query_p query, size_t *threads, size_t *threadsPerGroup, query_operator_p operator, void ** batch_addr) {
 	
 	// gpu_config_p config = gpu_switch_config(query);
 	/* There is only one config */
 	gpu_config_p config = query->configs[0];
 
 	/* Write input */
-	gpu_config_writeInput (config, operator->writeInput, query->qid);
-	gpu_config_moveInputBuffers (config);
+	// gpu_config_writeInput (config, operator->writeInput, query->qid);
+	gpu_config_moveInputBuffers (config, batch_addr);
 	
-	/* execute */
-	if (operator->configure != NULL) {
-		gpu_config_configureKernel (config, operator->configure, operator->args1, operator->args2);
-	}
-	gpu_config_submitKernel (config, threads, threadsPerGroup);
+	// /* execute */
+	// if (operator->configure != NULL) {
+	// 	gpu_config_configureKernel (config, operator->configure, operator->args1, operator->args2);
+	// }
+	// gpu_config_submitKernel (config, threads, threadsPerGroup);
 
-	/* output and clean up */
-	gpu_config_moveOutputBuffers (config);
-	gpu_config_flush (config);
-	gpu_config_finish(config);
-	gpu_config_readOutput (config, operator->readOutput, query->qid);
+	// /* output and clean up */
+	// gpu_config_moveOutputBuffers (config);
+	// gpu_config_flush (config);
+	// gpu_config_finish(config);
+	// gpu_config_readOutput (config, operator->readOutput, query->qid);
 
 	return 0;
 }
@@ -266,6 +264,6 @@ static int gpu_query_exec_2 (gpu_query_p q, size_t *threads, size_t *threadsPerG
 // 		result_handler_waitForReadEvent (q->handler);
 // 	}
 
-// 	return 0;
+	return 0;
 }
 

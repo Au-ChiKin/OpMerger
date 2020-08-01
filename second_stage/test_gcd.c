@@ -65,7 +65,7 @@ void run_processing_gpu(cbuf_handle_t buffers [], int size, int * result, int lo
             /* TODO wrap in a general setup method */
             reduction_setup(16384, 64);
             /* TODO wrap in a general query process method */
-            reduction_process(input_batch, 64 /* tuple_size */, 0);
+            // reduction_process(input_batch, 64 /* tuple_size */, 0);
             break;
         default: 
             break; 

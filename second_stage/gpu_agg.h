@@ -9,7 +9,7 @@ typedef struct query_operator {
 	int  *args1;
 	long *args2;
 
-	void (*writeInput) (gpu_config_p, int, int);
+	// void (*writeInput) (gpu_config_p, int, int);
 	void (*readOutput) (gpu_config_p, int, int, int);
 
 	void (*configure) (cl_kernel, gpu_config_p, int *, long *);
@@ -50,5 +50,10 @@ int gpu_set_output(int qid, int ndx, int size, int writeOnly, int doNotMove, int
 
 /* Release gpu memory */
 void gpu_free();
+
+/* Execute operators*/
+
+/* Reduce */
+void gpu_execute_reduce(int qid, int * threads, int * threads_per_group, long * args2, void ** batch_addr);
 
 #endif

@@ -35,6 +35,12 @@ void callback_setKernelAggregate (cl_kernel, gpu_config_p, int *, long *);
 
 void callback_setKernelReduce (cl_kernel kernel, gpu_config_p context, int *args1, long *args2);
 
+void callback_configureReduce (cl_kernel kernel, gpu_config_p context, int *args1, long *args2);
+
+void callback_readOutput (gpu_config_p context, int qid, int ndx, int mark);
+
+gpu_config_p callback_execKernel (gpu_config_p context);
+
 
 static void set_platform () {
     int error = 0;
@@ -194,14 +200,15 @@ int gpu_set_kernel (int qid, int ndx /* kernel index */,
 
 int gpu_exec (int qid,
 	size_t *threads, size_t *threadsPerGroup,
-	query_operator_p operator) {
+	query_operator_p operator,
+	void ** batch_addr) {
 
 	if (qid < 0 || qid >= query_num) {
 		fprintf(stderr, "error: query index [%d] out of bounds\n", qid);
 		exit (1);
 	}
 	gpu_query_p query = queries[qid];
-	return gpu_query_exec (query, threads, threadsPerGroup, operator);
+	return gpu_query_exec (query, threads, threadsPerGroup, operator, batch_addr);
 }
 
 void gpu_set_kernel_aggregate(int qid, int * args1, long * args2) {
@@ -407,7 +414,7 @@ void callback_setKernelReduce (cl_kernel kernel, gpu_config_p context, int *args
 	return;
 }
 
-void_execute_reduce(int qid, int * threads, int * threads_per_group, long * args2) {
+void gpu_execute_reduce(int qid, int * threads, int * threads_per_group, long * args2, void ** batch_addr) {
 	int const kernel_num = 4;
 	for (int i=0; i<kernel_num; i++) {
 		dbg("[DBG] kernel %d: %10zu threads %10zu threads/group\n", i, threads[i], threads_per_group[i]);
@@ -422,23 +429,17 @@ void_execute_reduce(int qid, int * threads, int * threads_per_group, long * args
 	operator->args1 = NULL;
 	operator->args2 = args2;
 	operator->configure = callback_configureReduce;
-	operator->writeInput = callback_writeInput;
+	// operator->writeInput = callback_writeInput;
 	operator->readOutput = callback_readOutput;
 	operator->execKernel = callback_execKernel;
 
-	gpu_exec(qid, threads, threads_per_group, operator);
+	gpu_exec(qid, threads, threads_per_group, operator, batch_addr);
 
 	/* Free operator */
 	if (operator)
 		free (operator);
 
-	/* Release Java arrays */
-	(*env)->ReleaseIntArrayElements (env, _t1, t1, JNI_ABORT);
-	(*env)->ReleaseIntArrayElements (env, _t2, t2, JNI_ABORT);
-
-	(*env)->ReleaseLongArrayElements(env, _args2, args2, JNI_ABORT);
-
-	return 0;
+	return;
 }
 
 void callback_configureReduce (cl_kernel kernel, gpu_config_p context, int *args1, long *args2) {
@@ -465,19 +466,25 @@ void callback_configureReduce (cl_kernel kernel, gpu_config_p context, int *args
 
 /* Data movement callbacks */
 
-void callback_writeInput (gpu_config_p context, int qid, int ndx) {
+// void callback_writeInput (gpu_config_p context, int qid, int ndx) {
 
-	(*env)->CallVoidMethod (
-			env, obj, writeMethod,
-			qid,
-			ndx,
-			(long) (context->kernelInput.inputs[ndx]->mapped_buffer),
-			context->kernelInput.inputs[ndx]->size);
+// 	// It seems that it is for Java to move the data to mapped_buffer.
+// 	// Therefore we do not need this
+// 	/* Copy data across the JNI boundary */
+// 	writeMethod = (*env)->GetMethodID (env, class,
+// 		"inputDataMovementCallback",  "(IIJI)V");
+	
+// 	(*env)->CallVoidMethod (
+// 			env, obj, writeMethod,
+// 			qid, // qid
+// 			ndx, // bid
+// 			(long) (context->kernelInput.inputs[ndx]->mapped_buffer), // address
+// 			context->kernelInput.inputs[ndx]->size); // size
 
-	return ;
-}
+// 	return ;
+// }
 
-void callback_readOutput (gpu_config_p context, JNIEnv *env, jobject obj, int qid, int ndx, int mark) {
+void callback_readOutput (gpu_config_p context, int qid, int ndx, int mark) {
 	
 	if (context->kernelOutput.outputs[ndx]->doNotMove)
 		return;
@@ -496,29 +503,30 @@ void callback_readOutput (gpu_config_p context, JNIEnv *env, jobject obj, int qi
 	}
 	
 	/* Copy data across the JNI boundary */
-	(*env)->CallVoidMethod (
-			env, obj, readMethod,
-			qid,
-			ndx,
-			(long) (context->kernelOutput.outputs[ndx]->mapped_buffer),
-			size);
+	// readMethod = (*env)->GetMethodID (env, class, "outputDataMovementCallback",  "(IIJI)V");
+	// (*env)->CallVoidMethod (
+	// 		env, obj, readMethod,
+	// 		qid,
+	// 		ndx,
+	// 		(long) (context->kernelOutput.outputs[ndx]->mapped_buffer),
+	// 		size);
 
 	return;
 }
 
-gpu_config_p callback_execKernel (gpu_config_p context) {
-	int i;
-	gpu_config_p p = pipeline[0];
-	#ifdef GPU_VERBOSE
-	if (! p)
-		dbg("[DBG] (null) callback_execKernel(%p) \n", context);
-	else
-		dbg("[DBG] %p callback_execKernel(%p)\n", p, context);
-	#endif
-	/* Shift */
-	for (i = 0; i < D - 1; i++) {
-		pipeline[i] = pipeline [i + 1];
-	}
-	pipeline[D - 1] = context;
+gpu_config_p callback_execKernel(gpu_config_p config) {
+	// int i;
+	gpu_config_p p = NULL; // pipeline[0];
+	// #ifdef GPU_VERBOSE
+	// if (! p)
+	// 	dbg("[DBG] (null) callback_execKernel(%p) \n", context);
+	// else
+	// 	dbg("[DBG] %p callback_execKernel(%p)\n", p, context);
+	// #endif
+	// /* Shift */
+	// for (i = 0; i < D - 1; i++) {
+	// 	pipeline[i] = pipeline [i + 1];
+	// }
+	// pipeline[D - 1] = config;
 	return p;
 }

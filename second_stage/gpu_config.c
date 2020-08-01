@@ -253,18 +253,17 @@ void gpu_config_setKernel (gpu_config_p query,
 // 	return;
 // }
 
-void gpu_context_writeInput (gpu_config_p q,
-	void (*callback)(gpu_config_p, int, int),
-	int qid) {
+// void gpu_config_writeInput (gpu_config_p config,
+// 	void (*callback)(gpu_config_p, int, int),
+// 	int qid) {
 
-	int idx;
-	for (idx = 0; idx < q->kernelInput.count; idx++)
-		(*callback) (q, qid, idx);
-	return;
-}
+// 	int idx;
+// 	for (idx = 0; idx < config->kernelInput.count; idx++)
+// 		(*callback) (config, qid, idx);
+// 	return;
+// }
 
-/* 1/08 TODO: understand the functionality of mapped buffer */
-void gpu_context_moveInputBuffers (gpu_config_p config) {
+void gpu_config_moveInputBuffers (gpu_config_p config, void ** host_addr) {
 	int i;
 	int error = 0;
 	/* Write */
@@ -276,7 +275,7 @@ void gpu_context_moveInputBuffers (gpu_config_p config) {
 				CL_FALSE,
 				0,
 				config->kernelInput.inputs[i]->size,
-				config->kernelInput.inputs[i]->mapped_buffer,
+				host_addr[i],
 #ifdef GPU_PROFILE				
 				0, NULL, &(config->write_event));
 #else				
@@ -289,7 +288,7 @@ void gpu_context_moveInputBuffers (gpu_config_p config) {
 				CL_FALSE,
 				0,
 				config->kernelInput.inputs[i]->size,
-				config->kernelInput.inputs[i]->mapped_buffer,
+				host_addr[i],
 				0, NULL, NULL);
 		}
 

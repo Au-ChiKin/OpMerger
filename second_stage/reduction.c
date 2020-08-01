@@ -6,8 +6,8 @@
 #define KERNEL_NUM 4
 #define MAX_THREADS_PER_GROUP 256
 
-static int threads[KERNEL_NUM];
-static int threads_per_group [KERNEL_NUM];
+static size_t threads[KERNEL_NUM];
+static size_t threads_per_group [KERNEL_NUM];
 
 void reduction_init(int tuple_size) {
     for (int i=0; i<KERNEL_NUM; i++) {

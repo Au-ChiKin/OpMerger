@@ -2,6 +2,7 @@
 #define __GPU_QUERY_H_
 
 #include "gpu_config.h"
+#include "gpu_agg.h"
 
 typedef struct gpu_query *gpu_query_p;
 typedef struct gpu_query {
@@ -42,6 +43,6 @@ int gpu_query_setKernel (gpu_query_p,
 		int *, long *);
 
 /* Process batch */
-int gpu_query_exec (gpu_query_p, size_t *, size_t *, query_operator_p);
+int gpu_query_exec (gpu_query_p, size_t *, size_t *, query_operator_p, void ** batch_addr);
 
 #endif /* __GPU_QUERY_H_ */
