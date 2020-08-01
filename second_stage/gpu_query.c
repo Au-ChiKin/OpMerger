@@ -198,7 +198,6 @@ static int gpu_query_exec_1 (gpu_query_p query, size_t *threads, size_t *threads
 	gpu_config_p config = query->configs[0];
 
 	/* Write input */
-	// gpu_config_writeInput (config, operator->writeInput, query->qid);
 	gpu_config_moveInputBuffers (config, batch_addr, addr_size);
 	
 	// /* execute */

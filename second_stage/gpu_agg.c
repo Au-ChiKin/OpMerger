@@ -429,7 +429,6 @@ void gpu_execute_reduce(int qid, int * threads, int * threads_per_group, long * 
 	operator->args1 = NULL;
 	operator->args2 = args2;
 	operator->configure = callback_configureReduce;
-	// operator->writeInput = callback_writeInput;
 	operator->readOutput = callback_readOutput;
 	operator->execKernel = callback_execKernel;
 
@@ -465,24 +464,6 @@ void callback_configureReduce (cl_kernel kernel, gpu_config_p context, int *args
 }
 
 /* Data movement callbacks */
-
-// void callback_writeInput (gpu_config_p context, int qid, int ndx) {
-
-// 	// It seems that it is for Java to move the data to mapped_buffer.
-// 	// Therefore we do not need this
-// 	/* Copy data across the JNI boundary */
-// 	writeMethod = (*env)->GetMethodID (env, class,
-// 		"inputDataMovementCallback",  "(IIJI)V");
-	
-// 	(*env)->CallVoidMethod (
-// 			env, obj, writeMethod,
-// 			qid, // qid
-// 			ndx, // bid
-// 			(long) (context->kernelInput.inputs[ndx]->mapped_buffer), // address
-// 			context->kernelInput.inputs[ndx]->size); // size
-
-// 	return ;
-// }
 
 void callback_readOutput (gpu_config_p context, int qid, int ndx, int mark) {
 	
