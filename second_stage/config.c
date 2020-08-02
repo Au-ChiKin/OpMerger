@@ -71,6 +71,8 @@ void set_test_case(char const * mname, enum test_cases * mode) {
         *mode = MERGED_AGGREGATION; 
     } else if (strcmp(mname, "merged-reduction") == 0) {
         *mode = MERGED_REDUCTION;
+    } else if (strcmp(mname, "merged-selection") == 0) {
+        *mode = MERGED_SELECTION;
     } else if (strcmp(mname, "cpu") == 0) {
         *mode = CPU;
     } else {

@@ -8,7 +8,7 @@
 
 #include "../clib/templates/byteorder.h"
 #define INPUT_VECTOR_SIZE 4
-#define OUTPUT_VECTOR_SIZE 1
+#define OUTPUT_VECTOR_SIZE 4
 
 typedef struct {
     long t;
@@ -31,9 +31,18 @@ typedef union {
 } input_t;
 
 typedef struct {
-    long t; /* timestamp */
-    float _1; /* sum */
-    int _2; /* count */
+    long t;
+    long _1;
+    long _2;
+    long _3;
+    int _4;
+    int _5;
+    int _6;
+    int _7;
+    float _8;
+    float _9;
+    float _10;
+    int _11;
 } output_tuple_t __attribute__((aligned(1)));
 
 typedef union {
@@ -165,6 +174,14 @@ __kernel void selectKernel (
         partitions[gid] = loffsets[_right];
         loffsets[_right] = 0; // So that in the downsweep, the last x[] element will be added to all the other elements
     }
+
+    downsweep(loffsets, l_tuple_num);
+
+    /* Write results to global memory */
+    goffsets[ left] = ( left < tuples) ? loffsets[ _left] : -1;
+    goffsets[right] = (right < tuples) ? loffsets[_right] : -1;
+}
+
 
 inline void compact_tuple(
     __global const uchar *input,

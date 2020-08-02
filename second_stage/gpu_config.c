@@ -282,13 +282,14 @@ void gpu_config_moveOutputBuffers (gpu_config_p config, void ** host_addr, size_
 		}
 
 		moved += 1;
+
+		if (error != CL_SUCCESS) {
+			fprintf(stderr, "opencl error (%d): %s (%s) when move output %d\n",
+				error, getErrorMessage(error), __FUNCTION__, i);
+			exit (1);
+		}
 	}
 
-	if (error != CL_SUCCESS) {
-		fprintf(stderr, "opencl error (%d): %s (%s)\n",
-			error, getErrorMessage(error), __FUNCTION__);
-		exit (1);
-	}
 
 	config->readCount += 1;
 	config->scheduled = 1;

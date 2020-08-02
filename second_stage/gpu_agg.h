@@ -36,6 +36,8 @@ void gpu_set_kernel_aggregate(int qid, int * _args1, long * _args2);
  */ 
 void gpu_set_kernel_reduce(int qid, int * args1, long * args2);
 
+void gpu_set_kernel_select(int qid, int * args);
+
 /* Initialise OpenCL device */
 void gpu_init(int query_num);
 
@@ -52,6 +54,8 @@ int gpu_set_output(int qid, int ndx, int size, int writeOnly, int doNotMove, int
 void gpu_free();
 
 /* Execute operators*/
+
+void gpu_execute (int qid, size_t * threads, size_t * threadsPerGroup, void ** input_batches, void ** output_batches, size_t addr_size);
 
 /* Reduce */
 void gpu_execute_reduce(int qid, size_t * threads, size_t * threads_per_group, long * args2, void ** input_batches, void ** output_batches, size_t addr_size);

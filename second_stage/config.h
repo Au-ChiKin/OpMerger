@@ -1,7 +1,9 @@
 #ifndef CONFIG_H
 #define CONFIG_H
 
-#define BUFFER_SIZE 16384 /* in tuple */
+#define BUFFER_SIZE 16384 / 128 /* in tuple */
+#define MAX_THREADS_PER_GROUP 256 /* Should be queried from the device */
+#define PARTIAL_WINDOWS 1024 * 16 /* window limit in a batch */
 
 /*
  * To add case:
@@ -12,6 +14,7 @@ enum test_cases {
     CPU,
     MERGED_AGGREGATION, 
     MERGED_REDUCTION,
+    MERGED_SELECTION,
     ERROR
 };
 

@@ -32,8 +32,9 @@ static gpu_query_p queries [MAX_QUERIES];
 /* Callback functions */
 
 void callback_setKernelAggregate (cl_kernel, gpu_config_p, int *, long *);
-
+void callback_setKernelCompact (cl_kernel kernel, gpu_config_p context, int *args1, long *args2);
 void callback_setKernelReduce (cl_kernel kernel, gpu_config_p context, int *args1, long *args2);
+void callback_setKernelSelect (cl_kernel kernel, gpu_config_p context, int *args1, long *args2);
 
 void callback_configureReduce (cl_kernel kernel, gpu_config_p context, int *args1, long *args2);
 
@@ -343,6 +344,34 @@ void gpu_set_kernel_reduce(int qid, int * args1, long * args2) {
 	return;
 }
 
+void gpu_execute (int qid, size_t * threads, size_t * threadsPerGroup, void ** input_batches, void ** output_batches, size_t addr_size) {
+
+	/* Create operator */
+	query_operator_p operator = (query_operator_p) malloc (sizeof(query_operator_t));
+	if (! operator) {
+		fprintf(stderr, "fatal error: out of memory\n");
+		exit(1);
+	}
+
+	/* Currently, we assume the same execution pattern for all queries */
+
+	operator->args1 = NULL;
+	operator->args2 = NULL;
+	
+	operator->configure = NULL;
+
+	operator->readOutput = callback_readOutput;
+	operator->execKernel = callback_execKernel;
+
+	gpu_exec (qid, threads, threadsPerGroup, operator, input_batches, output_batches, addr_size);
+
+	/* Free operator */
+	if (operator)
+		free (operator);
+
+	return;
+}
+
 void callback_setKernelReduce (cl_kernel kernel, gpu_config_p context, int *args1, long *args2) {
 
 	int numberOfTuples = args1[0];
@@ -464,6 +493,69 @@ void callback_configureReduce (cl_kernel kernel, gpu_config_p config, int *args1
 	}
 
 	return;
+}
+
+void gpu_set_kernel_select (int qid, int * args) {
+
+	gpu_set_kernel (qid, 0,  "selectKernel",  &callback_setKernelSelect, args, NULL);
+	gpu_set_kernel (qid, 1, "compactKernel",  &callback_setKernelCompact, args, NULL);
+
+	return ;
+}
+
+void callback_setKernelSelect (cl_kernel kernel, gpu_config_p context, int *args1, long *args2) {
+
+	(void) args2;
+
+	/* Get all constants */
+	int numberOfBytes  = args1[0];
+	int numberOfTuples = args1[1];
+	int cache_size     = args1[2]; /* Local buffer size */
+
+	int error = 0;
+	/* Set constant arguments */
+	error |= clSetKernelArg (kernel, 0, sizeof(int), (void *)   &numberOfBytes);
+	error |= clSetKernelArg (kernel, 1, sizeof(int), (void *)  &numberOfTuples);
+	/* Set I/O byte buffers */
+	error |= clSetKernelArg (
+		kernel,
+		2,
+		sizeof(cl_mem),
+		(void *) &(context->kernelInput.inputs[0]->device_buffer));
+	error |= clSetKernelArg (
+		kernel,
+		3,
+		sizeof(cl_mem),
+		(void *) &(context->kernelOutput.outputs[0]->device_buffer));
+	error |= clSetKernelArg (
+		kernel,
+		4,
+		sizeof(cl_mem),
+		(void *) &(context->kernelOutput.outputs[1]->device_buffer));
+	error |= clSetKernelArg (
+		kernel,
+		5,
+		sizeof(cl_mem),
+		(void *) &(context->kernelOutput.outputs[2]->device_buffer));
+	error |= clSetKernelArg (
+		kernel,
+		6,
+		sizeof(cl_mem),
+		(void *) &(context->kernelOutput.outputs[3]->device_buffer));
+	/* Set local memory */
+	error |= clSetKernelArg (kernel, 7, (size_t) cache_size, (void *) NULL);
+
+	if (error != CL_SUCCESS) {
+		fprintf(stderr, "opencl error (%d): %s\n", error, getErrorMessage(error));
+		exit (1);
+	}
+	return;
+}
+
+void callback_setKernelCompact (cl_kernel kernel, gpu_config_p context, int *args1, long *args2) {
+
+	/* The configuration of this kernel is identical to the select kernel. */
+	callback_setKernelSelect (kernel, context, args1, args2);
 }
 
 /* Data movement callbacks */

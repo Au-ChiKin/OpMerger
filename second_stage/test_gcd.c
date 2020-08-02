@@ -33,6 +33,7 @@
 #include "config.h"
 #include "aggregation.h"
 #include "reduction.h"
+#include "selection.h"
 #include "batch.h"
 
 /* Input data of interest from files */
@@ -72,12 +73,18 @@ void run_processing_gpu(
 
     /* simplified query creation */
     switch (mode) {
-        case MERGED_AGGREGATION: 
-            fprintf(stdout, "========== Running merged aggregation test ===========\n");
-            aggregation(16384, 64);
+        case MERGED_SELECTION: 
+            fprintf(stdout, "========== Running merged selection test ===========\n");
+            selection_init(buffer_size);
+            /* TODO wrap in a general setup method */
+            selection_setup(buffer_size, tuple_size);
+            /* TODO wrap in a general query process method */
+            selection_process(input_batch, buffer_size, tuple_size, 0, output);
+
+            selection_print_output(output, buffer_size, tuple_size);
             break;
         case MERGED_REDUCTION: 
-            fprintf(stdout, "========== Running sepaerate select test ===========\n");
+            fprintf(stdout, "========== Running merged reduction test ===========\n");
             reduction_init(buffer_size);
             /* TODO wrap in a general setup method */
             reduction_setup(buffer_size, tuple_size);
