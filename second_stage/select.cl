@@ -55,8 +55,8 @@ typedef union {
 // What we need to do is to change this one
 inline int selectf (__global input_t *p) {
     int value = 1;
-    int attribute_value = p->tuple._6; /* where event_type == 1*/
-    value = value & (attribute_value == 1); 
+    int attribute_value = p->tuple._7; /* where category == 1*/
+    value = value & (attribute_value == 9); 
     return value;
 }
 
@@ -200,8 +200,9 @@ inline void compact_tuple(
             __global  input_t *l_in  = (__global  input_t *) &  input[l_in_byte];
             __global output_t *l_out = (__global output_t *) & output[l_out_byte];
 
-            l_out->vectors[0] = l_in->vectors[0];
-            l_out->vectors[1] = l_in->vectors[1];
+        for (int i=0; i<OUTPUT_VECTOR_SIZE; i++) {
+            l_out->vectors[i] = l_in->vectors[i];
+        }
     }   
 }
 

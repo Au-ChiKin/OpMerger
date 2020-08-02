@@ -122,7 +122,7 @@ void selection_print_output(batch_p outputs, int batch_size, int tuple_size) {
     printf("[Results] Output tuple numbers: %d\n", count);
     printf("[Results] Tuple    Timestamp    user-id     event-type    category    priority    cpu\n");
     for (int i=0; i<10; i++) {
-        printf("[Results] %-8d %-8ld %-8d %-6d %-6d %-6d %-6.5f\n", i, output->t, output->_4, output->_5, output->_6, output->_7, output->_8);
+        printf("[Results] %-8d %-12ld %-11d %-13d %-11d %-11d %-6.5f\n", i, output->t, output->_4, output->_5, output->_6, output->_7, output->_8);
         output += 1;
     }
 }
