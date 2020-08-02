@@ -46,7 +46,7 @@ typedef union {
 
 #define PANES_PER_WINDOW 1L
 #define PANES_PER_SLIDE  1L
-#define PANE_SIZE        32L
+#define PANE_SIZE        16L
 
 inline void initf (__local output_t *p) {
     p->tuple.t = 0;
@@ -56,7 +56,7 @@ inline void initf (__local output_t *p) {
 
 inline void reducef (__local output_t *p, __global input_t *q) {
     p->tuple.t = (p->tuple.t == 0) ? : q->tuple.t;
-    p->tuple._1 += q->tuple._5;
+    p->tuple._1 += q->tuple._8;
     p->tuple._2 += 1;
 }
 
