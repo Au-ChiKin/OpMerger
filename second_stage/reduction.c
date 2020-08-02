@@ -137,7 +137,7 @@ void reduction_print_output(batch_p outputs, int batch_size, int tuple_size) {
     current_offset += window_counts_size;
 
     int output_size = batch_size * tuple_size; /* SystemConf.UNBOUNDED_BUFFER_SIZE */
-    output_tuple_t * output = outputs->buffer + current_offset;
+    output_tuple_t * output = (output_tuple_t *) (outputs->buffer + current_offset);
     current_offset += output_size;
 
     /* print */
