@@ -92,6 +92,10 @@ void reduction_process(batch_p batch, int tuple_size, int qid, batch_p output) {
         args2[1] = s;
     }
     
+    u_int8_t * inputs [1] = {batch->buffer + batch->start};
+
+    u_int8_t * outputs [2] = {output->buffer + batch->start, output->buffer + batch->start + 20};
+
     /* TODO: support pipelined operators */
     /* Set output for a previously executed operator */
     
@@ -108,7 +112,7 @@ void reduction_process(batch_p batch, int tuple_size, int qid, batch_p output) {
         qid, 
         threads, threads_per_group, 
         args2, 
-        (void **) (batch->buffer + batch->start), (void **) (output->buffer + output->start), sizeof(u_int8_t)); 
+        (void **) (inputs), (void **) (outputs), sizeof(u_int8_t)); 
         // passing the batch without deserialisation
     
     /* TODO: output result */
