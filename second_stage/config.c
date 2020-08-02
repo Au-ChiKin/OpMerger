@@ -70,7 +70,7 @@ void set_test_case(char const * mname, enum test_cases * mode) {
     if (strcmp(mname, "merged-aggregation") == 0) {
         *mode = MERGED_AGGREGATION; 
     } else if (strcmp(mname, "reduction") == 0) {
-        *mode = MERGED_REDUCTION;
+        *mode = REDUCTION;
     } else if (strcmp(mname, "merged-selection") == 0) {
         *mode = MERGED_SELECTION;
     } else if (strcmp(mname, "separate-selection") == 0) {
