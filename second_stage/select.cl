@@ -55,8 +55,8 @@ typedef union {
 // What we need to do is to change this one
 inline int selectf (__global input_t *p) {
     int value = 1;
-    int attribute_value = p->tuple._5; /* where event_type == 2*/
-    value = value & (attribute_value != 2); 
+    int attribute_value = p->tuple._6; /* where event_type == 1*/
+    value = value & (attribute_value == 1); 
     return value;
 }
 

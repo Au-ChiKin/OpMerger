@@ -62,11 +62,13 @@ void selection_process(batch_p batch, int batch_size, int tuple_size, int qid, b
     //     pipelinedOperator = pipelinedBatch.getQuery().getMostUpstreamOperator().getGpuCode();
     //     pipelinedOperator.configureOutput (qid);
     // }
+
     u_int8_t * inputs [1] = {batch->buffer + batch->start};
 
-    u_int8_t * outputs [2] = {
-        output->buffer + batch->start, 
-        output->buffer + batch->start + 4 * threads[0] / threads_per_group[0]};
+    u_int8_t * outputs [3] = {
+        output->buffer + batch->start,
+        output->buffer + batch->start + 4 * batch_size,
+        output->buffer + batch->start + 4 * batch_size + 4 * threads[0] / threads_per_group[0]};
 
     /* Execute */
     gpu_execute(qid, threads, threads_per_group, 
@@ -92,12 +94,16 @@ void selection_print_output(batch_p outputs, int batch_size, int tuple_size) {
         float _9;
         float _10;
         int _11;
-    } output_tuple_t;
+    } output_tuple_t __attribute__((aligned(1)));
 
     /* Deserialise output buffer */
     int current_offset = 0;
     
-    int partitions_size = 4 * batch_size / TUPLES_PER_THREADS;
+    int flags_size = 4 * batch_size;
+    int * flags = (int *) (outputs->buffer + current_offset);
+    current_offset += flags_size;
+
+    int partitions_size = 4 * threads[0] / threads_per_group[0];
     int * partitions = (int *) (outputs->buffer + current_offset);
     current_offset += partitions_size;
 
@@ -105,7 +111,7 @@ void selection_print_output(batch_p outputs, int batch_size, int tuple_size) {
     output_tuple_t * output = (output_tuple_t *) (outputs->buffer + current_offset);
     current_offset += output_size;
 
-    /* Count output tuples */
+    /* Calculate output tuples */
     int count = 0;
     for (int i=0; i<threads[0] / threads_per_group[0]; i++) {
         count += partitions[i];
@@ -114,9 +120,9 @@ void selection_print_output(batch_p outputs, int batch_size, int tuple_size) {
     /* print */
     printf("[Results] Required Output buffer size is %d\n", current_offset);
     printf("[Results] Output tuple numbers: %d\n", count);
-    // printf("[Results] Tuple    Timestamp    Sum     Count\n");
-    // for (int i=0; i<10; i++) {
-    //     printf("[Results] %-8d %-12ld %-6.5f %d\n", i, output->t, output->_1, output->_2);
-    //     output += 1;
-    // }    
+    printf("[Results] Tuple    Timestamp    user-id     event-type    category    priority    cpu\n");
+    for (int i=0; i<10; i++) {
+        printf("[Results] %-8d %-8ld %-8d %-6d %-6d %-6d %-6.5f\n", i, output->t, output->_4, output->_5, output->_6, output->_7, output->_8);
+        output += 1;
+    }
 }

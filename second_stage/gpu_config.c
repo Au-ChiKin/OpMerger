@@ -283,6 +283,8 @@ void gpu_config_moveOutputBuffers (gpu_config_p config, void ** host_addr, size_
 
 		moved += 1;
 
+		dbg("[DBG] Moved: %d when i %d (%s)\n", moved, i, __FUNCTION__);
+
 		if (error != CL_SUCCESS) {
 			fprintf(stderr, "opencl error (%d): %s (%s) when move output %d\n",
 				error, getErrorMessage(error), __FUNCTION__, i);
@@ -296,5 +298,40 @@ void gpu_config_moveOutputBuffers (gpu_config_p config, void ** host_addr, size_
 
 	return;
 }
+
+// void gpu_context_readOutput (gpuContextP q,
+// 	void (*callback)(gpuContextP, JNIEnv *, jobject, int, int, int),
+// 	JNIEnv *env, jobject obj, int qid) {
+
+// 	int idx;
+// 	/* Find mark */
+// 	int mark = -1;
+// 	for (idx = 0; idx < q->kernelOutput.count; idx++) {
+// 		if (q->kernelOutput.outputs[idx]->bearsMark) {
+// 			dbg("[DBG] output %d bears mark\n", idx);
+// 			int N = q->kernelOutput.outputs[idx]->size / sizeof(int);
+// 			// dbg("[DBG] %d values\n", N);
+// 			int *values = (int *) (q->kernelOutput.outputs[idx]->mapped_buffer);
+// 			int j;
+// 			for (j = N - 1; j >= 0; j--) {
+// 				// dbg("[DBG] value[%6d] = %d\n", j, values[j]);
+// 				if (values[j] != 0) {
+// 					mark = values[j];
+// 					break;
+// 				}
+// 			}
+// 			dbg("[DBG] mark is %d\n", mark);
+// 			break;
+// 		}
+// 	}
+// 	// mark = -1;
+// 	// fprintf(stdout, "[DBG] mark is %10d\n", mark);
+// 	// fflush(stdout);
+
+// 	for (idx = 0; idx < q->kernelOutput.count; idx++)
+// 		(*callback) (q, env, obj, qid, idx, mark);
+
+// 	return;
+// }
 
 
