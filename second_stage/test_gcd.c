@@ -1,25 +1,5 @@
 /* 
  * The main logic to run the experiment of merged operators
- * 
- * Query:
- * select timestamp, category, sum(cpu) as totalCpu
- * from TaskEvents [range 60 slide 1]
- * grop by category
- * 
- * Query 1: (aggregation)
- * select others, category(aggregated), sum(cpu)
- * from TaskEvents
- * group by category
- * output as TaskEvents1
- *     input tuple 1 time + 11 attr
- *     output tuple 1 time + 11 attr (but timestamp, cpu and category are different)
- * 
- * Query 2: (projection)
- * select timestamp, category, sum(cpu) as totalCpu
- * from TaskEvents
- * group by category
- *     input tuple 1 time + 11 attr (output from the first query)
- *     output tuple 1 time + 2 attr
  */
 #include "gpu_agg.h"
 #include "tuple.h"
@@ -129,7 +109,20 @@ void run_processing_gpu(
 
             selection_print_output(output, buffer_size, tuple_size);
             break;
-        case QUERY2: 
+        case QUERY2:
+            /**
+             * Query 2:
+             * select timestamp, category, sum(cpu) as totalCpu
+             * from TaskEvents [range 60 slide 1]
+             * group by category
+             * 
+             * Since we have not yet implemented aggregation
+             * 
+             * Query 2 - variant:
+             * select timestamp, category, sum(cpu) as totalCpu
+             * from TaskEvents [range 60 slide 1]
+             * where category == 1
+             **/
             fprintf(stdout, "========== Running query2 of google cluster dataset ===========\n");
             selection_init(buffer_size);
             /* TODO wrap in a general setup method */
