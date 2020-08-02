@@ -69,9 +69,13 @@ void parse_arguments(int argc, char * argv[], enum test_cases * mode, int * work
 void set_test_case(char const * mname, enum test_cases * mode) {
     if (strcmp(mname, "merged-aggregation") == 0) {
         *mode = MERGED_AGGREGATION; 
-    } else if (strcmp(mname, "merged-reduction") == 0) {
+    } else if (strcmp(mname, "reduction") == 0) {
         *mode = MERGED_REDUCTION;
     } else if (strcmp(mname, "merged-selection") == 0) {
+        *mode = MERGED_SELECTION;
+    } else if (strcmp(mname, "separate-selection") == 0) {
+        *mode = MERGED_SELECTION;
+    } else if (strcmp(mname, "query2") == 0) {
         *mode = MERGED_SELECTION;
     } else if (strcmp(mname, "cpu") == 0) {
         *mode = CPU;

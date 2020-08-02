@@ -73,6 +73,8 @@ void run_processing_gpu(
 
     /* simplified query creation */
     switch (mode) {
+        /* TODO what should be done is one selection follows anther without copying out the data */
+        /* TODO deep merged or shallow merged ? */
         case MERGED_SELECTION: 
             fprintf(stdout, "========== Running merged selection test ===========\n");
             selection_init(buffer_size);
@@ -82,9 +84,63 @@ void run_processing_gpu(
             selection_process(input_batch, buffer_size, tuple_size, 0, output);
 
             selection_print_output(output, buffer_size, tuple_size);
+            
+            /* TODO some internal connection */
             break;
-        case MERGED_REDUCTION: 
-            fprintf(stdout, "========== Running merged reduction test ===========\n");
+        /* Merely reduction cannot be merged (unlike aggregation) */
+        case REDUCTION: 
+            fprintf(stdout, "========== Running reduction test ===========\n");
+            reduction_init(buffer_size);
+            /* TODO wrap in a general setup method */
+            reduction_setup(buffer_size, tuple_size);
+            /* TODO wrap in a general query process method */
+            reduction_process(input_batch, tuple_size, 0, output);
+
+            reduction_print_output(output, buffer_size, tuple_size);
+            break;
+        /* TODO: the previous multiple test cases */
+        case SEPARATE_SELECTION: 
+            fprintf(stdout, "========== Running separate selection test ===========\n");
+            selection_init(buffer_size);
+            /* TODO wrap in a general setup method */
+            selection_setup(buffer_size, tuple_size);
+            /* TODO wrap in a general query process method */
+            selection_process(input_batch, buffer_size, tuple_size, 0, output);
+
+            selection_print_output(output, buffer_size, tuple_size);
+
+            /* Connection */
+
+            selection_init(buffer_size);
+            /* TODO wrap in a general setup method */
+            selection_setup(buffer_size, tuple_size);
+            /* TODO wrap in a general query process method */
+            selection_process(input_batch, buffer_size, tuple_size, 0, output);
+
+            selection_print_output(output, buffer_size, tuple_size);
+
+            /* Connection */
+
+            selection_init(buffer_size);
+            /* TODO wrap in a general setup method */
+            selection_setup(buffer_size, tuple_size);
+            /* TODO wrap in a general query process method */
+            selection_process(input_batch, buffer_size, tuple_size, 0, output);
+
+            selection_print_output(output, buffer_size, tuple_size);
+            break;
+        case QUERY2: 
+            fprintf(stdout, "========== Running query2 of google cluster dataset ===========\n");
+            selection_init(buffer_size);
+            /* TODO wrap in a general setup method */
+            selection_setup(buffer_size, tuple_size);
+            /* TODO wrap in a general query process method */
+            selection_process(input_batch, buffer_size, tuple_size, 0, output);
+
+            selection_print_output(output, buffer_size, tuple_size);
+
+            /* TODO a connection here but not merging one */
+
             reduction_init(buffer_size);
             /* TODO wrap in a general setup method */
             reduction_setup(buffer_size, tuple_size);
