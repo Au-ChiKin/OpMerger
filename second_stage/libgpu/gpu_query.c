@@ -1,7 +1,7 @@
 #include "gpu_query.h"
 
-#include "../clib/openclerrorcode.h"
-#include "../clib/debug.h"
+#include "../../clib/openclerrorcode.h"
+#include "../../clib/debug.h"
 
 #include <stdio.h>
 #include <stdlib.h>

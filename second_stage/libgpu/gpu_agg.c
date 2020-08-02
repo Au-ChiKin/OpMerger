@@ -10,7 +10,7 @@
 #include "gpu_query.h"
 #include "gpu_input_buffer.h"
 #include "gpu_output_buffer.h"
-#include "../clib/openclerrorcode.h"
+#include "../../clib/openclerrorcode.h"
 
 
 static cl_platform_id platform = NULL;

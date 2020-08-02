@@ -22,12 +22,12 @@ VPATH    = $(OBJDIR)
 
 # Targets
 PROGS   = test_gcd
-GPU_LIB = gpu_agg.c gpu_config.c gpu_query.c gpu_input_buffer.c gpu_output_buffer.c
 OPERATOR = aggregation.c reduction.c selection.c
-SRCS = test_gcd.c openclerrorcode.c config.c helpers.c $(GPU_LIB) $(OPERATOR)
+SRCS = test_gcd.c openclerrorcode.c config.c helpers.c $(OPERATOR)
 
 # Submodules
 include ./libcirbuf/cirbuf.mk
+include ./libgpu/libgpu.mk
 
 OBJECTS = $(patsubst %.c,%.o,$(SRCS))
 

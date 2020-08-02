@@ -1,7 +1,7 @@
 /* 
  * The main logic to run the experiment of merged operators
  */
-#include "gpu_agg.h"
+#include "libgpu/gpu_agg.h"
 #include "tuple.h"
 
 #include <stdio.h>

@@ -1,7 +1,7 @@
 #include "aggregation.h"
 
 #include "helpers.h"
-#include "gpu_agg.h"
+#include "libgpu/gpu_agg.h"
 
 void aggregation(int batch_size, int tuple_size) {
     char * source = read_source("cl/aggregation_gen.cl");

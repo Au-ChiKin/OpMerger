@@ -1,6 +1,6 @@
 #include "gpu_input_buffer.h"
 
-#include "../clib/openclerrorcode.h"
+#include "../../clib/openclerrorcode.h"
 
 #include <stdio.h>
 #include <stdlib.h>

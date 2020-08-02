@@ -1,9 +1,9 @@
 #ifndef __GPU_CONFIG_H_
 #define __GPU_CONFIG_H_
 
-#include "../clib/utils.h"
+#include "../../clib/utils.h"
 
-#include "../clib/debug.h"
+#include "../../clib/debug.h"
 #include "gpu_input_buffer.h"
 #include "gpu_output_buffer.h"
 

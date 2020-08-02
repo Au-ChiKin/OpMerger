@@ -3,7 +3,7 @@
 #include <stdio.h>
 
 #include "helpers.h"
-#include "gpu_agg.h"
+#include "libgpu/gpu_agg.h"
 #include "config.h"
 
 #define KERNEL_NUM 4
