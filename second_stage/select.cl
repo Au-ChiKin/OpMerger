@@ -114,14 +114,14 @@ inline void downsweep (__local int *data, int length) {
  */
 
 __kernel void selectKernel (
-    const int size,
-    const int tuples,
+    const int size, /* Seems to be no use but keep it first */
+    const int tuples, /* Seems to be no use but keep it first */
     __global const uchar *input,
-    __global int *flags, /* The output of select (0 or 1) */ // [input & output]
-    __global int *offsets, // [output] maps the local memory position of the tuples to global memory
-    __global int *partitions, // [output] ???
-    __global uchar *output, // [output] ???
-    __local  int *x // [output] local memory position of tuples
+    __global int *flags, /* The output of select (0 or 1) */
+    __global int *goffsets, /* If flags == 1, refers to the global offset of the corresponding tuple in output */
+    __global int *partitions, /* Refers to the global block offset of the work group in output */
+    __global uchar *output, /* Output tuples */
+    __local  int *loffsets /* Refers to local offset of the corresponding tuples in output */
 )
 {
     int lgs = get_local_size (0); // local group size (thread number in the group)
@@ -137,8 +137,8 @@ __kernel void selectKernel (
     int _right = (2 * lid) + 1; // tuple2 memory indice
 
     int gid = get_group_id (0); // group id
-    /* A thread group processes twice as many tuples */
-    int L = 2 * lgs; // total tuples in the group
+    /* A thread group processes twice as many tuples as the work items at the group */
+    int l_tuple_num = 2 * lgs;
 
     /* Fetch tuple and apply selection filter */
     const int lidx =  left * sizeof(input_t);
@@ -152,35 +152,51 @@ __kernel void selectKernel (
     flags[ left] = selectf (lp);
     flags[right] = selectf (rp);
 
-    /* Copy flag to local memory */
-    x[ _left] = (left  < tuples) ? flags[ left] : 0; // left < tuples means not exceeding the total amount of tuples
-    x[_right] = (right < tuples) ? flags[right] : 0; // if exceeding -> 0 -> means not taking this tuple
+    /* Initialise the local offsets with flags */
+    loffsets[ _left] = (left  < tuples) ? flags[ left] : 0; // left < tuples means not exceeding the total amount of tuples
+    loffsets[_right] = (right < tuples) ? flags[right] : 0; // if exceeding -> 0 -> means not taking this tuple
 
-    upsweep(x, L);
+    /* upsweep + reduce */
+    upsweep(loffsets, l_tuple_num);
 
-    // if this thread is the last in this group, save the flag of right tuple in partitions 
-    // array corresponding to the group id and put a 0 to its flag  
+    // if this thread is the last in this group, pass the result of reduce (loffsets[_right]) to the partition array and 
+    // set loffsets[_right] to 0
     if (lid == (lgs - 1)) { // _left = lid * 2 = 2 * (lgs - 1) = (2 * lgs - 1) - 1
-        partitions[gid] = x[_right];
-        x[_right] = 0; // ???
+        partitions[gid] = loffsets[_right];
+        loffsets[_right] = 0; // So that in the downsweep, the last x[] element will be added to all the other elements
     }
 
-    downsweep(x, L);
+inline void compact_tuple(
+    __global const uchar *input,
+    __global int *goffsets,
+    __global int *flags,
+    __global uchar *output, 
+    __local int *pivot,
+    int tuple_id
+) {
+    /* Compact left and right */
+    if (flags[tuple_id] == 1) {
 
-    /* Write results to global memory */
-    offsets[ left] = ( left < tuples) ? x[ _left] : -1;
-    offsets[right] = (right < tuples) ? x[_right] : -1;
+        const int l_in_byte = tuple_id * sizeof(input_t); // left tuple of input memory location
+        const int l_out_byte = (goffsets[tuple_id] + *pivot) * sizeof(output_t); // left tuple of output memory location
+        flags[tuple_id] = l_out_byte + sizeof(output_t);
+            __global  input_t *l_in  = (__global  input_t *) &  input[l_in_byte];
+            __global output_t *l_out = (__global output_t *) & output[l_out_byte];
+
+            l_out->vectors[0] = l_in->vectors[0];
+            l_out->vectors[1] = l_in->vectors[1];
+    }   
 }
 
 __kernel void compactKernel (
-    const int size,
-    const int tuples,
+    const int size, /* Seems to be no use but keep it first */
+    const int tuples, /* Seems to be no use but keep it first */
     __global const uchar *input,
     __global int *flags,
-    __global int *offsets,
-    __global int *partitions, // [input now]
+    __global int *goffsets,
+    __global int *partitions,
     __global uchar *output,
-    __local  int *x
+    __local  int *loffsets
 ) {
 
     int tid = get_global_id (0);
@@ -202,39 +218,9 @@ __kernel void compactKernel (
             }
         }
     }
-    barrier(CLK_LOCAL_MEM_FENCE); // From now on protect the local memory
+    barrier(CLK_LOCAL_MEM_FENCE);
 
     /* Compact left and right */
-    if (flags[left] == 1) {
-
-        const int lq = (offsets[left] + pivot) * sizeof(output_t); // left tuple of output memory location
-        const int lp = left * sizeof(input_t); // left tuple of input memory location
-        flags[left] = lq + sizeof(output_t); // ???
-            __global  input_t *lx = (__global  input_t *) &  input[lp];
-            __global output_t *ly = (__global output_t *) & output[lq];
-
-            /* TODO: replace with generic function */
-
-            ly->vectors[0] = lx->vectors[0];
-            ly->vectors[1] = lx->vectors[1];
-        //  ly->vectors[2] = lx->vectors[2];
-        //  ly->vectors[3] = lx->vectors[3];
-    }
-
-    if (flags[right] == 1) {
-
-        const int rq = (offsets[right] + pivot) * sizeof(output_t);
-        const int rp = right * sizeof(input_t);
-        flags[right] = rq + sizeof(output_t);
-            __global  input_t *rx = (__global  input_t *) &  input[rp];
-            __global output_t *ry = (__global output_t *) & output[rq];
-
-            /* TODO: replace with generic function */
-
-            ry->vectors[0] = rx->vectors[0];
-            ry->vectors[1] = rx->vectors[1];
-            // ry->vectors[2] = rx->vectors[2];
-            // ry->vectors[3] = rx->vectors[3];
-
-    }
+    compact_tuple(input, goffsets, flags, output, &pivot, left);
+    compact_tuple(input, goffsets, flags, output, &pivot, right);
 }
