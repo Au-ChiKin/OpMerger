@@ -91,48 +91,6 @@ void run_processing_gpu(
     gpu_free();
 }
 
-int main(int argc, char * argv[]) {
-
-    int work_load = 1; // default to be 1MB
-    enum test_cases mode = MERGED_AGGREGATION;
-
-    parse_arguments(argc, argv, &mode, &work_load);
-
-    /* Read input from files */
-
-    /* 144370688 lines for each txt, 144370688 / BUFFER_SIZE is about 8812 */
-    static int const task_num = 1; // 8812;
-    u_int8_t * buffers [task_num];
-    cbuf_handle_t cbufs [task_num];
-    for (int i=0; i<task_num; i++) {
-        buffers[i] = (u_int8_t *) malloc(BUFFER_SIZE * TUPLE_SIZE * sizeof(u_int8_t)); // creates 8812 ByteBuffers
-        cbufs[i] = circular_buf_init(buffers[i], BUFFER_SIZE * TUPLE_SIZE);
-    }
-    read_input_buffers(cbufs, task_num);
-
-    /* Start processing */
-
-    // int results_size = 0;
-    // tuple_t results_tuple[BUFFER_SIZE];
-
-    int results[BUFFER_SIZE];
-    for (int i=0; i<BUFFER_SIZE; i++) {
-        results[i] = 0;
-    }
-
-    run_processing_gpu(
-        buffers, BUFFER_SIZE, task_num, TUPLE_SIZE, /* input */
-        results, /* output */
-        work_load, mode); /* configs */
-
-    for (int i=0; i<task_num; i++) {
-        free(buffers[i]);
-        circular_buf_free(cbufs[i]);
-    }
-
-    return 0;
-}
-
 void print_10_tuples(cbuf_handle_t cbufs []) {
     for (int i=0; i<10; i++) {
         input_t tuple;
@@ -259,4 +217,46 @@ void read_input_buffers(cbuf_handle_t cbufs [], int buffer_num) {
     }
 
     printf("[MAIN] finished loading files\n");
+}
+
+int main(int argc, char * argv[]) {
+
+    int work_load = 1; // default to be 1MB
+    enum test_cases mode = MERGED_AGGREGATION;
+
+    parse_arguments(argc, argv, &mode, &work_load);
+
+    /* Read input from files */
+
+    /* 144370688 lines for each txt, 144370688 / BUFFER_SIZE is about 8812 */
+    static int const task_num = 1; // 8812;
+    u_int8_t * buffers [task_num];
+    cbuf_handle_t cbufs [task_num];
+    for (int i=0; i<task_num; i++) {
+        buffers[i] = (u_int8_t *) malloc(BUFFER_SIZE * TUPLE_SIZE * sizeof(u_int8_t)); // creates 8812 ByteBuffers
+        cbufs[i] = circular_buf_init(buffers[i], BUFFER_SIZE * TUPLE_SIZE);
+    }
+    read_input_buffers(cbufs, task_num);
+
+    /* Start processing */
+
+    // int results_size = 0;
+    // tuple_t results_tuple[BUFFER_SIZE];
+
+    int results[BUFFER_SIZE];
+    for (int i=0; i<BUFFER_SIZE; i++) {
+        results[i] = 0;
+    }
+
+    run_processing_gpu(
+        buffers, BUFFER_SIZE, task_num, TUPLE_SIZE, /* input */
+        results, /* output */
+        work_load, mode); /* configs */
+
+    for (int i=0; i<task_num; i++) {
+        free(buffers[i]);
+        circular_buf_free(cbufs[i]);
+    }
+
+    return 0;
 }
