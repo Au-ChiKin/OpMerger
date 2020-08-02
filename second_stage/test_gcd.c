@@ -43,7 +43,7 @@ void print_10_tuples(cbuf_handle_t cbufs []);
 
 void run_processing_gpu(
     u_int8_t * buffers [], int buffer_size, int buffer_num, int tuple_size,
-    int * result, 
+    u_int8_t * result, 
     int load, enum test_cases mode) {
     
     u_int8_t * batch = buffers[0];
@@ -57,13 +57,13 @@ void run_processing_gpu(
     }
     batch_p input_batch = &wrapped_batch;
 
-    u_int8_t * output_buf = (u_int8_t *) malloc(BUFFER_SIZE * TUPLE_SIZE * sizeof(u_int8_t));
+    /* TODO: dynmaically decide the output buffer size */
     batch_t wrapped_output;
     {
         wrapped_output.start = 0;
-        wrapped_output.end = buffer_size;
-        wrapped_output.buffer = output_buf;
-        wrapped_output.pane_size = buffer_size; /* tumbling window for now, use the whole buffer as a batch */
+        wrapped_output.end = 4 * buffer_size;
+        wrapped_output.buffer = result;
+        wrapped_output.pane_size = 4 * buffer_size; /* tumbling window for now, use the whole buffer as a batch */
     }
     batch_p output = &wrapped_output;
 
@@ -83,12 +83,15 @@ void run_processing_gpu(
             reduction_setup(buffer_size, tuple_size);
             /* TODO wrap in a general query process method */
             reduction_process(input_batch, tuple_size, 0, output);
+
+            reduction_print_output(output, buffer_size, tuple_size);
             break;
         default: 
             break; 
     }
 
     gpu_free();
+
 }
 
 void print_10_tuples(cbuf_handle_t cbufs []) {
@@ -221,6 +224,7 @@ void read_input_buffers(cbuf_handle_t cbufs [], int buffer_num) {
 
 int main(int argc, char * argv[]) {
 
+    /* Arguments */
     int work_load = 1; // default to be 1MB
     enum test_cases mode = MERGED_AGGREGATION;
 
@@ -228,35 +232,34 @@ int main(int argc, char * argv[]) {
 
     /* Read input from files */
 
-    /* 144370688 lines for each txt, 144370688 / BUFFER_SIZE is about 8812 */
-    static int const task_num = 1; // 8812;
-    u_int8_t * buffers [task_num];
-    cbuf_handle_t cbufs [task_num];
-    for (int i=0; i<task_num; i++) {
+    static int const gcd_lines = 144370688; /* maximum lines for input txts */
+    static int const buffers_num = 1; // gcd_lines / BUFFER_SIZE; // about 8812
+    u_int8_t * buffers [buffers_num];
+    cbuf_handle_t cbufs [buffers_num];
+    for (int i=0; i<buffers_num; i++) {
         buffers[i] = (u_int8_t *) malloc(BUFFER_SIZE * TUPLE_SIZE * sizeof(u_int8_t)); // creates 8812 ByteBuffers
         cbufs[i] = circular_buf_init(buffers[i], BUFFER_SIZE * TUPLE_SIZE);
     }
-    read_input_buffers(cbufs, task_num);
+    read_input_buffers(cbufs, buffers_num);
+
+    /* Create output buffers */
+    
+    u_int8_t * result = (u_int8_t *) malloc( 4 * BUFFER_SIZE * TUPLE_SIZE * sizeof(u_int8_t));
 
     /* Start processing */
 
-    // int results_size = 0;
-    // tuple_t results_tuple[BUFFER_SIZE];
-
-    int results[BUFFER_SIZE];
-    for (int i=0; i<BUFFER_SIZE; i++) {
-        results[i] = 0;
-    }
-
     run_processing_gpu(
-        buffers, BUFFER_SIZE, task_num, TUPLE_SIZE, /* input */
-        results, /* output */
+        buffers, BUFFER_SIZE, buffers_num, TUPLE_SIZE, /* input */
+        result, /* output */
         work_load, mode); /* configs */
 
-    for (int i=0; i<task_num; i++) {
+    /* Clear up */
+
+    for (int i=0; i<buffers_num; i++) {
         free(buffers[i]);
         circular_buf_free(cbufs[i]);
     }
+    free(result);
 
     return 0;
 }

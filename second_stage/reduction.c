@@ -4,10 +4,9 @@
 
 #include "helpers.h"
 #include "gpu_agg.h"
+#include "config.h"
 
 #define KERNEL_NUM 4
-#define MAX_THREADS_PER_GROUP 256 /* Should be queried from the device */
-#define PARTIAL_WINDOWS 1024 * 1024 /* window limit in a batch */
 
 static size_t threads[KERNEL_NUM];
 static size_t threads_per_group [KERNEL_NUM];
@@ -105,7 +104,8 @@ void reduction_process(batch_p batch, int tuple_size, int qid, batch_p output) {
     // }
     
     /* Execute */
-    gpu_execute_reduce(qid, 
+    gpu_execute_reduce(
+        qid, 
         threads, threads_per_group, 
         args2, 
         (void **) (batch->buffer + batch->start), (void **) (output->buffer + output->start), sizeof(u_int8_t)); 
@@ -116,4 +116,33 @@ void reduction_process(batch_p batch, int tuple_size, int qid, batch_p output) {
     //     pipelinedOperator.processOutput (qid, pipelinedBatch);
     
     // api.outputWindowBatchResult (pipelinedBatch);
+}
+
+void reduction_print_output(batch_p outputs, int batch_size, int tuple_size) {
+    typedef struct {
+        long t; /* timestamp */
+        float _1; /* sum */
+        int _2; /* count */
+    } output_tuple_t;
+
+    /* Deserialise output buffer */
+    int current_offset = 0;
+    
+    int window_counts_size = 20; /* 4 integers, +1 that is the mark */
+    int * window_counts = (int *) (outputs->buffer + current_offset);
+    current_offset += window_counts_size;
+
+    int output_size = batch_size * tuple_size; /* SystemConf.UNBOUNDED_BUFFER_SIZE */
+    output_tuple_t * output = outputs->buffer + current_offset;
+    current_offset += output_size;
+
+    /* print */
+    printf("[Results] Required Output buffer size is %d\n", current_offset);
+    printf("[Results] Closing Windows: %d    Pending Windows: %d    Complete Windows: %d    Opening Windows: %d    Mark: %d\n",
+        window_counts[0], window_counts[1], window_counts[2], window_counts[3], window_counts[4]);
+    printf("[Results] Tuple    Timestamp    Sum    Count\n");
+    for (int i=0; i<10; i++) {
+        output += i;
+        printf("[Results] %-8d %-12ld %-6.2f %d\n", i, output->t, output->_1, output->_2);
+    }
 }
