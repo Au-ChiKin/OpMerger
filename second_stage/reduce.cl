@@ -33,7 +33,7 @@ typedef union {
 typedef struct {
     long t; /* timestamp */
     float _1; /* sum */
-    int _2; /* ??? */
+    int _2; /* count */
 } output_tuple_t __attribute__((aligned(1)));
 
 typedef union {
@@ -46,31 +46,31 @@ typedef union {
 
 #define PANES_PER_WINDOW 1L
 #define PANES_PER_SLIDE  1L
-#define PANE_SIZE        1024L
+#define PANE_SIZE        32L
 
 inline void initf (__local output_t *p) {
-        p->tuple.t = 0;
-        p->tuple._1 = 0;
-        p->tuple._2 = 0;
+    p->tuple.t = 0;
+    p->tuple._1 = 0;
+    p->tuple._2 = 0;
 }
 
 inline void reducef (__local output_t *p, __global input_t *q) {
-        p->tuple.t = (p->tuple.t == 0) ? : q->tuple.t;
-        p->tuple._1 += __bswapfp(q->tuple._1);
-        p->tuple._2 += 1;
+    p->tuple.t = (p->tuple.t == 0) ? : q->tuple.t;
+    p->tuple._1 += q->tuple._5;
+    p->tuple._2 += 1;
 }
 
 inline void cachef (__local output_t *p, __local output_t *q) {
-        q->vectors[0] = p->vectors[0];
+    q->vectors[0] = p->vectors[0];
 }
 
 inline void mergef (__local output_t *p, __local output_t *q) {
-        p->tuple._1 += q->tuple._1;
-        p->tuple._2 += q->tuple._2;
+    p->tuple._1 += q->tuple._1;
+    p->tuple._2 += q->tuple._2;
 }
 
 inline void copyf (__local output_t *p, __global output_t *q) {
-        q->vectors[0] = p->vectors[0];
+    q->vectors[0] = p->vectors[0];
 }
 
 
