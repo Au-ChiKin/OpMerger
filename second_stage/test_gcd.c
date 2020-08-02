@@ -94,18 +94,20 @@ void run_processing_gpu(
 
 }
 
-void print_10_tuples(cbuf_handle_t cbufs []) {
-    for (int i=0; i<BUFFER_SIZE; i++) {
+void print_tuples(cbuf_handle_t cbufs [], int n) {
+    printf("[MAIN] Printing %d tuples as sample\n", n);
+    for (int i=0; i<n; i++) {
         input_t tuple;
         circular_buf_read_bytes(cbufs[0], tuple.vectors, TUPLE_SIZE);
 
-        printf("Tuple %ld has %d %d %d %.5f\n", 
+        printf("       Tuple %-3ld has %5d %5d %5d      %.5f\n", 
             tuple.tuple.time_stamp, 
             tuple.tuple.event_type,
             tuple.tuple.category,
             tuple.tuple.priority,
             tuple.tuple.cpu);
     }
+    printf("       ......\n");
 }
 
 void read_input_buffers(cbuf_handle_t cbufs [], int buffer_num) {
@@ -243,7 +245,7 @@ int main(int argc, char * argv[]) {
     }
     read_input_buffers(cbufs, buffers_num);
 
-    // print_10_tuples(cbufs);
+    print_tuples(cbufs, 32);
 
     /* Create output buffers */
     
