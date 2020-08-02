@@ -95,11 +95,11 @@ void run_processing_gpu(
 }
 
 void print_10_tuples(cbuf_handle_t cbufs []) {
-    for (int i=0; i<10; i++) {
+    for (int i=0; i<BUFFER_SIZE; i++) {
         input_t tuple;
         circular_buf_read_bytes(cbufs[0], tuple.vectors, TUPLE_SIZE);
 
-        printf("Tuple %ld has %d %d %d %.2f\n", 
+        printf("Tuple %ld has %d %d %d %.5f\n", 
             tuple.tuple.time_stamp, 
             tuple.tuple.event_type,
             tuple.tuple.category,
@@ -139,7 +139,7 @@ void read_input_buffers(cbuf_handle_t cbufs [], int buffer_num) {
     }
 
     char line [256] = "";
-    int line_num = 0;
+    int line_num = 0; /* line_num is the 'absolute' index while tupleIndex is relative to a buffer */
     int bufferIndex = 0, tupleIndex = 0, attributeIndex;
     bool is_finished = false;
     cbuf_handle_t cbuf;
@@ -153,8 +153,6 @@ void read_input_buffers(cbuf_handle_t cbufs [], int buffer_num) {
             }
         }
         cbuf = cbufs[bufferIndex];
-
-        line_num += 1;
 
         input_t tuple;
         tuple.tuple.time_stamp = line_num;
@@ -186,13 +184,16 @@ void read_input_buffers(cbuf_handle_t cbufs [], int buffer_num) {
                         uint8_t vectors[sizeof(float)];
                     } num;
 
-                    num.num = atoi(line);
+                    num.num = atof(line);
                     for (int j=0; j<4; j++) {
                         tuple.vectors[attributeIndex+j] = num.vectors[j];
                     }
                 }
 
-                tupleIndex ++;
+                if (i == 3) { // Last file, inc index
+                    tupleIndex ++;
+                    line_num += 1;
+                }
             } else {
                 is_finished = true;
             }
@@ -241,6 +242,8 @@ int main(int argc, char * argv[]) {
         cbufs[i] = circular_buf_init(buffers[i], BUFFER_SIZE * TUPLE_SIZE);
     }
     read_input_buffers(cbufs, buffers_num);
+
+    // print_10_tuples(cbufs);
 
     /* Create output buffers */
     

@@ -144,9 +144,9 @@ void reduction_print_output(batch_p outputs, int batch_size, int tuple_size) {
     printf("[Results] Required Output buffer size is %d\n", current_offset);
     printf("[Results] Closing Windows: %d    Pending Windows: %d    Complete Windows: %d    Opening Windows: %d    Mark: %d\n",
         window_counts[0], window_counts[1], window_counts[2], window_counts[3], window_counts[4]);
-    printf("[Results] Tuple    Timestamp    Sum    Count\n");
+    printf("[Results] Tuple    Timestamp    Sum     Count\n");
     for (int i=0; i<10; i++) {
-        output += i;
-        printf("[Results] %-8d %-12ld %-6.2f %d\n", i, output->t, output->_1, output->_2);
+        output += 1;
+        printf("[Results] %-8d %-12ld %-6.5f %d\n", i, output->t, output->_1, output->_2);
     }
 }
