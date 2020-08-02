@@ -250,6 +250,7 @@ void gpu_config_moveInputBuffers (gpu_config_p config, void ** host_addr, size_t
 void gpu_config_moveOutputBuffers (gpu_config_p config, void ** host_addr, size_t addr_size) {
 	int i;
 	int error = 0;
+	int accumulated_offet = 0;
 	/* Read */
 	for (i = 0; i < config->kernelOutput.count; i++) {
 
@@ -263,7 +264,7 @@ void gpu_config_moveOutputBuffers (gpu_config_p config, void ** host_addr, size_
 				CL_FALSE,
 				0,
 				config->kernelOutput.outputs[i]->size,
-				(void *) (host_addr + i * addr_size), /* TODO cast it to void * for now but we need a proper conversion */
+				(void *) (host_addr + accumulated_offet * addr_size), /* TODO cast it to void * for now but we need a proper conversion */
 #ifdef GPU_PROFILE
 				0, NULL, &(config->read_event));
 #else
@@ -276,9 +277,11 @@ void gpu_config_moveOutputBuffers (gpu_config_p config, void ** host_addr, size_
 				CL_FALSE,
 				0,
 				config->kernelOutput.outputs[i]->size,
-				(void *) (host_addr + i * addr_size), /* TODO cast it to void * for now but we need a proper conversion */
+				(void *) (host_addr + accumulated_offet * addr_size), /* TODO cast it to void * for now but we need a proper conversion */
 				0, NULL, NULL);
 		}
+
+		accumulated_offet += config->kernelOutput.outputs[i]->size;
 	}
 
 	if (error != CL_SUCCESS) {
