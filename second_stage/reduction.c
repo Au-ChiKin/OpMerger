@@ -24,7 +24,7 @@ void reduction_init(int batch_size) {
 }
 
 void reduction_setup(int batch_size, int tuple_size) {
-    char * source = read_source("reduce.cl");
+    char * source = read_source("cl/reduce.cl");
     int qid = gpu_get_query(source, 4, 1, 5);
     
     gpu_set_input(qid, 0, batch_size * tuple_size);

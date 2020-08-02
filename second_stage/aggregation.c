@@ -4,7 +4,7 @@
 #include "gpu_agg.h"
 
 void aggregation(int batch_size, int tuple_size) {
-    char * source = read_source("aggregation_gen.cl");
+    char * source = read_source("cl/aggregation_gen.cl");
     int qid = gpu_get_query(source, 9, 1, 9);
 
     gpu_set_input(qid, 0, batch_size * tuple_size);

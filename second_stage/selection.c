@@ -25,7 +25,7 @@ void selection_init(int batch_size) {
 }
 
 void selection_setup(int batch_size, int tuple_size) {
-    char * source = read_source("select.cl");
+    char * source = read_source("cl/select.cl");
     int qid = gpu_get_query(source, 2, 1, 4);
     
     gpu_set_input(qid, 0, batch_size * tuple_size);
