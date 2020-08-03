@@ -74,9 +74,9 @@ void set_test_case(char const * mname, enum test_cases * mode) {
     } else if (strcmp(mname, "merged-selection") == 0) {
         *mode = MERGED_SELECTION;
     } else if (strcmp(mname, "separate-selection") == 0) {
-        *mode = MERGED_SELECTION;
+        *mode = SEPARATE_SELECTION;
     } else if (strcmp(mname, "query2") == 0) {
-        *mode = MERGED_SELECTION;
+        *mode = QUERY2;
     } else if (strcmp(mname, "cpu") == 0) {
         *mode = CPU;
     } else {
