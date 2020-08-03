@@ -606,3 +606,106 @@ gpu_config_p callback_execKernel(gpu_config_p config) {
 	// pipeline[D - 1] = config;
 	return p;
 }
+
+// static void read_count(int group_size, int * count) {
+//     cl_int error = 0;
+
+//     int * partitions = (int *) malloc(group_size * sizeof(int));
+
+//     error = clEnqueueReadBuffer(
+//         config->command_queue[0], 
+//         partitions_mem, 
+//         CL_TRUE, 
+//         0, 
+//         group_size * sizeof(int), 
+//         partitions, 
+//         0, NULL, NULL);
+//     if (error != CL_SUCCESS) {
+// 		fprintf(stderr, "error: fail to read count\n");
+// 		exit (1);
+// 	}
+
+//     *count = 0;
+//     for (int i=0; i<group_size; i++) {
+//         *count += partitions[i];
+//     }
+
+//     // printf("Current group size: %d and count : %d\n", group_size, *count);
+// }
+
+// void from_selection_to_selection() {
+// 	read_count(global_item_size/local_item_size, &count);
+
+// 	if (config->kernel.count > 1 && k < config->kernel.count-1) {
+
+// 		// make a copy of output
+// 		cl_int error = 0;
+// 		cl_event perf_event;
+// 		cl_event * perf_event_p = NULL;
+// 		if (profiling) {
+// 			perf_event_p = &perf_event;
+// 		}
+
+// 		/* Copy the input buffer on the host to the memory buffer on device */
+// 		unsigned char * copy = (unsigned char *) malloc(sizeof(unsigned char) * tuple_size * count);
+
+// 		error = clEnqueueReadBuffer(
+// 			config->command_queue[0], 
+// 			output_mem, 
+// 			CL_TRUE, 
+// 			0, 
+// 			count * tuple_size * sizeof(unsigned char), 
+// 			copy, 
+// 			0, NULL, perf_event_p);
+// 		if (error != CL_SUCCESS) {
+// 			fprintf(stderr, "error: fail to read count\n");
+// 			exit (1);
+// 		}
+// 		if (profiling) {
+// 			cl_ulong cl_start = 0, cl_end = 0;
+			
+// 			clWaitForEvents(1, perf_event_p);
+			
+// 			clGetEventProfilingInfo(perf_event, CL_PROFILING_COMMAND_START, sizeof(cl_ulong), &cl_start, NULL);
+// 			clGetEventProfilingInfo(perf_event, CL_PROFILING_COMMAND_END, sizeof(cl_ulong), &cl_end, NULL);
+
+// 			*inter_time += cl_end - cl_start;
+// 		}
+
+// 		clFinish(config->command_queue[0]); // read and write to the same buffer
+
+// 		// copy the created copy to input
+// 		error = clEnqueueWriteBuffer(
+// 			config->command_queue[0], 
+// 			input_mem, 
+// 			CL_TRUE,         /* blocking write */
+// 			0, 
+// 			count * tuple_size * sizeof(unsigned char), 
+// 			copy,            /* pointer to data in the host memeory */
+// 			0, NULL, perf_event_p);  /* event related */
+// 		if (error != CL_SUCCESS) {
+// 			fprintf(stderr, "error: failed to enqueue write buffer command\n", NULL);
+// 			exit(1);
+// 		}
+// 		if (profiling) {
+// 			cl_ulong cl_start = 0, cl_end = 0;
+			
+// 			clWaitForEvents(1, perf_event_p);
+			
+// 			clGetEventProfilingInfo(perf_event, CL_PROFILING_COMMAND_START, sizeof(cl_ulong), &cl_start, NULL);
+// 			clGetEventProfilingInfo(perf_event, CL_PROFILING_COMMAND_END, sizeof(cl_ulong), &cl_end, NULL);
+
+// 			*inter_time += cl_end - cl_start;
+// 		}
+
+// 		clFinish(config->command_queue[0]);
+
+// 		if (copy) {
+// 			free(copy);
+// 		}
+
+// 		// run again with new item size
+// 		global_item_size = count / tuple_per_thread;
+// 	}
+    
+// }
