@@ -43,6 +43,13 @@ selection_p selection(
     enum comparor com) {
 
     selection_p p = (selection_p) malloc(sizeof(selection_t));
+    p->operator = (operator_p) malloc(sizeof (operator_t));
+    {
+        p->operator->setup = (void *) selection_setup;
+        p->operator->process = (void *) selection_process;
+        p->operator->print = (void *) selection_print_output;
+        p->operator->type = OPERATOR_SELECT;
+    }
     p->input_schema = input_schema;
     p->ref = ref;
     p->value = value;

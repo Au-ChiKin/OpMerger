@@ -3,6 +3,7 @@
 
 #include "batch.h"
 #include "schema.h"
+#include "operator.h"
 
 #define SELECTION_KERNEL_NUM 4
 #define SELECTION_TUPLES_PER_THREADS 2
@@ -25,6 +26,8 @@ typedef struct ref_value {
 
 typedef struct selection * selection_p;
 typedef struct selection {
+    operator_p operator; /* As a parent class */
+
     schema_p input_schema;
     int ref;
     ref_value_p value;
