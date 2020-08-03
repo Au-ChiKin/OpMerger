@@ -15,6 +15,7 @@
 #include "reduction.h"
 #include "selection.h"
 #include "batch.h"
+#include "query.h"
 
 /* Input data of interest from files */
 void read_input_buffers(cbuf_handle_t cbufs [], int buffer_num);
@@ -33,8 +34,8 @@ void run_processing_gpu(
     {
         wrapped_batch.start = 0;
         wrapped_batch.end = buffer_size;
+        wrapped_batch.size = buffer_size;
         wrapped_batch.buffer = batch;
-        wrapped_batch.pane_size = buffer_size; /* tumbling window for now, use the whole buffer as a batch */
     }
     batch_p input_batch = &wrapped_batch;
 
@@ -43,8 +44,8 @@ void run_processing_gpu(
     {
         wrapped_output.start = 0;
         wrapped_output.end = 4 * buffer_size;
+        wrapped_output.size = 4 * buffer_size;
         wrapped_output.buffer = result;
-        wrapped_output.pane_size = 4 * buffer_size; /* tumbling window for now, use the whole buffer as a batch */
     }
     batch_p output = &wrapped_output;
 
@@ -127,11 +128,20 @@ void run_processing_gpu(
             /* Connect two selection */
             // selection_merger_and(select1, select1, gpu_code);
 
-            /* TODO wrap in a general setup method */
-            selection_setup(select1, buffer_size);
-            /* TODO wrap in a general query process method */
-            selection_process(select1, input_batch, buffer_size, 0, output);
+            /* Create a query */
+            int window_size = 64;
+            int window_side = 64;
+            bool is_merging = false;
+            query_p query1 = query(0, buffer_size, window_size, window_side, is_merging);
 
+            query_add_operator(query1, (void *) select1, select1->operator);
+
+            query_setup(query1);
+
+            /* Execute */
+            query_process(query1, input_batch, output);
+
+            /* For debugging */
             selection_print_output(select1, output, buffer_size);
 
             break;

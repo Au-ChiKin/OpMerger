@@ -1,6 +1,7 @@
 #include "selection.h"
 
 #include <stdio.h>
+#include <string.h>
 
 #include "helpers.h"
 #include "libgpu/gpu_agg.h"
@@ -48,7 +49,10 @@ selection_p selection(
         p->operator->setup = (void *) selection_setup;
         p->operator->process = (void *) selection_process;
         p->operator->print = (void *) selection_print_output;
+
         p->operator->type = OPERATOR_SELECT;
+
+        strcpy(p->operator->code_name, SELECTION_CODE_FILENAME);
     }
     p->input_schema = input_schema;
     p->ref = ref;
@@ -57,7 +61,8 @@ selection_p selection(
     return p;
 }
 
-void selection_setup(selection_p select, int batch_size) {
+void selection_setup(void * select_ptr, int batch_size) {
+    selection_p select = (selection_p) select_ptr;
 
     /* Operator setup */
     for (int i=0; i<SELECTION_KERNEL_NUM; i++) {
@@ -94,7 +99,8 @@ void selection_setup(selection_p select, int batch_size) {
     gpu_set_kernel_select (qid, args);
 }
 
-void selection_process(selection_p select, batch_p batch, int batch_size, int qid, batch_p output) {
+void selection_process(int qid, void * select_ptr, batch_p input, batch_p output) {
+    selection_p select = (selection_p) select_ptr;
     
     int work_group_num = select->threads[0] / select->threads_per_group[0];
 
@@ -116,12 +122,12 @@ void selection_process(selection_p select, batch_p batch, int batch_size, int qi
     //     pipelinedOperator.configureOutput (qid);
     // }
 
-    u_int8_t * inputs [1] = {batch->buffer + batch->start};
+    u_int8_t * inputs [1] = {input->buffer + input->start};
 
     u_int8_t * outputs [3] = {
-        output->buffer + batch->start,
-        output->buffer + batch->start + 4 * batch_size,
-        output->buffer + batch->start + 4 * batch_size + 4 * work_group_num};
+        output->buffer + input->start,
+        output->buffer + input->start + 4 * input->size,
+        output->buffer + input->start + 4 * input->size + 4 * work_group_num};
 
     /* Execute */
     gpu_execute(qid, select->threads, select->threads_per_group,

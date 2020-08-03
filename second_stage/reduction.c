@@ -78,7 +78,8 @@ void reduction_process(batch_p batch, int tuple_size, int qid, batch_p output) {
         args2[0] = -1;
         long s = batch->start;
         int  t = tuple_size;
-        long p = batch->pane_size;
+        /* TODO: use the pane_size in query */
+        long p = 64L;
         if (batch->start > 0) {
             // TODO: support range based windows 
             // if (batch.getWindowDefinition().isRangeBased()) {

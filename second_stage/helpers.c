@@ -25,3 +25,20 @@ char * read_source(char * filename) {
 
     return source_str;
 }
+
+int gcd(int x, int y) {
+    if (x <= 0 || y <= 0) {
+        fprintf(stderr, "error: input numbers should be positive (%s)\n", __FUNCTION__);
+    }
+
+    int ret;
+
+    for(int i=1; i <= x && i <= y; ++i)
+        {
+            // Checks if i is factor of both integers
+            if(x%i==0 && y%i==0)
+                ret = i;
+        }
+
+    return ret;
+}

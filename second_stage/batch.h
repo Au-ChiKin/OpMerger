@@ -7,8 +7,8 @@ typedef struct batch * batch_p;
 typedef struct batch {
     long start;
     long end;
+    int size;
     u_int8_t * buffer;
-    long pane_size;
 } batch_t;
 
 

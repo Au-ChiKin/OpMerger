@@ -7,6 +7,8 @@
 
 #define SELECTION_KERNEL_NUM 4
 #define SELECTION_TUPLES_PER_THREADS 2
+#define SELECTION_CODE_FILENAME "cl/select.cl"
+#define SELECTION_CODE_TEMPLATE "cl/template/select_template.cl"
 
 enum comparor {
     GREATER,
@@ -41,9 +43,9 @@ void ref_value_free(ref_value_p);
 
 selection_p selection(schema_p input_schema, int ref, ref_value_p value, enum comparor com);
 
-void selection_setup(selection_p selection, int batch_size);
+void selection_setup(void * select_ptr, int batch_size);
 
-void selection_process(selection_p select, batch_p batch, int batch_size, int qid, batch_p output);
+void selection_process(int qid, void * select_ptr, batch_p batch, batch_p output);
 
 void selection_print_output(selection_p select, batch_p outputs, int batch_size);
 
