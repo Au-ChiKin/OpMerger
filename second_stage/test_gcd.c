@@ -57,13 +57,13 @@ void run_processing_gpu(
         /* TODO deep merged or shallow merged ? */
         case MERGED_SELECTION: 
             fprintf(stdout, "========== Running merged selection test ===========\n");
-            selection_init(buffer_size);
-            /* TODO wrap in a general setup method */
-            selection_setup(buffer_size, tuple_size);
-            /* TODO wrap in a general query process method */
-            selection_process(input_batch, buffer_size, tuple_size, 0, output);
+            // selection(buffer_size);
+            // /* TODO wrap in a general setup method */
+            // selection_setup(buffer_size, tuple_size);
+            // /* TODO wrap in a general query process method */
+            // selection_process(input_batch, buffer_size, tuple_size, 0, output);
 
-            selection_print_output(output, buffer_size, tuple_size);
+            // selection_print_output(output, buffer_size, tuple_size);
             
             /* TODO some internal connection */
             break;
@@ -81,33 +81,59 @@ void run_processing_gpu(
         /* TODO: the previous multiple test cases */
         case SEPARATE_SELECTION: 
             fprintf(stdout, "========== Running separate selection test ===========\n");
-            selection_init(buffer_size);
+
+            /* The whole point is to generate proper opencl code that merges the operators */
+
+            char gpu_code [1024 * 1024];
+
+            /* Construct schemas */
+            schema_p schema1 = schema();
+            schema_add_attr(schema1, TYPE_LONG);  /* time_stamp */
+            schema_add_attr(schema1, TYPE_LONG);  /* job_id */
+            schema_add_attr(schema1, TYPE_LONG);  /* task_id */
+            schema_add_attr(schema1, TYPE_LONG);  /* machine_id */
+            schema_add_attr(schema1, TYPE_INT);   /* user_id */
+            schema_add_attr(schema1, TYPE_INT);   /* event_type */
+            schema_add_attr(schema1, TYPE_INT);   /* category */
+            schema_add_attr(schema1, TYPE_INT);   /* priority */
+            schema_add_attr(schema1, TYPE_FLOAT); /* cpu */
+            schema_add_attr(schema1, TYPE_FLOAT); /* ram */
+            schema_add_attr(schema1, TYPE_FLOAT); /* disk */
+            schema_add_attr(schema1, TYPE_INT);   /* constraints */
+            printf("[MAIN] Created a schema of size %d\n", schema1->size);
+
+            /* Construct a select: where column 6 (category) == 1 */
+            int col1 = 6;
+
+            enum comparor com1 = EQUAL;
+
+            int i1 = 1;
+            ref_value_p val1 = ref_value();
+            val1->i = &i1;
+            
+            selection_p select1 = selection(schema1, col1, val1, com1);
+
+            /* Construct a select: where column 5 (event_type) == 1 */
+            int col2 = 5;
+
+            enum comparor com2 = EQUAL;
+
+            int i2 = 1;
+            ref_value_p val2 = ref_value();
+            val2->i = &i2;
+            
+            selection_p select2 = selection(schema1, col2, val2, com2);
+
+            /* Connect two selection */
+            // selection_merger_and(select1, select1, gpu_code);
+
             /* TODO wrap in a general setup method */
-            selection_setup(buffer_size, tuple_size);
+            selection_setup(select1, buffer_size);
             /* TODO wrap in a general query process method */
-            selection_process(input_batch, buffer_size, tuple_size, 0, output);
+            selection_process(select1, input_batch, buffer_size, 0, output);
 
-            selection_print_output(output, buffer_size, tuple_size);
+            selection_print_output(select1, output, buffer_size);
 
-            /* Connection */
-
-            selection_init(buffer_size);
-            /* TODO wrap in a general setup method */
-            selection_setup(buffer_size, tuple_size);
-            /* TODO wrap in a general query process method */
-            selection_process(input_batch, buffer_size, tuple_size, 0, output);
-
-            selection_print_output(output, buffer_size, tuple_size);
-
-            /* Connection */
-
-            selection_init(buffer_size);
-            /* TODO wrap in a general setup method */
-            selection_setup(buffer_size, tuple_size);
-            /* TODO wrap in a general query process method */
-            selection_process(input_batch, buffer_size, tuple_size, 0, output);
-
-            selection_print_output(output, buffer_size, tuple_size);
             break;
         case QUERY2:
             /**
@@ -124,23 +150,23 @@ void run_processing_gpu(
              * where category == 1
              **/
             fprintf(stdout, "========== Running query2 of google cluster dataset ===========\n");
-            selection_init(buffer_size);
-            /* TODO wrap in a general setup method */
-            selection_setup(buffer_size, tuple_size);
-            /* TODO wrap in a general query process method */
-            selection_process(input_batch, buffer_size, tuple_size, 0, output);
+            // selection(buffer_size);
+            // /* TODO wrap in a general setup method */
+            // selection_setup(buffer_size, tuple_size);
+            // /* TODO wrap in a general query process method */
+            // selection_process(input_batch, buffer_size, tuple_size, 0, output);
 
-            selection_print_output(output, buffer_size, tuple_size);
+            // selection_print_output(output, buffer_size, tuple_size);
 
             /* TODO a connection here but not merging one */
 
-            reduction_init(buffer_size);
-            /* TODO wrap in a general setup method */
-            reduction_setup(buffer_size, tuple_size);
-            /* TODO wrap in a general query process method */
-            reduction_process(input_batch, tuple_size, 0, output);
+            // reduction_init(buffer_size);
+            // /* TODO wrap in a general setup method */
+            // reduction_setup(buffer_size, tuple_size);
+            // /* TODO wrap in a general query process method */
+            // reduction_process(input_batch, tuple_size, 0, output);
 
-            reduction_print_output(output, buffer_size, tuple_size);
+            // reduction_print_output(output, buffer_size, tuple_size);
             break;
         default: 
             break; 
