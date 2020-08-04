@@ -59,64 +59,62 @@ void run_processing_gpu(
         /* TODO deep merged or shallow merged ? */
         case MERGED_SELECTION: 
             fprintf(stdout, "========== Running merged selection test ===========\n");
-            /* The whole point is to generate proper opencl code that merges the operators */
+            {
+                /* Construct schemas */
+                schema_p schema1 = schema();
+                schema_add_attr(schema1, TYPE_LONG);  /* time_stamp */
+                schema_add_attr(schema1, TYPE_LONG);  /* job_id */
+                schema_add_attr(schema1, TYPE_LONG);  /* task_id */
+                schema_add_attr(schema1, TYPE_LONG);  /* machine_id */
+                schema_add_attr(schema1, TYPE_INT);   /* user_id */
+                schema_add_attr(schema1, TYPE_INT);   /* event_type */
+                schema_add_attr(schema1, TYPE_INT);   /* category */
+                schema_add_attr(schema1, TYPE_INT);   /* priority */
+                schema_add_attr(schema1, TYPE_FLOAT); /* cpu */
+                schema_add_attr(schema1, TYPE_FLOAT); /* ram */
+                schema_add_attr(schema1, TYPE_FLOAT); /* disk */
+                schema_add_attr(schema1, TYPE_INT);   /* constraints */
+                printf("[MAIN] Created a schema of size %d\n", schema1->size);
 
-            char gpu_code [1024 * 1024];
+                /* Construct a select: where column 6 (category) == 1 */
+                int col1 = 6;
 
-            /* Construct schemas */
-            schema_p schema1 = schema();
-            schema_add_attr(schema1, TYPE_LONG);  /* time_stamp */
-            schema_add_attr(schema1, TYPE_LONG);  /* job_id */
-            schema_add_attr(schema1, TYPE_LONG);  /* task_id */
-            schema_add_attr(schema1, TYPE_LONG);  /* machine_id */
-            schema_add_attr(schema1, TYPE_INT);   /* user_id */
-            schema_add_attr(schema1, TYPE_INT);   /* event_type */
-            schema_add_attr(schema1, TYPE_INT);   /* category */
-            schema_add_attr(schema1, TYPE_INT);   /* priority */
-            schema_add_attr(schema1, TYPE_FLOAT); /* cpu */
-            schema_add_attr(schema1, TYPE_FLOAT); /* ram */
-            schema_add_attr(schema1, TYPE_FLOAT); /* disk */
-            schema_add_attr(schema1, TYPE_INT);   /* constraints */
-            printf("[MAIN] Created a schema of size %d\n", schema1->size);
+                enum comparor com1 = EQUAL;
 
-            /* Construct a select: where column 6 (category) == 1 */
-            int col1 = 6;
+                int i1 = 1;
+                ref_value_p val1 = ref_value();
+                val1->i = &i1;
+                
+                selection_p select1 = selection(schema1, col1, val1, com1);
 
-            enum comparor com1 = EQUAL;
+                /* Construct a select: where column 5 (event_type) == 1 */
+                int col2 = 5;
 
-            int i1 = 1;
-            ref_value_p val1 = ref_value();
-            val1->i = &i1;
-            
-            selection_p select1 = selection(schema1, col1, val1, com1);
+                enum comparor com2 = EQUAL;
 
-            /* Construct a select: where column 5 (event_type) == 1 */
-            int col2 = 5;
+                int i2 = 1;
+                ref_value_p val2 = ref_value();
+                val2->i = &i2;
+                
+                selection_p select2 = selection(schema1, col2, val2, com2);
 
-            enum comparor com2 = EQUAL;
+                /* Create a query */
+                int window_size = 64;
+                int window_side = 64;
+                bool is_merging = true;
+                query_p query1 = query(0, buffer_size, window_size, window_side, is_merging);
 
-            int i2 = 1;
-            ref_value_p val2 = ref_value();
-            val2->i = &i2;
-            
-            selection_p select2 = selection(schema1, col2, val2, com2);
+                query_add_operator(query1, (void *) select1, select1->operator);
 
-            /* Create a query */
-            int window_size = 64;
-            int window_side = 64;
-            bool is_merging = true;
-            query_p query1 = query(0, buffer_size, window_size, window_side, is_merging);
+                /* TODO connect one operator to another (Merging way) */
+                query_setup(query1);
 
-            query_add_operator(query1, (void *) select1, select1->operator);
+                /* Execute */
+                query_process(query1, input, output);
 
-            /* TODO connect one operator to another (Merging way) */
-            query_setup(query1);
-
-            /* Execute */
-            query_process(query1, input, output);
-
-            /* For debugging */
-            selection_print_output(select1, output, buffer_size);
+                /* For debugging */
+                selection_print_output(select1, output, buffer_size);
+            }
 
             break;
         /* Merely reduction cannot be merged (unlike aggregation) */
@@ -134,63 +132,61 @@ void run_processing_gpu(
         case SEPARATE_SELECTION: 
             fprintf(stdout, "========== Running separate selection test ===========\n");
 
-            /* The whole point is to generate proper opencl code that merges the operators */
+            {
+                /* Construct schemas */
+                schema_p schema1 = schema();
+                schema_add_attr(schema1, TYPE_LONG);  /* time_stamp */
+                schema_add_attr(schema1, TYPE_LONG);  /* job_id */
+                schema_add_attr(schema1, TYPE_LONG);  /* task_id */
+                schema_add_attr(schema1, TYPE_LONG);  /* machine_id */
+                schema_add_attr(schema1, TYPE_INT);   /* user_id */
+                schema_add_attr(schema1, TYPE_INT);   /* event_type */
+                schema_add_attr(schema1, TYPE_INT);   /* category */
+                schema_add_attr(schema1, TYPE_INT);   /* priority */
+                schema_add_attr(schema1, TYPE_FLOAT); /* cpu */
+                schema_add_attr(schema1, TYPE_FLOAT); /* ram */
+                schema_add_attr(schema1, TYPE_FLOAT); /* disk */
+                schema_add_attr(schema1, TYPE_INT);   /* constraints */
+                printf("[MAIN] Created a schema of size %d\n", schema1->size);
 
-            char gpu_code [1024 * 1024];
+                /* Construct a select: where column 6 (category) == 1 */
+                int col1 = 6;
 
-            /* Construct schemas */
-            schema_p schema1 = schema();
-            schema_add_attr(schema1, TYPE_LONG);  /* time_stamp */
-            schema_add_attr(schema1, TYPE_LONG);  /* job_id */
-            schema_add_attr(schema1, TYPE_LONG);  /* task_id */
-            schema_add_attr(schema1, TYPE_LONG);  /* machine_id */
-            schema_add_attr(schema1, TYPE_INT);   /* user_id */
-            schema_add_attr(schema1, TYPE_INT);   /* event_type */
-            schema_add_attr(schema1, TYPE_INT);   /* category */
-            schema_add_attr(schema1, TYPE_INT);   /* priority */
-            schema_add_attr(schema1, TYPE_FLOAT); /* cpu */
-            schema_add_attr(schema1, TYPE_FLOAT); /* ram */
-            schema_add_attr(schema1, TYPE_FLOAT); /* disk */
-            schema_add_attr(schema1, TYPE_INT);   /* constraints */
-            printf("[MAIN] Created a schema of size %d\n", schema1->size);
+                enum comparor com1 = EQUAL;
 
-            /* Construct a select: where column 6 (category) == 1 */
-            int col1 = 6;
+                int i1 = 1;
+                ref_value_p val1 = ref_value();
+                val1->i = &i1;
+                
+                selection_p select1 = selection(schema1, col1, val1, com1);
 
-            enum comparor com1 = EQUAL;
+                /* Construct a select: where column 5 (event_type) == 1 */
+                int col2 = 5;
 
-            int i1 = 1;
-            ref_value_p val1 = ref_value();
-            val1->i = &i1;
-            
-            selection_p select1 = selection(schema1, col1, val1, com1);
+                enum comparor com2 = EQUAL;
 
-            /* Construct a select: where column 5 (event_type) == 1 */
-            int col2 = 5;
+                int i2 = 1;
+                ref_value_p val2 = ref_value();
+                val2->i = &i2;
+                
+                selection_p select2 = selection(schema1, col2, val2, com2);
 
-            enum comparor com2 = EQUAL;
+                /* Create a query */
+                int window_size = 64;
+                int window_side = 64;
+                bool is_merging = false;
+                query_p query1 = query(0, buffer_size, window_size, window_side, is_merging);
 
-            int i2 = 1;
-            ref_value_p val2 = ref_value();
-            val2->i = &i2;
-            
-            selection_p select2 = selection(schema1, col2, val2, com2);
+                query_add_operator(query1, (void *) select1, select1->operator);
 
-            /* Create a query */
-            int window_size = 64;
-            int window_side = 64;
-            bool is_merging = false;
-            query_p query1 = query(0, buffer_size, window_size, window_side, is_merging);
+                query_setup(query1);
 
-            query_add_operator(query1, (void *) select1, select1->operator);
+                /* Execute */
+                query_process(query1, input, output);
 
-            query_setup(query1);
-
-            /* Execute */
-            query_process(query1, input, output);
-
-            /* For debugging */
-            selection_print_output(select1, output, buffer_size);
+                /* For debugging */
+                selection_print_output(select1, output, buffer_size);
+            }
 
             break;
         case QUERY2:
