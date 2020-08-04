@@ -29,15 +29,16 @@ void run_processing_gpu(
     int load, enum test_cases mode) {
     
     u_int8_t * batch = buffers[0];
-    /* TODO extend the batch struct into a real memoery manager */
-    batch_t wrapped_batch;
+    /* TODO extend the batch struct into a real memoery manager that could create a batch 
+       according to the start and end pointer */
+    batch_t wrapped_input;
     {
-        wrapped_batch.start = 0;
-        wrapped_batch.end = buffer_size;
-        wrapped_batch.size = buffer_size;
-        wrapped_batch.buffer = batch;
+        wrapped_input.start = 0;
+        wrapped_input.end = buffer_size;
+        wrapped_input.size = buffer_size;
+        wrapped_input.buffer = batch;
     }
-    batch_p input_batch = &wrapped_batch;
+    batch_p input = &wrapped_input;
 
     /* TODO: dynmaically decide the output buffer size */
     batch_t wrapped_output;
@@ -112,7 +113,7 @@ void run_processing_gpu(
             query_setup(query1);
 
             /* Execute */
-            query_process(query1, input_batch, output);
+            query_process(query1, input, output);
 
             /* For debugging */
             selection_print_output(select1, output, buffer_size);
@@ -125,7 +126,7 @@ void run_processing_gpu(
             /* TODO wrap in a general setup method */
             reduction_setup(buffer_size, tuple_size);
             /* TODO wrap in a general query process method */
-            reduction_process(input_batch, tuple_size, 0, output);
+            reduction_process(input, tuple_size, 0, output);
 
             reduction_print_output(output, buffer_size, tuple_size);
             break;
@@ -186,7 +187,7 @@ void run_processing_gpu(
             query_setup(query1);
 
             /* Execute */
-            query_process(query1, input_batch, output);
+            query_process(query1, input, output);
 
             /* For debugging */
             selection_print_output(select1, output, buffer_size);
@@ -211,7 +212,7 @@ void run_processing_gpu(
             // /* TODO wrap in a general setup method */
             // selection_setup(buffer_size, tuple_size);
             // /* TODO wrap in a general query process method */
-            // selection_process(input_batch, buffer_size, tuple_size, 0, output);
+            // selection_process(input, buffer_size, tuple_size, 0, output);
 
             // selection_print_output(output, buffer_size, tuple_size);
 
@@ -221,7 +222,7 @@ void run_processing_gpu(
             // /* TODO wrap in a general setup method */
             // reduction_setup(buffer_size, tuple_size);
             // /* TODO wrap in a general query process method */
-            // reduction_process(input_batch, tuple_size, 0, output);
+            // reduction_process(input, tuple_size, 0, output);
 
             // reduction_print_output(output, buffer_size, tuple_size);
             break;
