@@ -7,7 +7,7 @@
 #include "operator.h"
 
 /* TODO to support more than one operator */
-#define QUERY_MAX_OPERATOR_NUM 1
+#define QUERY_MAX_OPERATOR_NUM 2
 
 enum window_types {
     RANGE_BASE,  /* Time based */
@@ -18,6 +18,7 @@ typedef struct query * query_p;
 typedef struct query {
     int id;
     int batch_size;
+    bool has_setup;
 
     int window_size;
     int window_slide;

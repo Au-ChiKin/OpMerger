@@ -210,6 +210,7 @@ void run_processing_gpu(
                 query_p query1 = query(0, batch_size, window_size, window_side, is_merging);
 
                 query_add_operator(query1, (void *) select1, select1->operator);
+                query_add_operator(query1, (void *) select2, select2->operator);
 
                 query_setup(query1);
 
