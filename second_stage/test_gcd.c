@@ -163,75 +163,6 @@ void run_processing_gpu(
             break;
         case SEPARATE_SELECTION: 
             fprintf(stdout, "========== Running separate selection test ===========\n");
-
-            {
-                /* Construct schemas */
-                schema_p schema1 = schema();
-                schema_add_attr(schema1, TYPE_LONG);  /* time_stamp */
-                schema_add_attr(schema1, TYPE_LONG);  /* job_id */
-                schema_add_attr(schema1, TYPE_LONG);  /* task_id */
-                schema_add_attr(schema1, TYPE_LONG);  /* machine_id */
-                schema_add_attr(schema1, TYPE_INT);   /* user_id */
-                schema_add_attr(schema1, TYPE_INT);   /* event_type */
-                schema_add_attr(schema1, TYPE_INT);   /* category */
-                schema_add_attr(schema1, TYPE_INT);   /* priority */
-                schema_add_attr(schema1, TYPE_FLOAT); /* cpu */
-                schema_add_attr(schema1, TYPE_FLOAT); /* ram */
-                schema_add_attr(schema1, TYPE_FLOAT); /* disk */
-                schema_add_attr(schema1, TYPE_INT);   /* constraints */
-                printf("[MAIN] Created a schema of size %d\n", schema1->size);
-
-                /* Construct a select: where column 6 (category) == 1 */
-                int col1 = 6;
-
-                enum comparor com1 = EQUAL;
-
-                int i1 = 1;
-                ref_value_p val1 = ref_value();
-                val1->i = &i1;
-                
-                selection_p select1 = selection(schema1, col1, val1, com1);
-
-                /* Construct a reduce: sum column 8 (cpu) */
-                int col2 = 8;
-
-                selection_p reduce1 = reduction(schema1, col2);
-
-                /* Create a query */
-                int batch_size = buffer_size;
-                int window_size = 64;
-                int window_side = 64;
-                bool is_merging = false;
-                query_p query1 = query(0, batch_size, window_size, window_side, is_merging);
-
-                query_add_operator(query1, (void *) select1, select1->operator);
-                query_add_operator(query1, (void *) reduce1, reduce1->operator);
-
-                query_setup(query1);
-
-                /* Execute */
-                query_process(query1, input, output);
-
-                /* For debugging */
-                selection_print_output(select1, output, buffer_size);
-            }
-
-            break;
-        case QUERY2:
-            /**
-             * Query 2:
-             * select timestamp, category, sum(cpu) as totalCpu
-             * from TaskEvents [range 60 slide 1]
-             * group by category
-             * 
-             * Since we have not yet implemented aggregation
-             * 
-             * Query 2 - variant:
-             * select timestamp, category, sum(cpu) as totalCpu
-             * from TaskEvents [range 60 slide 1]
-             * where category == 1
-             **/
-            fprintf(stdout, "========== Running query2 of google cluster dataset ===========\n");
             {
                 /* Construct schemas */
                 schema_p schema1 = schema();
@@ -279,6 +210,73 @@ void run_processing_gpu(
                 query_p query1 = query(0, batch_size, window_size, window_side, is_merging);
 
                 query_add_operator(query1, (void *) select1, select1->operator);
+
+                query_setup(query1);
+
+                /* Execute */
+                query_process(query1, input, output);
+
+                /* For debugging */
+                selection_print_output(select1, output, buffer_size);
+            }
+            break;
+        case QUERY2:
+            /**
+             * Query 2:
+             * select timestamp, category, sum(cpu) as totalCpu
+             * from TaskEvents [range 60 slide 1]
+             * group by category
+             * 
+             * Since we have not yet implemented aggregation
+             * 
+             * Query 2 - variant:
+             * select timestamp, category, sum(cpu) as totalCpu
+             * from TaskEvents [range 60 slide 1]
+             * where category == 1
+             **/
+            fprintf(stdout, "========== Running query2 of google cluster dataset ===========\n");
+            {
+                /* Construct schemas */
+                schema_p schema1 = schema();
+                schema_add_attr(schema1, TYPE_LONG);  /* time_stamp */
+                schema_add_attr(schema1, TYPE_LONG);  /* job_id */
+                schema_add_attr(schema1, TYPE_LONG);  /* task_id */
+                schema_add_attr(schema1, TYPE_LONG);  /* machine_id */
+                schema_add_attr(schema1, TYPE_INT);   /* user_id */
+                schema_add_attr(schema1, TYPE_INT);   /* event_type */
+                schema_add_attr(schema1, TYPE_INT);   /* category */
+                schema_add_attr(schema1, TYPE_INT);   /* priority */
+                schema_add_attr(schema1, TYPE_FLOAT); /* cpu */
+                schema_add_attr(schema1, TYPE_FLOAT); /* ram */
+                schema_add_attr(schema1, TYPE_FLOAT); /* disk */
+                schema_add_attr(schema1, TYPE_INT);   /* constraints */
+                printf("[MAIN] Created a schema of size %d\n", schema1->size);
+
+                /* Construct a select: where column 6 (category) == 1 */
+                int col1 = 6;
+
+                enum comparor com1 = EQUAL;
+
+                int i1 = 1;
+                ref_value_p val1 = ref_value();
+                val1->i = &i1;
+                
+                selection_p select1 = selection(schema1, col1, val1, com1);
+
+                /* Construct a reduce: sum column 8 (cpu) */
+                int col2 = 8;
+
+                selection_p reduce1 = reduction(schema1, col2);
+
+                /* Create a query */
+                int batch_size = buffer_size;
+                int window_size = 64;
+                int window_side = 64;
+                bool is_merging = false;
+                query_p query1 = query(0, batch_size, window_size, window_side, is_merging);
+
+                query_add_operator(query1, (void *) select1, select1->operator);
+                query_add_operator(query1, (void *) reduce1, reduce1->operator);
 
                 query_setup(query1);
 
