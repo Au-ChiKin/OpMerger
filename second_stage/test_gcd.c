@@ -34,7 +34,8 @@ void run_processing_gpu(
     batch_t wrapped_input;
     {
         wrapped_input.start = 0;
-        wrapped_input.end = buffer_size;
+        /* Move this outside of this function */
+        wrapped_input.end = buffer_size * TUPLE_SIZE;
         wrapped_input.size = buffer_size;
         wrapped_input.buffer = batch;
     }
@@ -44,7 +45,8 @@ void run_processing_gpu(
     batch_t wrapped_output;
     {
         wrapped_output.start = 0;
-        wrapped_output.end = 4 * buffer_size;
+        /* Move this outside of this function */
+        wrapped_output.end = 4 * buffer_size * TUPLE_SIZE;
         wrapped_output.size = 4 * buffer_size;
         wrapped_output.buffer = result;
     }

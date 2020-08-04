@@ -47,6 +47,7 @@ void selection_setup(void * select_ptr, int batch_size);
 
 void selection_process(int qid, void * select_ptr, batch_p batch, batch_p output);
 
+/* Only for debugging. No longer consistent with the current design */
 void selection_print_output(selection_p select, batch_p outputs, int batch_size);
 
 int selection_merger_and(selection_p, selection_p, char * source);

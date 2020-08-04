@@ -48,6 +48,7 @@ selection_p selection(
     {
         p->operator->setup = (void *) selection_setup;
         p->operator->process = (void *) selection_process;
+        p->operator->process_output = (void *) selection_process_output;
         p->operator->print = (void *) selection_print_output;
 
         p->operator->type = OPERATOR_SELECT;
@@ -101,42 +102,29 @@ void selection_setup(void * select_ptr, int batch_size) {
 
 void selection_process(int qid, void * select_ptr, batch_p input, batch_p output) {
     selection_p select = (selection_p) select_ptr;
-    
+
+    int batch_size = input->size;
+    int tuple_size = select->input_schema->size;
     int work_group_num = select->threads[0] / select->threads_per_group[0];
 
-    /* Set input */
-    
-    // IQueryBuffer inputBuffer = batch.getBuffer();
-    // int start = batch.getBufferStartPointer();
-    // int end   = batch.getBufferEndPointer();
-    
-    // TheGPU.getInstance().setInputBuffer(qid, 0, inputBuffer, start, end);
-    
-    /* Set output for a previously executed operator */
-    
-    // WindowBatch pipelinedBatch = TheGPU.getInstance().shiftUp(batch);
-    
-    // IOperatorCode pipelinedOperator = null; 
-    // if (pipelinedBatch != null) {
-    //     pipelinedOperator = pipelinedBatch.getQuery().getMostUpstreamOperator().getGpuCode();
-    //     pipelinedOperator.configureOutput (qid);
-    // }
-
+    /* Set input buffer addresses and entries */
     u_int8_t * inputs [1] = {input->buffer + input->start};
 
+    /* Set output buffer addresses and entries */
     u_int8_t * outputs [3] = {
-        output->buffer + input->start,
-        output->buffer + input->start + 4 * input->size,
-        output->buffer + input->start + 4 * input->size + 4 * work_group_num};
+        output->buffer + input->start,                                        /* flags */
+        output->buffer + input->start + 4 * batch_size,                       /* partitions */
+        output->buffer + input->start + 4 * batch_size + 4 * work_group_num}; /* output */
+
+    /* Validate whether the given output buffer is big enough */
+    if ((output->end - output->start) < (long) (4 * batch_size + 4 * work_group_num + batch_size * tuple_size)) {
+        fprintf(stderr, "error: Expected output size has exceeded the given output buffer size (%s)\n", __FUNCTION__);
+        exit(1);
+    }
 
     /* Execute */
     gpu_execute(qid, select->threads, select->threads_per_group,
         (void *) inputs, (void *) outputs, sizeof(u_int8_t));
-    
-    // if (pipelinedBatch != null)
-    //     pipelinedOperator.processOutput (qid, pipelinedBatch);
-    
-    // api.outputWindowBatchResult (pipelinedBatch);
 }
 
 void selection_print_output(selection_p select, batch_p outputs, int batch_size) {
@@ -193,16 +181,19 @@ void selection_print_output(selection_p select, batch_p outputs, int batch_size)
 
 // void selection_configureOutput (int queryId) {
     
+//     /* Create a buffer to hold the output */
 //     IQueryBuffer outputBuffer = UnboundedQueryBufferFactory.newInstance();
-//     TheGPU.getInstance().setOutputBuffer(queryId, 3, outputBuffer);
+//     TheGPU.getInstance().setOutputBuffer(queryId, /* output id */ 3, outputBuffer);
 // }
 
 // void selection_processOutput (int queryId, WindowBatch batch) {
     
+//     /* Get the buffer which has been used to store the result from this oeprator */
 //     IQueryBuffer buffer = TheGPU.getInstance().getOutputBuffer(queryId, 3);
     
 //     // System.out.println(String.format("[DBG] task %10d (\"select\"): output buffer position is %10d", 
 //     //		batch.getTaskId(), buffer.position()));
     
+//     /* Make it into an input batch to another operator */
 //     batch.setBuffer(buffer);
 // }
