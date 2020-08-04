@@ -29,7 +29,13 @@ void query_add_operator(query_p query, void * new_operator, operator_p operator_
     if (query->operator_num >= QUERY_MAX_OPERATOR_NUM) {
         fprintf(stderr, "error: Exceed query maximum operator limit (%s)\n", __FUNCTION__);
         exit(1);
-    } 
+    }
+
+    if (!new_operator) {
+        fprintf(stderr, "error: new_operator cannot be NULL (%s)\n", __FUNCTION__);
+        exit(1);
+    }
+
     query->operators[query->operator_num] = new_operator;
     query->callbacks[query->operator_num] = operator_callbacks;
     query->operator_num += 1;
@@ -90,11 +96,6 @@ void query_process(query_p query, batch_p input, batch_p output) {
     if (!query->has_setup) {
 
         fprintf(stderr, "error: This query has not been setup (%s)\n", __FUNCTION__);
-        exit(1);
-    }
-
-    if (query->operator_num == 0) {
-        fprintf(stderr, "error: No operator has been added to this query (%s)\n", __FUNCTION__);
         exit(1);
     }
 
