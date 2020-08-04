@@ -99,10 +99,11 @@ void run_processing_gpu(
                 selection_p select2 = selection(schema1, col2, val2, com2);
 
                 /* Create a query */
+                int batch_size = buffer_size;
                 int window_size = 64;
                 int window_side = 64;
                 bool is_merging = true;
-                query_p query1 = query(0, buffer_size, window_size, window_side, is_merging);
+                query_p query1 = query(0, batch_size, window_size, window_side, is_merging);
 
                 query_add_operator(query1, (void *) select1, select1->operator);
 
@@ -143,10 +144,11 @@ void run_processing_gpu(
                 selection_p reduce1 = reduction(schema1, col1);
 
                 /* Create a query */
+                int batch_size = buffer_size;
                 int window_size = 64;
                 int window_side = 64;
                 bool is_merging = false;
-                query_p query1 = query(0, buffer_size, window_size, window_side, is_merging);
+                query_p query1 = query(0, batch_size, window_size, window_side, is_merging);
 
                 query_add_operator(query1, (void *) reduce1, reduce1->operator);
 
@@ -196,10 +198,11 @@ void run_processing_gpu(
                 selection_p reduce1 = reduction(schema1, col2);
 
                 /* Create a query */
+                int batch_size = buffer_size;
                 int window_size = 64;
                 int window_side = 64;
                 bool is_merging = false;
-                query_p query1 = query(0, buffer_size, window_size, window_side, is_merging);
+                query_p query1 = query(0, batch_size, window_size, window_side, is_merging);
 
                 query_add_operator(query1, (void *) select1, select1->operator);
                 query_add_operator(query1, (void *) reduce1, reduce1->operator);
@@ -269,10 +272,11 @@ void run_processing_gpu(
                 selection_p select2 = selection(schema1, col2, val2, com2);
 
                 /* Create a query */
+                int batch_size = buffer_size;
                 int window_size = 64;
                 int window_side = 64;
                 bool is_merging = false;
-                query_p query1 = query(0, buffer_size, window_size, window_side, is_merging);
+                query_p query1 = query(0, batch_size, window_size, window_side, is_merging);
 
                 query_add_operator(query1, (void *) select1, select1->operator);
 
