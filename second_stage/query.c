@@ -3,6 +3,7 @@
 #include <stdio.h>
 
 #include "helpers.h"
+#include "selection.h"
 
 
 query_p query(int id, int batch_size, int window_size, int window_side, bool is_merging) {
@@ -107,15 +108,55 @@ void query_process(query_p query, batch_p input, batch_p output) {
     if (query->is_merging) {
 
     } else {
-        /* Create am intermediate buffer for data from operator to operator */
+        /* Create an intermediate buffer for data from operator to operator */
+        u_int8_t * inter_buffer = malloc(4 * query->batch_size * 64 /* TODO: a more reasonable way to define the size */);
+        batch_t inter_batch;
+        {
+            inter_batch.start = 0;
+            inter_batch.end = 4 * query->batch_size * 64;
+            inter_batch.size = 0; /* output buffer, default to be empty */
+            inter_batch.buffer = inter_buffer;
+        }
+        batch_p inter = &inter_batch;
+
+        /* Another buffer for more than two operators */
+        u_int8_t * inter_buffer_swap = malloc(4 * query->batch_size * 64);
+        batch_t inter_batch_swap;
+        {
+            inter_batch_swap.start = 0;
+            inter_batch_swap.end = 4 * query->batch_size * 64;
+            inter_batch_swap.size = 0; /* output buffer, default to be empty */
+            inter_batch_swap.buffer = inter_buffer_swap;
+        }
+        /* The buffer pointed by inter_swap should not be used (since it is also pointed to by input */
+        batch_p inter_swap = &inter_batch_swap;
+
+        batch_p tmp;
 
         /* TODO: there is no checking of whether the operators[i] matches the callbacks[i] */
         for (int i=0; i<query->operator_num; i++) {
+            printf("[QUERY] Excecuting operator %d\n", i);
             if (i != query->operator_num-1) {
-                /* TODO: use the intermediate buffer instead */
-                (* query->callbacks[i]->process) (query->id, query->operators[i], input, output);
+                (* query->callbacks[i]->reset_threads) (query->operators[i], input->size);
+
+                (* query->callbacks[i]->process) (i, query->operators[i], input, inter);
+
+                /* Move the inter to input */
+                (* query->callbacks[i]->process_output) (query->operators[i], inter);
+                input = inter; /* Shallow copy. input batch does not belong to query class, no need to free */
+
+                /* Use the other buffer as input */
+                tmp = inter;
+                { /* Reset the used input batch */
+                    inter_swap->start = 0;
+                    inter_swap->size = 0;
+                }
+                inter = inter_swap;
+                inter_swap = tmp;
             } else  {
-                (* query->callbacks[i]->process) (query->id, query->operators[i], input, output);
+                (* query->callbacks[i]->reset_threads) (query->operators[i], input->size);
+
+                (* query->callbacks[i]->process) (i, query->operators[i], input, output);
             }
         }
     }

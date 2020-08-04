@@ -46,10 +46,11 @@ selection_p selection(
     selection_p p = (selection_p) malloc(sizeof(selection_t));
     p->operator = (operator_p) malloc(sizeof (operator_t));
     {
-        p->operator->setup = (void *) selection_setup;
-        p->operator->process = (void *) selection_process;
-        p->operator->process_output = (void *) selection_process_output;
-        p->operator->print = (void *) selection_print_output;
+        p->operator->setup = selection_setup;
+        p->operator->process = selection_process;
+        p->operator->process_output = selection_process_output;
+        p->operator->reset_threads = selection_reset_threads;
+        p->operator->print = selection_print_output;
 
         p->operator->type = OPERATOR_SELECT;
 
@@ -65,6 +66,8 @@ selection_p selection(
 void selection_setup(void * select_ptr, int batch_size) {
     selection_p select = (selection_p) select_ptr;
 
+    int tuple_size = select->input_schema->size;
+
     /* Operator setup */
     for (int i=0; i<SELECTION_KERNEL_NUM; i++) {
         select->threads[i] = batch_size / SELECTION_TUPLES_PER_THREADS;
@@ -75,14 +78,21 @@ void selection_setup(void * select_ptr, int batch_size) {
             select->threads_per_group[i] = MAX_THREADS_PER_GROUP;
         }
     }
+    int work_group_num = select->threads[0] / select->threads_per_group[0];
+
+    /* Since the outputs have been set at this stage, their size in libgpu cannot be alterred afterwards(during 
+       processing, we might want to change to number of threads used to compute according to the input batch).
+       Therefore, we need to calculate these entries here instead of when needed. Otherwise they might change
+       according to the new settings and do not match up the libgpu settings */
+    select->output_entries[0] = 0;
+    select->output_entries[1] = 4 * batch_size;
+    select->output_entries[2] = 4 * batch_size + 4 * work_group_num;
 
     /* Source generation */
     char * source = read_source("cl/select.cl");
     int qid = gpu_get_query(source, 2, 1, 4);
     
     /* GPU inputs and outputs setup */
-    int tuple_size = select->input_schema->size;
-    int work_group_num = select->threads[0] / select->threads_per_group[0];
     
     gpu_set_input(qid, 0, batch_size * tuple_size);
     
@@ -100,6 +110,20 @@ void selection_setup(void * select_ptr, int batch_size) {
     gpu_set_kernel_select (qid, args);
 }
 
+void selection_reset_threads(void * select_ptr, int new_batch_size) {
+    selection_p select = (selection_p) select_ptr;
+
+    for (int i=0; i<SELECTION_KERNEL_NUM; i++) {
+        select->threads[i] = new_batch_size / SELECTION_TUPLES_PER_THREADS;
+
+        if (select->threads[i] < MAX_THREADS_PER_GROUP) {
+            select->threads_per_group[i] = select->threads[0];
+        } else {
+            select->threads_per_group[i] = MAX_THREADS_PER_GROUP;
+        }
+    }
+}
+
 void selection_process(int qid, void * select_ptr, batch_p input, batch_p output) {
     selection_p select = (selection_p) select_ptr;
 
@@ -112,9 +136,9 @@ void selection_process(int qid, void * select_ptr, batch_p input, batch_p output
 
     /* Set output buffer addresses and entries */
     u_int8_t * outputs [3] = {
-        output->buffer + input->start,                                        /* flags */
-        output->buffer + input->start + 4 * batch_size,                       /* partitions */
-        output->buffer + input->start + 4 * batch_size + 4 * work_group_num}; /* output */
+        output->buffer + output->start + select->output_entries[0],  /* flags */
+        output->buffer + output->start + select->output_entries[1],  /* partitions */
+        output->buffer + output->start + select->output_entries[2]}; /* output */
 
     /* Validate whether the given output buffer is big enough */
     if ((output->end - output->start) < (long) (4 * batch_size + 4 * work_group_num + batch_size * tuple_size)) {
@@ -127,9 +151,8 @@ void selection_process(int qid, void * select_ptr, batch_p input, batch_p output
         (void *) inputs, (void *) outputs, sizeof(u_int8_t));
 }
 
-void selection_print_output(selection_p select, batch_p outputs, int batch_size) {
+void selection_print_output(selection_p select, batch_p outputs) {
 
-    int tuple_size = select->input_schema->size;
     int work_group_num = select->threads[0] / select->threads_per_group[0];
 
     typedef struct {
@@ -148,19 +171,11 @@ void selection_print_output(selection_p select, batch_p outputs, int batch_size)
     } output_tuple_t __attribute__((aligned(1)));
 
     /* Deserialise output buffer */
-    int current_offset = 0;
-    
-    int flags_size = 4 * batch_size;
-    int * flags = (int *) (outputs->buffer + current_offset);
-    current_offset += flags_size;
+    int * flags = (int *) (outputs->buffer + outputs->start + select->output_entries[0]);
 
-    int partitions_size = 4 * work_group_num;
-    int * partitions = (int *) (outputs->buffer + current_offset);
-    current_offset += partitions_size;
+    int * partitions = (int *) (outputs->buffer + outputs->start + select->output_entries[1]);
 
-    int output_size = batch_size * tuple_size; /* SystemConf.UNBOUNDED_BUFFER_SIZE */
-    output_tuple_t * output = (output_tuple_t *) (outputs->buffer + current_offset);
-    current_offset += output_size;
+    output_tuple_t * output = (output_tuple_t *) (outputs->buffer + outputs->start + select->output_entries[2]);
 
     /* Calculate output tuples */
     int count = 0;
@@ -169,7 +184,6 @@ void selection_print_output(selection_p select, batch_p outputs, int batch_size)
     }
 
     /* print */
-    printf("[Results] Required Output buffer size is %d\n", current_offset);
     printf("[Results] Output tuple numbers: %d\n", count);
     printf("[Results] Tuple    Timestamp    user-id     event-type    category    priority    cpu\n");
     for (int i=0; i<10; i++) {
@@ -179,21 +193,23 @@ void selection_print_output(selection_p select, batch_p outputs, int batch_size)
     }
 }
 
-// void selection_configureOutput (int queryId) {
-    
-//     /* Create a buffer to hold the output */
-//     IQueryBuffer outputBuffer = UnboundedQueryBufferFactory.newInstance();
-//     TheGPU.getInstance().setOutputBuffer(queryId, /* output id */ 3, outputBuffer);
-// }
+void selection_process_output (void * select_ptr, batch_p outputs) {
+    selection_p select = (selection_p) select_ptr;
 
-// void selection_processOutput (int queryId, WindowBatch batch) {
-    
-//     /* Get the buffer which has been used to store the result from this oeprator */
-//     IQueryBuffer buffer = TheGPU.getInstance().getOutputBuffer(queryId, 3);
-    
-//     // System.out.println(String.format("[DBG] task %10d (\"select\"): output buffer position is %10d", 
-//     //		batch.getTaskId(), buffer.position()));
-    
-//     /* Make it into an input batch to another operator */
-//     batch.setBuffer(buffer);
-// }
+    int work_group_num = select->threads[0] / select->threads_per_group[0];
+
+    /* Calculate output tuples */
+    int * partitions = (int *) (outputs->buffer + select->output_entries[1]);
+    int count = 0;
+    for (int i=0; i<work_group_num; i++) {
+        count += partitions[i];
+    }
+    /* TODO: replace it with the least power of 2 number that bigger than count */
+    // if ()
+
+    /* TODO: initialise the extra tuples */
+
+    /* Update pointers to use only the output array (tuples) and exclude flags and partitions */
+    outputs->start += select->output_entries[1];
+    outputs->size = 128; // count;
+}

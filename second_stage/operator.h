@@ -14,6 +14,8 @@ typedef struct opmerger_operator * operator_p;
 typedef struct opmerger_operator {
     void (* setup) (void * operator, int batch_size);
     void (* process) (int qid, void * operator, batch_p input, batch_p output);
+    void (* process_output) (void * operator, batch_p output);
+    void (* reset_threads) (void * operator, int new_batch_size);
     void (* print) ();
 
     enum operator_types type;

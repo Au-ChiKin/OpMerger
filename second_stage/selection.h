@@ -36,6 +36,8 @@ typedef struct selection {
     size_t threads[SELECTION_KERNEL_NUM];
     size_t threads_per_group [SELECTION_KERNEL_NUM];
 
+    long output_entries[3];
+
 } selection_t;
 
 ref_value_p ref_value();
@@ -48,7 +50,12 @@ void selection_setup(void * select_ptr, int batch_size);
 void selection_process(int qid, void * select_ptr, batch_p batch, batch_p output);
 
 /* Only for debugging. No longer consistent with the current design */
-void selection_print_output(selection_p select, batch_p outputs, int batch_size);
+void selection_print_output(selection_p select, batch_p outputs);
+
+/* To prepare the output batch from selection for being inserted to next operator */
+void selection_process_output (void * select_ptr, batch_p outputs);
+
+void selection_reset_threads(void * select_ptr, int new_batch_size);
 
 int selection_merger_and(selection_p, selection_p, char * source);
 int selection_merger_or(selection_p, selection_p, char * source);

@@ -52,7 +52,7 @@ void run_processing_gpu(
     }
     batch_p output = &wrapped_output;
 
-    int const query_num = 1;
+    int const query_num = 2;
     gpu_init(query_num);
 
     /* simplified query creation */
@@ -116,7 +116,7 @@ void run_processing_gpu(
                 query_process(query1, input, output);
 
                 /* For debugging */
-                selection_print_output(select1, output, buffer_size);
+                selection_print_output(select1, output);
             }
 
             break;
@@ -143,7 +143,7 @@ void run_processing_gpu(
                 /* Construct a reduce: sum column 8 (cpu) */
                 int col1 = 8;
 
-                selection_p reduce1 = reduction(schema1, col1);
+                reduction_p reduce1 = reduction(schema1, col1);
 
                 /* Create a query */
                 int batch_size = buffer_size;
@@ -220,7 +220,7 @@ void run_processing_gpu(
                 query_process(query1, input, output);
 
                 /* For debugging */
-                selection_print_output(select1, output, buffer_size);
+                selection_print_output(select1, output);
             }
             break;
         case QUERY2:
@@ -269,7 +269,7 @@ void run_processing_gpu(
                 /* Construct a reduce: sum column 8 (cpu) */
                 int col2 = 8;
 
-                selection_p reduce1 = reduction(schema1, col2);
+                reduction_p reduce1 = reduction(schema1, col2);
 
                 /* Create a query */
                 int batch_size = buffer_size;
@@ -287,7 +287,7 @@ void run_processing_gpu(
                 query_process(query1, input, output);
 
                 /* For debugging */
-                selection_print_output(select1, output, buffer_size);
+                selection_print_output(select1, output);
             }
             break;
         default: 
