@@ -120,13 +120,44 @@ void run_processing_gpu(
         /* Merely reduction cannot be merged (unlike aggregation) */
         case REDUCTION: 
             fprintf(stdout, "========== Running reduction test ===========\n");
-            reduction_init(buffer_size);
-            /* TODO wrap in a general setup method */
-            reduction_setup(buffer_size, tuple_size);
-            /* TODO wrap in a general query process method */
-            reduction_process(input, tuple_size, 0, output);
+            {
+                /* Construct schemas */
+                schema_p schema1 = schema();
+                schema_add_attr(schema1, TYPE_LONG);  /* time_stamp */
+                schema_add_attr(schema1, TYPE_LONG);  /* job_id */
+                schema_add_attr(schema1, TYPE_LONG);  /* task_id */
+                schema_add_attr(schema1, TYPE_LONG);  /* machine_id */
+                schema_add_attr(schema1, TYPE_INT);   /* user_id */
+                schema_add_attr(schema1, TYPE_INT);   /* event_type */
+                schema_add_attr(schema1, TYPE_INT);   /* category */
+                schema_add_attr(schema1, TYPE_INT);   /* priority */
+                schema_add_attr(schema1, TYPE_FLOAT); /* cpu */
+                schema_add_attr(schema1, TYPE_FLOAT); /* ram */
+                schema_add_attr(schema1, TYPE_FLOAT); /* disk */
+                schema_add_attr(schema1, TYPE_INT);   /* constraints */
+                printf("[MAIN] Created a schema of size %d\n", schema1->size);
 
-            reduction_print_output(output, buffer_size, tuple_size);
+                /* Construct a reduce: sum column 8 (cpu) */
+                int col1 = 6;
+
+                selection_p reduce1 = reduction(schema1, col1);
+
+                /* Create a query */
+                int window_size = 64;
+                int window_side = 64;
+                bool is_merging = false;
+                query_p query1 = query(0, buffer_size, window_size, window_side, is_merging);
+
+                query_add_operator(query1, (void *) reduce1, reduce1->operator);
+
+                query_setup(query1);
+
+                /* Execute */
+                query_process(query1, input, output);
+
+                /* For debugging */
+                reduction_print_output(output, buffer_size, tuple_size);
+            }
             break;
         /* TODO: the previous multiple test cases */
         case SEPARATE_SELECTION: 

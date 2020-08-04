@@ -6,27 +6,44 @@
 #include "libgpu/gpu_agg.h"
 #include "config.h"
 
-#define KERNEL_NUM 4
+reduction_p reduction(schema_p input_schema, int ref) {
+    reduction_p p = (reduction_p) malloc(sizeof(reduction_t));
+    p->operator = (operator_p) malloc(sizeof (operator_t));
+    {
+        p->operator->setup = (void *) reduction_setup;
+        p->operator->process = (void *) reduction_process;
+        p->operator->print = (void *) reduction_print_output;
 
-static size_t threads[KERNEL_NUM];
-static size_t threads_per_group [KERNEL_NUM];
+        p->operator->type = OPERATOR_REDUCE;
 
-void reduction_init(int batch_size) {
-    for (int i=0; i<KERNEL_NUM; i++) {
-        threads[i] = batch_size;
-
-        if (batch_size < MAX_THREADS_PER_GROUP) {
-            threads_per_group[i] = batch_size;
-        } else {
-            threads_per_group[i] = MAX_THREADS_PER_GROUP;
-        }
+        strcpy(p->operator->code_name, REDUCTION_CODE_FILENAME);
     }
+    p->input_schema = input_schema;
+    p->ref = ref;
+
+    return p;    
 }
 
-void reduction_setup(int batch_size, int tuple_size) {
+void reduction_setup(void * reduce_ptr, int batch_size) {
+    reduction_p reduce = (reduction_p) reduce_ptr;
+
+    /* Operator setup */
+    for (int i=0; i<REDUCTION_KERNEL_NUM; i++) {
+        reduce->threads[i] = batch_size;
+
+        if (batch_size < MAX_THREADS_PER_GROUP) {
+            reduce->threads_per_group[i] = batch_size;
+        } else {
+            reduce->threads_per_group[i] = MAX_THREADS_PER_GROUP;
+        }
+    }
+
+    /* TODO: Source generation */
     char * source = read_source("cl/reduce.cl");
     int qid = gpu_get_query(source, 4, 1, 5);
     
+    /* GPU inputs and outputs setup */
+    int tuple_size = reduce->input_schema->size;
     gpu_set_input(qid, 0, batch_size * tuple_size);
     
     int window_pointers_size = 4 * PARTIAL_WINDOWS;
@@ -37,12 +54,12 @@ void reduction_setup(int batch_size, int tuple_size) {
     gpu_set_output(qid, 2, offset_size, 0, 1, 0, 0, 1);
     
     int window_counts_size = 20; /* 4 integers, +1 that is the mark */
-    // windowCounts = new UnboundedQueryBuffer (-1, windowCountsSize, false);
     gpu_set_output(qid, 3, window_counts_size, 0, 0, 1, 0, 1);
     
     int outputSize = batch_size * tuple_size; /* SystemConf.UNBOUNDED_BUFFER_SIZE */
     gpu_set_output(qid, 4, outputSize, 1, 0, 0, 1, 0);
     
+    /* GPU kernels setup */
     int args1 [4];
     args1[0] = batch_size; /* tuples */
     args1[1] = batch_size * tuple_size; /* input size */
@@ -61,7 +78,8 @@ void reduction_setup(int batch_size, int tuple_size) {
     gpu_set_kernel_reduce(qid, args1, args2);
 }
 
-void reduction_process(batch_p batch, int tuple_size, int qid, batch_p output) {
+void reduction_process(int qid, void * reduce_ptr, batch_p batch, batch_p output) {
+    reduction_p reduce = (reduction_p) reduce_ptr;
     
     /* Set input */
     
@@ -71,6 +89,8 @@ void reduction_process(batch_p batch, int tuple_size, int qid, batch_p output) {
     
     /* For setting start and end pointers in memory manager, no need for us */
     // java_gpu_setInputBuffer(qid, /*bid*/ 0, inputBuffer, start, end);
+    
+    int tuple_size = reduce->input_schema->size;
     
     long args2[2];
     {
@@ -111,7 +131,7 @@ void reduction_process(batch_p batch, int tuple_size, int qid, batch_p output) {
     /* Execute */
     gpu_execute_reduce(
         qid, 
-        threads, threads_per_group, 
+        reduce->threads, reduce->threads_per_group, 
         args2, 
         (void **) (inputs), (void **) (outputs), sizeof(u_int8_t)); 
         // passing the batch without deserialisation
