@@ -1,6 +1,7 @@
 #include "reduction.h"
 
 #include <stdio.h>
+#include <string.h>
 
 #include "helpers.h"
 #include "libgpu/gpu_agg.h"
