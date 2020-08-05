@@ -99,12 +99,11 @@ static char * generate_source(selection_p select, char const * filename) {
     char define_out_size[32] = "#define OUTPUT_VECTOR_SIZE ";
     sprintf(value, "%d", select->output_schema->size / 16);
     strcat(define_out_size, value);
-    strcat(define_out_size, "\n");
+    strcat(define_out_size, "\n\n");
 
-    strcat(define_out_size, "\n");
-
+    /* TODO create the genrating function in schema.c */
     /* Input and output tuple struct */
-    char generated[1024 * 3] = 
+    char input_tuple[1024] = 
 "typedef struct {\n\
     long t;\n\
     long _1;\n\
@@ -123,9 +122,10 @@ static char * generate_source(selection_p select, char const * filename) {
 typedef union {\n\
     input_tuple_t tuple;\n\
     uchar16 vectors[INPUT_VECTOR_SIZE];\n\
-} input_t;\n\
-\n\
-typedef struct {\n\
+} input_t;\n\n";
+
+    char output_tuple[1024] = 
+"typedef struct {\n\
     long t;\n\
     long _1;\n\
     long _2;\n\
@@ -143,9 +143,11 @@ typedef struct {\n\
 typedef union {\n\
     output_tuple_t tuple;\n\
     uchar16 vectors[OUTPUT_VECTOR_SIZE];\n\
-} output_t;\n\
-\n\
-// select condition\n\
+} output_t;\n\n";
+
+    /* TODO: generate according to select */
+    char selecf[1024] =
+"// select condition\n\
 inline int selectf (__global input_t *p) {\n\
     /* r */ int value = 1;\n\
 \n\
@@ -154,13 +156,18 @@ inline int selectf (__global input_t *p) {\n\
 \n\
     /* r */ return value;\n\
 }\n";
+
+    /* Template funcitons */
     char * template = read_file("cl/templates/select_template.cl");
 
+    /* Assembling */
     strcpy(source, extensions);
     strcat(source, headers);
     strcat(source, define_in_size);
     strcat(source, define_out_size);
-    strcat(source, generated);
+    strcat(source, input_tuple);
+    strcat(source, output_tuple);
+    strcat(source, selecf);
     strcat(source, template);
 
     free(extensions);
