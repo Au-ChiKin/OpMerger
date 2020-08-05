@@ -54,11 +54,26 @@ inline void initf (__local output_t *p) {
     p->tuple._2 = 0;
 }
 
-inline void reducef (__local output_t *p, __global input_t *q) {
-    p->tuple.t = (p->tuple.t == 0) ? : q->tuple.t;
-    p->tuple._1 += q->tuple._8;
-    p->tuple._2 += 1;
-}
+// inline int selectf (__global input_t *in) {
+//     int value = 1;
+//     int attribute_value = in->tuple._7; /* where category == 1*/
+//     value = value & (attribute_value == 9); 
+//     return value;
+// }
+
+/* r */ inline void reducef (__local output_t *out, __global input_t *in) {
+
+    /* r */ int flag = 1;
+
+    /* Selection */
+    int attribute_value = in->tuple._7; /* where category == 1*/
+    flag = flag & (attribute_value == 9);
+
+    /* Reduce */
+    /* r */ out->tuple.t = (out->tuple.t == 0) ? : in->tuple.t;
+    out->tuple._1 += in->tuple._8 * flag;
+    /* r */ out->tuple._2 += 1;
+/* r */ }
 
 inline void cachef (__local output_t *p, __local output_t *q) {
     q->vectors[0] = p->vectors[0];
