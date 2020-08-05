@@ -43,11 +43,16 @@ typedef struct selection {
 } selection_t;
 
 ref_value_p ref_value();
+
 void ref_value_free(ref_value_p);
 
+/* Constructor */
 selection_p selection(schema_p input_schema, int ref, ref_value_p value, enum comparor com);
 
 void selection_setup(void * select_ptr, int batch_size);
+
+/* Reset threads[] and thread_per_group[] according to new_batch_size */
+void selection_reset_threads(void * select_ptr, int new_batch_size);
 
 void selection_process(int qid, void * select_ptr, batch_p batch, batch_p output);
 
@@ -57,9 +62,5 @@ void selection_print_output(selection_p select, batch_p outputs);
 /* To prepare the output batch from selection for being inserted to next operator */
 void selection_process_output (void * select_ptr, batch_p outputs);
 
-void selection_reset_threads(void * select_ptr, int new_batch_size);
-
-int selection_merger_and(selection_p, selection_p, char * source);
-int selection_merger_or(selection_p, selection_p, char * source);
 
 #endif

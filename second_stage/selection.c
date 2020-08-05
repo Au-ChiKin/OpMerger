@@ -9,6 +9,8 @@
 
 static int free_id = 0;
 
+static void generate_filename(int id, char * filename);
+
 ref_value_p ref_value() {
 
     ref_value_p value = (ref_value_p) malloc(sizeof(ref_value_t));
