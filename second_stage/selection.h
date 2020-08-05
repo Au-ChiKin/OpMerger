@@ -38,6 +38,7 @@ typedef struct selection {
     size_t threads[SELECTION_KERNEL_NUM];
     size_t threads_per_group [SELECTION_KERNEL_NUM];
 
+    schema_p output_schema;
     long output_entries[3];
 
 } selection_t;

@@ -66,6 +66,9 @@ selection_p selection(
     p->ref = ref;
     p->value = value;
 
+    /* For selection, the input and output schema are the same */
+    p->output_schema = input_schema;
+
     return p;
 }
 
@@ -85,11 +88,24 @@ static char * generate_source(selection_p select, char const * filename) {
 
     char * extensions = read_file("cl/templates/extensions.cl");
     char * headers = read_file("cl/templates/headers.cl");
+
+    /* Input and output vector sizes */
+    char value [8] = "";
+    char define_in_size[32] = "#define INPUT_VECTOR_SIZE ";
+    sprintf(value, "%d", select->input_schema->size / 16);
+    strcat(define_in_size, value);
+    strcat(define_in_size, "\n");
+
+    char define_out_size[32] = "#define OUTPUT_VECTOR_SIZE ";
+    sprintf(value, "%d", select->output_schema->size / 16);
+    strcat(define_out_size, value);
+    strcat(define_out_size, "\n");
+
+    strcat(define_out_size, "\n");
+
+    /* Input and output tuple struct */
     char generated[1024 * 3] = 
-"#define INPUT_VECTOR_SIZE 4\n\
-#define OUTPUT_VECTOR_SIZE 4\n\
-\n\
-typedef struct {\n\
+"typedef struct {\n\
     long t;\n\
     long _1;\n\
     long _2;\n\
@@ -142,6 +158,8 @@ inline int selectf (__global input_t *p) {\n\
 
     strcpy(source, extensions);
     strcat(source, headers);
+    strcat(source, define_in_size);
+    strcat(source, define_out_size);
     strcat(source, generated);
     strcat(source, template);
 
