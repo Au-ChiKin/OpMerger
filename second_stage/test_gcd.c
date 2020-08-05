@@ -226,16 +226,43 @@ void run_processing_gpu(
         case QUERY2:
             /**
              * Query 2:
-             * select timestamp, category, sum(cpu) as totalCpu
-             * from TaskEvents [range 60 slide 1]
-             * group by category
+             * 
+             * input: TaskEvents
+             *     long  time_stamp;
+             *     long  job_id; 
+             *     long  task_id;
+             *     long  machine_id;
+             *     int   user_id;
+             *     int   event_type;
+             *     int   category;
+             *     int   priority;
+             *     float cpu;
+             *     float ram;
+             *     float disk;
+             *     int constraints;
+             * 
+             * output: CPUusagePerCategory 
+             *     long timestamp 
+             *     int category 
+             *     float totalCpu
+             * 
+             * query:
+             *     select timestamp, category, sum(cpu) as totalCpu
+             *     from TaskEvents [range 60 slide 1]
+             *     group by category
              * 
              * Since we have not yet implemented aggregation
              * 
              * Query 2 - variant:
-             * select timestamp, category, sum(cpu) as totalCpu
-             * from TaskEvents [range 60 slide 1]
-             * where category == 1
+             *     select timestamp, category, sum(cpu) as totalCpu
+             *     from TaskEvents [range 60 slide 1]
+             *     where category == 1
+             * 
+             * Output becomes
+             * output: CPUusageForCategory1
+             *     long timestamp 
+             *     float totalCpu
+             *     int counter
              **/
             fprintf(stdout, "========== Running query2 of google cluster dataset ===========\n");
             {
