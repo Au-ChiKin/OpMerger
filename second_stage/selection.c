@@ -80,6 +80,78 @@ static void generate_filename(int id, char * filename) {
     strcat(filename, ".cl");
 }
 
+static char * generate_source(selection_p select, char const * filename) {
+    char * source = (char *) malloc(1024 * 10 * sizeof(char));
+
+    char * extensions = read_file("cl/templates/extensions.cl");
+    char * headers = read_file("cl/templates/headers.cl");
+    char generated[1024 * 3] = 
+"#define INPUT_VECTOR_SIZE 4\n\
+#define OUTPUT_VECTOR_SIZE 4\n\
+\n\
+typedef struct {\n\
+    long t;\n\
+    long _1;\n\
+    long _2;\n\
+    long _3;\n\
+    int _4;\n\
+    int _5;\n\
+    int _6;\n\
+    int _7;\n\
+    float _8;\n\
+    float _9;\n\
+    float _10;\n\
+    int _11;\n\
+} input_tuple_t __attribute__((aligned(1)));\n\
+\n\
+typedef union {\n\
+    input_tuple_t tuple;\n\
+    uchar16 vectors[INPUT_VECTOR_SIZE];\n\
+} input_t;\n\
+\n\
+typedef struct {\n\
+    long t;\n\
+    long _1;\n\
+    long _2;\n\
+    long _3;\n\
+    int _4;\n\
+    int _5;\n\
+    int _6;\n\
+    int _7;\n\
+    float _8;\n\
+    float _9;\n\
+    float _10;\n\
+    int _11;\n\
+} output_tuple_t __attribute__((aligned(1)));\n\
+\n\
+typedef union {\n\
+    output_tuple_t tuple;\n\
+    uchar16 vectors[OUTPUT_VECTOR_SIZE];\n\
+} output_t;\n\
+\n\
+// select condition\n\
+inline int selectf (__global input_t *p) {\n\
+    /* r */ int value = 1;\n\
+\n\
+    int attribute_value = p->tuple._7; /* where category == 1*/\n\
+    value = value & (attribute_value == 9);\n\
+\n\
+    /* r */ return value;\n\
+}\n";
+    char * template = read_file("cl/templates/select_template.cl");
+
+    strcpy(source, extensions);
+    strcat(source, headers);
+    strcat(source, generated);
+    strcat(source, template);
+
+    free(extensions);
+    free(headers);
+    free(template);
+
+    return source;
+}
+
 void selection_setup(void * select_ptr, int batch_size) {
     selection_p select = (selection_p) select_ptr;
 
@@ -109,15 +181,14 @@ void selection_setup(void * select_ptr, int batch_size) {
     char filename [64] = "";
     generate_filename(select->id, filename);
 
-    /* TODO */
-    // generate_source(select, filename);
+    char * source = generate_source(select, filename);
+    printf("[SELECTION] Printing the generated source code to file: %s\n", filename);
+    print_to_file(filename, source);
 
-    printf("[SELECTION] Loading source filename %s ...\n", filename);
-    char * source = read_source(filename);
+    /* Build opencl program */
     int qid = gpu_get_query(source, 2, 1, 4);
     
     /* GPU inputs and outputs setup */
-    
     gpu_set_input(qid, 0, batch_size * tuple_size);
     
     gpu_set_output (qid, 0, 4 * batch_size,           0, 1, 1, 0, 1); /*      Flags */
@@ -132,6 +203,9 @@ void selection_setup(void * select_ptr, int batch_size) {
     args[2] = 4 * select->threads_per_group[0] * SELECTION_TUPLES_PER_THREADS;
 
     gpu_set_kernel_select (qid, args);
+
+    /* Free the inputed files */
+    free(source);
 }
 
 void selection_reset_threads(void * select_ptr, int new_batch_size) {
