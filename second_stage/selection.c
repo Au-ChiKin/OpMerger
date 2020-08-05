@@ -7,6 +7,8 @@
 #include "libgpu/gpu_agg.h"
 #include "config.h"
 
+static int free_id = 0;
+
 ref_value_p ref_value() {
 
     ref_value_p value = (ref_value_p) malloc(sizeof(ref_value_t));
@@ -38,7 +40,6 @@ void ref_value_free(ref_value_p value) {
 } 
 
 selection_p selection(
-
     schema_p input_schema, 
     int ref, ref_value_p value,
     enum comparor com) {
@@ -56,11 +57,25 @@ selection_p selection(
 
         strcpy(p->operator->code_name, SELECTION_CODE_FILENAME);
     }
+
+    p->id = free_id++;
+
     p->input_schema = input_schema;
     p->ref = ref;
     p->value = value;
 
     return p;
+}
+
+static void generate_filename(int id, char * filename) {
+    strcat(filename, SELECTION_CODE_FILENAME);
+
+    char subfix[64] = "";
+    sprintf(subfix, "%d", id);
+    strcat(filename, "_");
+    strcat(filename, subfix);
+
+    strcat(filename, ".cl");
 }
 
 void selection_setup(void * select_ptr, int batch_size) {
@@ -89,7 +104,14 @@ void selection_setup(void * select_ptr, int batch_size) {
     select->output_entries[2] = 4 * batch_size + 4 * work_group_num;
 
     /* Source generation */
-    char * source = read_source("cl/select.cl");
+    char filename [64] = "";
+    generate_filename(select->id, filename);
+
+    /* TODO */
+    // generate_source(select, filename);
+
+    printf("[SELECTION] Loading source filename %s ...\n", filename);
+    char * source = read_source(filename);
     int qid = gpu_get_query(source, 2, 1, 4);
     
     /* GPU inputs and outputs setup */

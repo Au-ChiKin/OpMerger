@@ -7,7 +7,7 @@
 
 #define SELECTION_KERNEL_NUM 4
 #define SELECTION_TUPLES_PER_THREADS 2
-#define SELECTION_CODE_FILENAME "cl/select.cl"
+#define SELECTION_CODE_FILENAME "cl/select"
 #define SELECTION_CODE_TEMPLATE "cl/template/select_template.cl"
 
 enum comparor {
@@ -29,6 +29,8 @@ typedef struct ref_value {
 typedef struct selection * selection_p;
 typedef struct selection {
     operator_p operator; /* As a parent class */
+
+    int id;
 
     schema_p input_schema;
     int ref;
