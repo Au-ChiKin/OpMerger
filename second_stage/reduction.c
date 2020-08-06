@@ -12,6 +12,7 @@ reduction_p reduction(schema_p input_schema, int ref) {
     p->operator = (operator_p) malloc(sizeof (operator_t));
     {
         p->operator->setup = (void *) reduction_setup;
+        p->operator->reset_threads = (void *) reduction_rest_threads;
         p->operator->process = (void *) reduction_process;
         p->operator->print = (void *) reduction_print_output;
 
@@ -39,9 +40,14 @@ void reduction_setup(void * reduce_ptr, int batch_size) {
         }
     }
 
+    /* Refer to selection.c */
+    reduce->output_entries[0] = 0;
+    reduce->output_entries[1] = 20;
+
     /* TODO: Source generation */
     char * source = read_source("cl/reduce.cl");
     int qid = gpu_get_query(source, 4, 1, 5);
+    reduce->qid = qid;
     
     /* GPU inputs and outputs setup */
     int tuple_size = reduce->input_schema->size;
@@ -79,36 +85,23 @@ void reduction_setup(void * reduce_ptr, int batch_size) {
     gpu_set_kernel_reduce(qid, args1, args2);
 }
 
-void reduction_process(int qid, void * reduce_ptr, batch_p batch, batch_p output) {
+void reduction_process(void * reduce_ptr, batch_p batch, int pane_size, bool is_range, batch_p output) {
     reduction_p reduce = (reduction_p) reduce_ptr;
-    
-    /* Set input */
-    
-    // IQueryBuffer inputBuffer = batch.getBuffer();
-    // int start = batch.getBufferStartPointer();
-    // int end   = batch.getBufferEndPointer();
-    
-    /* For setting start and end pointers in memory manager, no need for us */
-    // java_gpu_setInputBuffer(qid, /*bid*/ 0, inputBuffer, start, end);
-    
-    int tuple_size = reduce->input_schema->size;
     
     long args2[2];
     {
         /* Previous pane id, based on stream start pointer, s */
         args2[0] = -1;
         long s = batch->start;
-        int  t = tuple_size;
-        /* TODO: use the pane_size in query */
-        long p = 64L;
+        int  t = reduce->input_schema->size;
+        long p = pane_size;
         if (batch->start > 0) {
-            // TODO: support range based windows 
-            // if (batch.getWindowDefinition().isRangeBased()) {
-            //     int offset = start - t;
-            //     args2[0] = batch.getTimestamp(offset) / p;
-            // } else {
+            if (is_range) {
+                int offset = s - t;
+                args2[0] = batch_get_timestamp(batch, offset) / p;
+            } else {
                 args2[0] = ((s / (long) t) / p) - 1;
-            // }
+            }
         }
     
         args2[1] = s;
@@ -116,32 +109,17 @@ void reduction_process(int qid, void * reduce_ptr, batch_p batch, batch_p output
     
     u_int8_t * inputs [1] = {batch->buffer + batch->start};
 
-    u_int8_t * outputs [2] = {output->buffer + batch->start, output->buffer + batch->start + 20};
+    u_int8_t * outputs [2] = {
+        output->buffer + output->start + reduce->output_entries[0], 
+        output->buffer + output->start + reduce->output_entries[1]};
 
-    /* TODO: support pipelined operators */
-    /* Set output for a previously executed operator */
-    
-    // WindowBatch pipelinedBatch = gpu_shiftUp(batch);
-    
-    // IOperatorCode pipelinedOperator = null; 
-    // if (pipelinedBatch != null) {
-    //     pipelinedOperator = pipelinedBatch.getQuery().getMostUpstreamOperator().getGpuCode();
-    //     pipelinedOperator.configureOutput (qid);
-    // }
-    
     /* Execute */
     gpu_execute_reduce(
-        qid, 
+        reduce->qid, 
         reduce->threads, reduce->threads_per_group, 
         args2, 
         (void **) (inputs), (void **) (outputs), sizeof(u_int8_t)); 
         // passing the batch without deserialisation
-    
-    /* TODO: output result */
-    // if (pipelinedBatch != null)
-    //     pipelinedOperator.processOutput (qid, pipelinedBatch);
-    
-    // api.outputWindowBatchResult (pipelinedBatch);
 }
 
 void reduction_print_output(batch_p outputs, int batch_size, int tuple_size) {
@@ -171,4 +149,22 @@ void reduction_print_output(batch_p outputs, int batch_size, int tuple_size) {
         printf("[Results] %-8d %-12ld %-6.5f %d\n", i, output->t, output->_1, output->_2);
         output += 1;
     }
+}
+
+void reduction_process_output(void * reduce_ptr, batch_p outputs) {
+    /* Stud, reduction is a pipeline breaker so it does not need to pass any output to another operator in this attempt */
+}
+
+void reduction_rest_threads(void * reduce_ptr, int new_batch_size) {
+    reduction_p reduce = (reduction_p) reduce_ptr;
+
+    for (int i=0; i<REDUCTION_KERNEL_NUM; i++) {
+        reduce->threads[i] = new_batch_size;
+
+        if (new_batch_size < MAX_THREADS_PER_GROUP) {
+            reduce->threads_per_group[i] = new_batch_size;
+        } else {
+            reduce->threads_per_group[i] = MAX_THREADS_PER_GROUP;
+        }
+    }    
 }

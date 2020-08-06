@@ -66,8 +66,8 @@ inline void initf (__local output_t *p) {
     /* r */ int flag = 1;
 
     /* Selection */
-    int attribute_value = in->tuple._7; /* where category == 1*/
-    flag = flag & (attribute_value == 9);
+    // int attribute_value = in->tuple._7; /* where category == 1*/
+    // flag = flag & (attribute_value == 9);
 
     /* Reduce */
     /* r */ out->tuple.t = (out->tuple.t == 0) ? : in->tuple.t;
