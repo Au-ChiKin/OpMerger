@@ -42,7 +42,7 @@ typedef union {
 } output_t;
 
 
-#define COUNT_BASED
+#define RANGE_BASED
 
 #define PANES_PER_WINDOW 1L
 #define PANES_PER_SLIDE  1L
@@ -248,7 +248,6 @@ __kernel void computePointersKernel (
 #ifdef RANGE_BASED
     __global input_t *curr = (__global input_t *) &input[tid * sizeof(input_t)];
     currPaneId = curr->tuple.t / PANE_SIZE;
-#else
     currPaneId = ((start_pointer + (tid * sizeof(input_t))) / sizeof(input_t)) / PANE_SIZE;
 #endif
 
