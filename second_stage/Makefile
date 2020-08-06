@@ -23,7 +23,7 @@ VPATH    = $(OBJDIR)
 # Targets
 PROGS   = test_gcd
 OPERATOR = aggregation.c reduction.c selection.c
-SRCS = test_gcd.c openclerrorcode.c config.c helpers.c schema.c query.c $(OPERATOR)
+SRCS = test_gcd.c openclerrorcode.c config.c helpers.c schema.c query.c batch.c $(OPERATOR)
 
 # Submodules
 include ./libcirbuf/cirbuf.mk
@@ -56,7 +56,7 @@ OBJPROG = $(addprefix $(OBJDIR)/, $(PROGS))
 all: $(OUTDIR) $(DEPOUTDIR) $(OBJPROG)
 
 $(OBJPROG): $(addprefix $(OBJDIR)/, $(OBJECTS)) 
-		$(LINK.o) $^ -o $@
+		$(LINK.o) $^ $(LDLIBS) -o $@
 
 
 # clean
