@@ -3,7 +3,7 @@
 
 #define BUFFER_SIZE 16384 /* in tuple */
 #define MAX_THREADS_PER_GROUP 256 /* Should be queried from the device */
-#define PARTIAL_WINDOWS 1024 * 16 /* window limit in a batch */
+#define PARTIAL_WINDOWS 1024 * 1024 /* window limit in a batch */
 
 /*
  * To add case:
