@@ -1,6 +1,8 @@
 #ifndef CONFIG_H
 #define CONFIG_H
 
+#define MAX_SOURCE_LENGTH 100 * 1024
+
 #define BUFFER_SIZE 16384 /* in tuple */
 #define MAX_THREADS_PER_GROUP 256 /* Should be queried from the device */
 #define PARTIAL_WINDOWS 1024 * 1024 /* window limit in a batch */

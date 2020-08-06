@@ -3,9 +3,12 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "schema.h"
+#include "config.h"
 #include "helpers.h"
 #include "libgpu/gpu_agg.h"
-#include "config.h"
+
+static int free_id = 0;
 
 reduction_p reduction(schema_p input_schema, int ref) {
     reduction_p p = (reduction_p) malloc(sizeof(reduction_t));
@@ -20,13 +23,174 @@ reduction_p reduction(schema_p input_schema, int ref) {
 
         strcpy(p->operator->code_name, REDUCTION_CODE_FILENAME);
     }
+
+    p->id = free_id++;
+
     p->input_schema = input_schema;
     p->ref = ref;
+
+    p->output_schema = schema();
+    {
+        schema_add_attr (p->output_schema, TYPE_LONG);
+        schema_add_attr (p->output_schema, TYPE_FLOAT);
+        schema_add_attr (p->output_schema, TYPE_INT);
+    }
+    printf("Created output schema of size %d\n", p->output_schema->size);
 
     return p;    
 }
 
-void reduction_setup(void * reduce_ptr, int batch_size) {
+static void generate_filename(int id, char * filename) {
+    strcat(filename, REDUCTION_CODE_FILENAME);
+
+    char subfix[64] = "";
+    sprintf(subfix, "%d", id);
+    strcat(filename, "_");
+    strcat(filename, subfix);
+
+    strcat(filename, ".cl");
+}
+
+static char * generate_window_definition(window_p window) {
+    char * ret = (char *) malloc(256 * sizeof(char)); *ret = '\0';
+    
+    if (window->type == RANGE_BASE)
+        strcat(ret, "#define RANGE_BASED\n\n");
+    else
+        strcat(ret, "#define COUNT_BASED\n\n");
+    
+    char s[64] = "";
+    sprintf(s, "#define PANES_PER_WINDOW %dL\n", window->size / window->pane_size);
+    strcat(ret, s);
+    sprintf(s, "#define PANES_PER_SLIDE  %dL\n", window->slide / window->pane_size);
+    strcat(ret, s);
+    sprintf(s, "#define PANE_SIZE        %dL\n", window->pane_size);
+    strcat(ret, s);
+    
+    return ret;
+}
+
+static char * generate_source(reduction_p reduce, char const * filename, window_p window) {
+    int const bytes_per_element = 16;
+    char * source = (char *) malloc(MAX_SOURCE_LENGTH * sizeof(char)); *source = '\0';
+
+    char * extensions = read_file("cl/templates/extensions.cl");
+
+    char * headers = read_file("cl/templates/headers.cl");
+
+    /* Input and output vector sizes */
+    char define_in_size[32], define_out_size[32];
+
+    if (reduce->input_schema->size % bytes_per_element != 0 || reduce->output_schema->size % bytes_per_element != 0) {
+        fprintf(stderr, "error: input/output sizz is not a multiple of the vector `uchar%d`\n", bytes_per_element);
+        exit(1);
+    }
+
+    sprintf(define_in_size, "#define INPUT_VECTOR_SIZE %d\n", reduce->input_schema->size / bytes_per_element);
+    sprintf(define_out_size, "#define OUTPUT_VECTOR_SIZE %d\n\n", reduce->output_schema->size / bytes_per_element);
+
+    /* TODO create the genrating function in schema.c */
+    /* Input and output tuple struct */
+    char input_tuple[1024] = 
+"typedef struct {\n\
+    long t;\n\
+    long _1;\n\
+    long _2;\n\
+    long _3;\n\
+    int _4;\n\
+    int _5;\n\
+    int _6;\n\
+    int _7;\n\
+    float _8;\n\
+    float _9;\n\
+    float _10;\n\
+    int _11;\n\
+} input_tuple_t __attribute__((aligned(1)));\n\
+\n\
+typedef union {\n\
+    input_tuple_t tuple;\n\
+    uchar16 vectors[INPUT_VECTOR_SIZE];\n\
+} input_t;\n\n";
+
+    char output_tuple[1024] = 
+"typedef struct {\n\
+    long t; /* timestamp */\n\
+    float _1; /* sum */\n\
+    int _2; /* count */\n\
+} output_tuple_t __attribute__((aligned(1)));\n\
+\n\
+typedef union {\n\
+    output_tuple_t tuple;\n\
+    uchar16 vectors[OUTPUT_VECTOR_SIZE];\n\
+} output_t;\n\n";
+
+    /* Window sizes */
+    char * windows = generate_window_definition(window);
+
+    /* TODO: generate according to reduce */
+    char funcs[1024] =
+"inline void initf (__local output_t *p) {\n\
+    p->tuple.t = 0;\n\
+    p->tuple._1 = 0;\n\
+    p->tuple._2 = 0;\n\
+}\n\
+\n\
+/* r */ inline void reducef (__local output_t *out, __global input_t *in) {\n\
+\n\
+    /* r */ int flag = 1;\n\
+\n\
+    /* Selection */\n\
+    // int attribute_value = in->tuple._7; /* where category == 1*/\n\
+    // flag = flag & (attribute_value == 9);\n\
+\n\
+    /* Reduce */\n\
+    /* r */ out->tuple.t = (out->tuple.t == 0) ? : in->tuple.t;\n\
+    out->tuple._1 += in->tuple._8 * flag;\n\
+    /* r */ out->tuple._2 += 1;\n\
+/* r */ }\n\
+\n\
+inline void cachef (__local output_t *p, __local output_t *q) {\n\
+    q->vectors[0] = p->vectors[0];\n\
+}\n\
+\n\
+inline void mergef (__local output_t *p, __local output_t *q) {\n\
+    p->tuple._1 += q->tuple._1;\n\
+    p->tuple._2 += q->tuple._2;\n\
+}\n\
+\n\
+inline void copyf (__local output_t *p, __global output_t *q) {\n\
+    q->vectors[0] = p->vectors[0];\n\
+}\n\n";
+
+    /* Template funcitons */
+    char * template = read_file(REDUCTION_CODE_TEMPLATE);
+
+    /* Assembling */
+    strcat(source, extensions);
+
+    strcat(source, headers);
+    
+    strcat(source, define_in_size);
+    strcat(source, define_out_size);
+    
+    strcat(source, input_tuple);
+    strcat(source, output_tuple);
+    
+    strcat(source, windows);
+    
+    strcat(source, funcs);
+    
+    strcat(source, template);
+
+    free(extensions);
+    free(headers);
+    free(windows);
+    free(template);
+
+    return source;
+}
+
+void reduction_setup(void * reduce_ptr, int batch_size, window_p window) {
     reduction_p reduce = (reduction_p) reduce_ptr;
 
     /* Operator setup */
@@ -45,7 +209,14 @@ void reduction_setup(void * reduce_ptr, int batch_size) {
     reduce->output_entries[1] = 20;
 
     /* TODO: Source generation */
-    char * source = read_source("cl/reduce.cl");
+    char filename [64] = "";
+    generate_filename(reduce->id, filename);
+
+    char * source = generate_source(reduce, filename, window);
+    printf("[REDUCTION] Printing the generated source code to file: %s\n", filename);
+    print_to_file(filename, source);
+    
+    /* Build opencl program */
     int qid = gpu_get_query(source, 4, 1, 5);
     reduce->qid = qid;
     
@@ -184,7 +355,7 @@ void reduction_reset(void * reduce_ptr, int new_batch_size) {
     args1[2] = PARTIAL_WINDOWS; 
     args1[3] = 16 * MAX_THREADS_PER_GROUP; /* local cache size */
 
-    fprintf(stderr, "After reset\n", args1[0]);
+    fprintf(stderr, "After reset\n");
     fprintf(stderr, "args1 0: %d\n", args1[0]);
     fprintf(stderr, "args1 1: %d\n", args1[1]);
     fprintf(stderr, "args1 2: %d\n", args1[2]);

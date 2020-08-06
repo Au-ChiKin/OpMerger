@@ -6,8 +6,8 @@
 #include "operator.h"
 
 #define REDUCTION_KERNEL_NUM 4
-#define REDUCTION_CODE_FILENAME "cl/reduce.cl"
-#define REDUCCTION_CODE_TEMPLATE "cl/template/reduce_template.cl"
+#define REDUCTION_CODE_FILENAME "cl/reduce"
+#define REDUCTION_CODE_TEMPLATE "cl/templates/reduce_template.cl"
 
 typedef struct reduction * reduction_p;
 typedef struct reduction {
@@ -21,6 +21,7 @@ typedef struct reduction {
     size_t threads[REDUCTION_KERNEL_NUM];
     size_t threads_per_group [REDUCTION_KERNEL_NUM];
 
+    schema_p output_schema;
     int output_entries[2];
 
 } reduction_t;
@@ -29,7 +30,7 @@ typedef struct reduction {
 
 reduction_p reduction(schema_p input_schema, int ref);
 
-void reduction_setup(void * reduce_ptr, int batch_size);
+void reduction_setup(void * reduce_ptr, int batch_size, window_p window);
 
 void reduction_reset(void * reduce_ptr, int new_batch_size);
 
