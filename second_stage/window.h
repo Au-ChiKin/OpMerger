@@ -15,4 +15,6 @@ typedef struct window {
     int pane_size;
 } window_t;
 
+window_p window(int size, int slide, enum window_types type);
+
 #endif
