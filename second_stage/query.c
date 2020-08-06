@@ -139,7 +139,10 @@ void query_process(query_p query, batch_p input, batch_p output) {
             if (i != query->operator_num-1) {
                 (* query->callbacks[i]->reset_threads) (query->operators[i], input->size);
 
-                (* query->callbacks[i]->process) (i, query->operators[i], input, inter);
+                (* query->callbacks[i]->process) (
+                    query->operators[i], 
+                    input, query->pane_size, query->window_type == RANGE_BASE, 
+                    inter);
 
                 /* Move the inter to input */
                 (* query->callbacks[i]->process_output) (query->operators[i], inter);
@@ -156,7 +159,10 @@ void query_process(query_p query, batch_p input, batch_p output) {
             } else  {
                 (* query->callbacks[i]->reset_threads) (query->operators[i], input->size);
 
-                (* query->callbacks[i]->process) (i, query->operators[i], input, output);
+                (* query->callbacks[i]->process) (
+                    query->operators[i], 
+                    input, query->pane_size, query->window_type == RANGE_BASE,
+                    output);
             }
         }
     }
