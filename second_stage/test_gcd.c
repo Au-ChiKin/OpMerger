@@ -27,7 +27,7 @@ void print_10_tuples(cbuf_handle_t cbufs []);
 void run_processing_gpu(
     u_int8_t * buffers [], int buffer_size, int buffer_num,
     u_int8_t * result, 
-    enum test_cases mode) {
+    enum test_cases mode, bool is_merging) {
     
     u_int8_t * batch [8812];
     /* TODO extend the batch struct into a real memoery manager that could create a batch 
@@ -62,10 +62,8 @@ void run_processing_gpu(
 
     /* simplified query creation */
     switch (mode) {
-        /* TODO what should be done is one selection follows anther without copying out the data */
-        /* TODO deep merged or shallow merged ? */
-        case MERGED_SELECTION: 
-            fprintf(stdout, "========== Running merged selection test ===========\n");
+        case SELECTION: 
+            fprintf(stdout, "========== Running selection test ===========\n");
             {
                 /* Construct schemas */
                 schema_p schema1 = schema();
@@ -94,28 +92,14 @@ void run_processing_gpu(
                 
                 selection_p select1 = selection(schema1, col1, val1, com1);
 
-                /* Construct a select: where column 5 (event_type) == 1 */
-                int col2 = 5;
-
-                enum comparor com2 = EQUAL;
-
-                int i2 = 1;
-                ref_value_p val2 = ref_value();
-                val2->i = &i2;
-                
-                selection_p select2 = selection(schema1, col2, val2, com2);
-
                 /* Create a query */
                 window_p window1 = window(64, 64, RANGE_BASE);
 
                 int batch_size = buffer_size;
-                bool is_merging = true;
                 query_p query1 = query(0, batch_size, window1, is_merging);
 
                 query_add_operator(query1, (void *) select1, select1->operator);
-                query_add_operator(query1, (void *) select2, select2->operator);
 
-                /* TODO connect one operator to another (Merging way) */
                 query_setup(query1);
 
                 for (int b=0; b<buffer_num; b++) {
@@ -157,7 +141,6 @@ void run_processing_gpu(
                 window_p window1 = window(1024, 1024, RANGE_BASE);
 
                 int batch_size = buffer_size;
-                bool is_merging = false;
                 query_p query1 = query(0, batch_size, window1, is_merging);
 
                 query_add_operator(query1, (void *) reduce1, reduce1->operator);
@@ -173,7 +156,7 @@ void run_processing_gpu(
                 }
             }
             break;
-        case SEPARATE_SELECTION: 
+        case TWO_SELECTION: 
             fprintf(stdout, "========== Running separate selection test ===========\n");
             {
                 /* Construct schemas */
@@ -218,7 +201,6 @@ void run_processing_gpu(
                 window_p window1 = window(64, 64, RANGE_BASE);
 
                 int batch_size = buffer_size;
-                bool is_merging = false;
                 query_p query1 = query(0, batch_size, window1, is_merging);
 
                 query_add_operator(query1, (void *) select1, select1->operator);
@@ -314,7 +296,6 @@ void run_processing_gpu(
                 window_p window1 = window(64, 64, RANGE_BASE);
 
                 int batch_size = buffer_size;
-                bool is_merging = false;
                 query_p query1 = query(0, batch_size, window1, is_merging);
 
                 query_add_operator(query1, (void *) select1, select1->operator);
@@ -473,10 +454,11 @@ void read_input_buffers(cbuf_handle_t cbufs [], int buffer_num) {
 int main(int argc, char * argv[]) {
 
     /* Arguments */
+    bool is_merging = false;
     int work_load = 1; // default to be 1MB
     enum test_cases mode = MERGED_AGGREGATION;
 
-    parse_arguments(argc, argv, &mode, &work_load);
+    parse_arguments(argc, argv, &mode, &work_load, &is_merging);
 
     /* Read input from files */
     static int const gcd_lines = 144370688; // maximum lines for input txts
@@ -503,7 +485,7 @@ int main(int argc, char * argv[]) {
     run_processing_gpu(
         buffers, BUFFER_SIZE, buffers_num, /* input */
         result, /* output */
-        mode);  /* configs */
+        mode, is_merging);  /* configs */
 
     /* Clear up */
     for (int i=0; i<buffers_num; i++) {

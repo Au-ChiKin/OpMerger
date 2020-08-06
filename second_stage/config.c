@@ -5,16 +5,16 @@
 #include <unistd.h>
 #include <stdlib.h>
 
-void parse_arguments(int argc, char * argv[], enum test_cases * mode, int * work_load) {
+void parse_arguments(int argc, char * argv[], enum test_cases * mode, int * work_load, bool * is_merging) {
 	extern char *optarg;
 	extern int optind;
 	int c, err = 0; 
     int debug = 0;
-	int lflag=0, mflag=0;
+	int lflag=0, mflag=0, fflag=0; /* f --> fused */
 	char *mname = "merged-aggregation";
-	static char usage[] = "usage: %s [-d] -m test-case [-l work-load-in-bytes]\n";
+	static char usage[] = "usage: %s [-d] -m test-case [-l work-load-in-bytes] [-f]\n";
 
-	while ((c = getopt(argc, argv, "dm:l:")) != -1) {
+	while ((c = getopt(argc, argv, "dm:l:f")) != -1) {
 		switch (c) {
             case 'd':
                 debug = 1;
@@ -31,6 +31,10 @@ void parse_arguments(int argc, char * argv[], enum test_cases * mode, int * work
             case 'l':
                 lflag = 1;
                 *work_load = atoi(optarg);
+                break;
+            case 'f':
+                fflag = 1;
+                *is_merging = true;
                 break;
             case '?':
                 err = 1;
@@ -56,6 +60,7 @@ void parse_arguments(int argc, char * argv[], enum test_cases * mode, int * work
         /* see what we have */
         printf("debug = %d\n", debug);
         printf("mflag = %d\n", mflag);
+        printf("fflag = %d\n", fflag);
         
         if (optind < argc)	/* these are the arguments after the command-line options */
             for (; optind < argc; optind++)
@@ -71,10 +76,10 @@ void set_test_case(char const * mname, enum test_cases * mode) {
         *mode = MERGED_AGGREGATION; 
     } else if (strcmp(mname, "reduction") == 0) {
         *mode = REDUCTION;
-    } else if (strcmp(mname, "merged-selection") == 0) {
-        *mode = MERGED_SELECTION;
-    } else if (strcmp(mname, "separate-selection") == 0) {
-        *mode = SEPARATE_SELECTION;
+    } else if (strcmp(mname, "selection") == 0) {
+        *mode = SELECTION;
+    } else if (strcmp(mname, "two-selection") == 0) {
+        *mode = TWO_SELECTION;
     } else if (strcmp(mname, "query2") == 0) {
         *mode = QUERY2;
     } else if (strcmp(mname, "cpu") == 0) {

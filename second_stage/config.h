@@ -7,6 +7,8 @@
 #define MAX_THREADS_PER_GROUP 256 /* Should be queried from the device */
 #define PARTIAL_WINDOWS 1024 * 1024 /* window limit in a batch */
 
+#include "stdbool.h"
+
 /*
  * To add case:
  *     add one enum here and
@@ -16,13 +18,13 @@ enum test_cases {
     CPU,
     MERGED_AGGREGATION, 
     REDUCTION,
-    MERGED_SELECTION,
-    SEPARATE_SELECTION,
+    SELECTION,
+    TWO_SELECTION,
     QUERY2,
     ERROR
 };
 
 void set_test_case(char const * mname, enum test_cases * mode);
-void parse_arguments(int argc, char * argv[], enum test_cases * mode, int * work_load);
+void parse_arguments(int argc, char * argv[], enum test_cases * mode, int * work_load, bool * is_merging);
 
 #endif // CONFIG_H
