@@ -19,3 +19,7 @@ datasets/google-cluster-data/priorities.txt
 
 # local tmp files
 second_stage/scripts.c
+
+# generated code
+reduce_*.cl
+select_*.cl
