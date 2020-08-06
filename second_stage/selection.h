@@ -51,7 +51,7 @@ void ref_value_free(ref_value_p);
 /* Constructor */
 selection_p selection(schema_p input_schema, int ref, ref_value_p value, enum comparor com);
 
-void selection_setup(void * select_ptr, int batch_size);
+void selection_setup(void * select_ptr, int batch_size, window_p window);
 
 /* Reset threads[] and thread_per_group[] according to new_batch_size */
 void selection_reset(void * select_ptr, int new_batch_size);

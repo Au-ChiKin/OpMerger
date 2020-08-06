@@ -177,7 +177,7 @@ inline int selectf (__global input_t *p) {\n\
     return source;
 }
 
-void selection_setup(void * select_ptr, int batch_size) {
+void selection_setup(void * select_ptr, int batch_size, window_p window) {
     selection_p select = (selection_p) select_ptr;
 
     int tuple_size = select->input_schema->size;
