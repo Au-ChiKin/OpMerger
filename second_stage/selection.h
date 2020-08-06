@@ -30,7 +30,8 @@ typedef struct selection * selection_p;
 typedef struct selection {
     operator_p operator; /* As a parent class */
 
-    int id;
+    int id; /* id for mark which selection instance this is */
+    int qid; /* id of gpu_query in libgpu where a query means an opeartor */
 
     schema_p input_schema;
     int ref;
@@ -55,7 +56,7 @@ void selection_setup(void * select_ptr, int batch_size);
 /* Reset threads[] and thread_per_group[] according to new_batch_size */
 void selection_reset_threads(void * select_ptr, int new_batch_size);
 
-void selection_process(int qid, void * select_ptr, batch_p batch, batch_p output);
+void selection_process(void * select_ptr, batch_p batch, batch_p output);
 
 /* Only for debugging. No longer consistent with the current design */
 void selection_print_output(selection_p select, batch_p outputs);

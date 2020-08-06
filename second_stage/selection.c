@@ -212,6 +212,7 @@ void selection_setup(void * select_ptr, int batch_size) {
 
     /* Build opencl program */
     int qid = gpu_get_query(source, 2, 1, 4);
+    select->qid = qid;
     
     /* GPU inputs and outputs setup */
     gpu_set_input(qid, 0, batch_size * tuple_size);
@@ -247,7 +248,7 @@ void selection_reset_threads(void * select_ptr, int new_batch_size) {
     }
 }
 
-void selection_process(int qid, void * select_ptr, batch_p input, batch_p output) {
+void selection_process(void * select_ptr, batch_p input, batch_p output) {
     selection_p select = (selection_p) select_ptr;
 
     int batch_size = input->size;
@@ -270,7 +271,7 @@ void selection_process(int qid, void * select_ptr, batch_p input, batch_p output
     }
 
     /* Execute */
-    gpu_execute(qid, select->threads, select->threads_per_group,
+    gpu_execute(select->qid, select->threads, select->threads_per_group,
         (void *) inputs, (void *) outputs, sizeof(u_int8_t));
 }
 
