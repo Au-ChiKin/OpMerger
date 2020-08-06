@@ -6,7 +6,7 @@
 #include "selection.h"
 
 
-query_p query(int id, int batch_size, int window_size, int window_side, bool is_merging) {
+query_p query(int id, int batch_size, window_p window, bool is_merging) {
     query_p query = (query_p) malloc(sizeof(query_t));
 
     query->id = id;
@@ -14,11 +14,7 @@ query_p query(int id, int batch_size, int window_size, int window_side, bool is_
 
     query->batch_size = batch_size;
 
-    query->window_size = window_size;
-    query->window_slide = window_side;
-    query->window_type = RANGE_BASE;
-
-    query->pane_size = gcd(window_size, window_side);
+    query->window = window;
 
     query->operator_num = 0;
     query->is_merging = is_merging;
@@ -78,13 +74,13 @@ void query_setup(query_p query) {
 
         /* Set up the last operator with the patch func */
         int last_idx = query->operator_num-1;
-        (* query->callbacks[last_idx]->setup) (query->operators[last_idx], query->batch_size);
+        (* query->callbacks[last_idx]->setup) (query->operators[last_idx], query->batch_size, query->window);
     } else {
         /* If not merging, then set up the operator one by one */
 
         /* TODO: there is no checking of whether the operators[i] matches the callbacks[i] */
         for (int i=0; i<query->operator_num; i++) {
-            (* query->callbacks[i]->setup) (query->operators[i], query->batch_size);
+            (* query->callbacks[i]->setup) (query->operators[i], query->batch_size, query->window);
         }
     }
 
@@ -142,7 +138,7 @@ void query_process(query_p query, batch_p input, batch_p output) {
 
                 (* query->callbacks[i]->process) (
                     query->operators[i], 
-                    input, query->pane_size, query->window_type == RANGE_BASE, 
+                    input, query->window->pane_size, query->window->type == RANGE_BASE, 
                     inter);
 
                 /* Move the inter to input */
@@ -164,10 +160,14 @@ void query_process(query_p query, batch_p input, batch_p output) {
 
                 (* query->callbacks[i]->process) (
                     query->operators[i], 
-                    input, query->pane_size, query->window_type == RANGE_BASE,
+                    input, query->window->pane_size, query->window->type == RANGE_BASE,
                     output);
             }
         }
     }
 
+}
+
+void query_free(query_p query) {
+    free(query->window);
 }

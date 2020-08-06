@@ -4,6 +4,7 @@
 #include <stdbool.h>
 
 #include "batch.h"
+#include "window.h"
 
 #define OPERATOR_CODE_FILENAME_LENGTH 256
 
@@ -16,7 +17,7 @@ enum operator_types {
 /* A collection of operator callbacks */
 typedef struct opmerger_operator * operator_p;
 typedef struct opmerger_operator {
-    void (* setup) (void * operator, int batch_size);
+    void (* setup) (void * operator, int batch_size, window_p window);
     void (* process) (void * operator, batch_p input, int pane_size, bool is_range, batch_p output);
     void (* process_output) (void * operator, batch_p output);
     void (* reset) (void * operator, int new_batch_size);

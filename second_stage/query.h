@@ -5,14 +5,10 @@
 
 #include "batch.h"
 #include "operator.h"
+#include "window.h"
 
 /* TODO to support more than one operator */
 #define QUERY_MAX_OPERATOR_NUM 2
-
-enum window_types {
-    RANGE_BASE,  /* Time based */
-    COUNTER_BASE
-};
 
 typedef struct query * query_p;
 typedef struct query {
@@ -20,11 +16,7 @@ typedef struct query {
     int batch_size;
     bool has_setup;
 
-    int window_size;
-    int window_slide;
-    enum window_types window_type;
-
-    int pane_size;
+    window_p window;
 
     int operator_num;
     void * operators[QUERY_MAX_OPERATOR_NUM];
@@ -32,12 +24,14 @@ typedef struct query {
     bool is_merging;
 } query_t;
 
-query_p query(int id, int batch_size, int window_size, int window_side, bool is_merging);
+query_p query(int id, int batch_size, window_p window, bool is_merging);
 
 void query_add_operator(query_p query, void * new_operator, operator_p operator_callbacks);
 
 void query_setup(query_p query);
 
 void query_process(query_p query, batch_p input, batch_p output);
+
+void query_free(query_p query);
 
 #endif
