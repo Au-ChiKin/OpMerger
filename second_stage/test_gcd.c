@@ -15,6 +15,7 @@
 #include "reduction.h"
 #include "selection.h"
 #include "batch.h"
+#include "window.h"
 #include "query.h"
 
 /* Input data of interest from files */
@@ -105,11 +106,17 @@ void run_processing_gpu(
                 selection_p select2 = selection(schema1, col2, val2, com2);
 
                 /* Create a query */
+                window_t window1;
+                {
+                    window1.size = 64;
+                    window1.slide = 64;
+                    window1.pane_size = gcd(window1.size, window1.slide);
+                    window1.type = RANGE_BASE;
+                }
+
                 int batch_size = buffer_size;
-                int window_size = 64;
-                int window_side = 64;
                 bool is_merging = true;
-                query_p query1 = query(0, batch_size, window_size, window_side, is_merging);
+                query_p query1 = query(0, batch_size, &window1, is_merging);
 
                 query_add_operator(query1, (void *) select1, select1->operator);
                 query_add_operator(query1, (void *) select2, select2->operator);
@@ -153,11 +160,17 @@ void run_processing_gpu(
                 reduction_p reduce1 = reduction(schema1, col1);
 
                 /* Create a query */
+                window_t window1;
+                {
+                    window1.size = 1024;
+                    window1.slide = 1024;
+                    window1.pane_size = gcd(window1.size, window1.slide);
+                    window1.type = RANGE_BASE;
+                }
+
                 int batch_size = buffer_size;
-                int window_size = 64;
-                int window_side = 64;
                 bool is_merging = false;
-                query_p query1 = query(0, batch_size, window_size, window_side, is_merging);
+                query_p query1 = query(0, batch_size, &window1, is_merging);
 
                 query_add_operator(query1, (void *) reduce1, reduce1->operator);
 
@@ -214,11 +227,17 @@ void run_processing_gpu(
                 selection_p select2 = selection(schema1, col2, val2, com2);
 
                 /* Create a query */
+                window_t window1;
+                {
+                    window1.size = 64;
+                    window1.slide = 64;
+                    window1.pane_size = gcd(window1.size, window1.slide);
+                    window1.type = RANGE_BASE;
+                }
+
                 int batch_size = buffer_size;
-                int window_size = 64;
-                int window_side = 64;
                 bool is_merging = false;
-                query_p query1 = query(0, batch_size, window_size, window_side, is_merging);
+                query_p query1 = query(0, batch_size, &window1, is_merging);
 
                 query_add_operator(query1, (void *) select1, select1->operator);
                 query_add_operator(query1, (void *) select2, select2->operator);
@@ -310,11 +329,17 @@ void run_processing_gpu(
                 reduction_p reduce1 = reduction(schema1, col2);
 
                 /* Create a query */
+                window_t window1;
+                {
+                    window1.size = 64;
+                    window1.slide = 64;
+                    window1.pane_size = gcd(window1.size, window1.slide);
+                    window1.type = RANGE_BASE;
+                }
+
                 int batch_size = buffer_size;
-                int window_size = 64;
-                int window_side = 64;
                 bool is_merging = false;
-                query_p query1 = query(0, batch_size, window_size, window_side, is_merging);
+                query_p query1 = query(0, batch_size, &window1, is_merging);
 
                 query_add_operator(query1, (void *) select1, select1->operator);
                 query_add_operator(query1, (void *) reduce1, reduce1->operator);
