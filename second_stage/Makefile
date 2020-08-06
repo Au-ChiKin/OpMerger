@@ -56,7 +56,7 @@ OBJPROG = $(addprefix $(OBJDIR)/, $(PROGS))
 all: $(OUTDIR) $(DEPOUTDIR) $(OBJPROG)
 
 $(OBJPROG): $(addprefix $(OBJDIR)/, $(OBJECTS)) 
-		$(LINK.o) $^ $(LDLIBS) -o $@
+		$(LINK.o) $^ -o $@
 
 
 # clean

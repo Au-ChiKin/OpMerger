@@ -26,20 +26,24 @@ void print_10_tuples(cbuf_handle_t cbufs []);
 void run_processing_gpu(
     u_int8_t * buffers [], int buffer_size, int buffer_num,
     u_int8_t * result, 
-    int load, enum test_cases mode) {
+    enum test_cases mode) {
     
-    u_int8_t * batch = buffers[0];
+    u_int8_t * batch [8812];
     /* TODO extend the batch struct into a real memoery manager that could create a batch 
-       according to the start and end pointer */
-    batch_t wrapped_input;
-    {
-        wrapped_input.start = 0;
-        /* Move this outside of this function */
-        wrapped_input.end = buffer_size * TUPLE_SIZE;
-        wrapped_input.size = buffer_size;
-        wrapped_input.buffer = batch;
+    according to the start and end pointer */
+    batch_t wrapped_input [8812];
+    batch_p input [8812];
+    for (int b=0; b<buffer_num; b++) {
+        batch[b] = buffers[b];
+        {
+            wrapped_input[b].start = 0;
+            /* TODO: Move this outside of this function */
+            wrapped_input[b].end = buffer_size * TUPLE_SIZE;
+            wrapped_input[b].size = buffer_size;
+            wrapped_input[b].buffer = batch[b];
+        }
+        input[b] = &wrapped_input[b];
     }
-    batch_p input = &wrapped_input;
 
     /* TODO: dynmaically decide the output buffer size */
     batch_t wrapped_output;
@@ -108,15 +112,18 @@ void run_processing_gpu(
                 query_p query1 = query(0, batch_size, window_size, window_side, is_merging);
 
                 query_add_operator(query1, (void *) select1, select1->operator);
+                query_add_operator(query1, (void *) select2, select2->operator);
 
                 /* TODO connect one operator to another (Merging way) */
                 query_setup(query1);
 
-                /* Execute */
-                query_process(query1, input, output);
+                for (int b=0; b<buffer_num; b++) {
+                    /* Execute */
+                    query_process(query1, input[b], output);
 
-                /* For debugging */
-                selection_print_output(select1, output);
+                    /* For debugging */
+                    selection_print_output(select1, output);
+                }
             }
 
             break;
@@ -156,11 +163,13 @@ void run_processing_gpu(
 
                 query_setup(query1);
 
-                /* Execute */
-                query_process(query1, input, output);
+                for (int b=0; b<buffer_num; b++) {
+                    /* Execute */
+                    query_process(query1, input[b], output);
 
-                /* For debugging */
-                reduction_print_output(output, buffer_size, schema1->size);
+                    /* For debugging */
+                    reduction_print_output(output, buffer_size, schema1->size);
+                }
             }
             break;
         case SEPARATE_SELECTION: 
@@ -216,11 +225,13 @@ void run_processing_gpu(
 
                 query_setup(query1);
 
-                /* Execute */
-                query_process(query1, input, output);
+                for (int b=0; b<buffer_num; b++) {
+                    /* Execute */
+                    query_process(query1, input[b], output);
 
-                /* For debugging */
-                selection_print_output(select1, output);
+                    /* For debugging */
+                    selection_print_output(select1, output);
+                }
             }
             break;
         case QUERY2:
@@ -310,11 +321,13 @@ void run_processing_gpu(
 
                 query_setup(query1);
 
-                /* Execute */
-                query_process(query1, input, output);
+                for (int b=0; b<buffer_num; b++) {
+                    /* Execute */
+                    query_process(query1, input[b], output);
 
-                /* For debugging */
-                selection_print_output(select1, output);
+                    /* For debugging */
+                    reduction_print_output(output, input[b]->size, schema1->size);
+                }
             }
             break;
         default: 
@@ -465,11 +478,15 @@ int main(int argc, char * argv[]) {
     parse_arguments(argc, argv, &mode, &work_load);
 
     /* Read input from files */
-
-    static int const gcd_lines = 144370688; /* maximum lines for input txts */
-    static int const buffers_num = 1; // gcd_lines / BUFFER_SIZE; // about 8812
+    static int const gcd_lines = 144370688; // maximum lines for input txts
+    static int buffers_num = gcd_lines / BUFFER_SIZE; // about 8812
     u_int8_t * buffers [buffers_num];
     cbuf_handle_t cbufs [buffers_num];
+
+    if (buffers_num > work_load) {
+        buffers_num =work_load;
+    }
+
     for (int i=0; i<buffers_num; i++) {
         buffers[i] = (u_int8_t *) malloc(BUFFER_SIZE * TUPLE_SIZE * sizeof(u_int8_t)); // creates 8812 ByteBuffers
         cbufs[i] = circular_buf_init(buffers[i], BUFFER_SIZE * TUPLE_SIZE);
@@ -479,18 +496,15 @@ int main(int argc, char * argv[]) {
     print_tuples(cbufs, 32);
 
     /* Create output buffers */
-    
     u_int8_t * result = (u_int8_t *) malloc( 4 * BUFFER_SIZE * TUPLE_SIZE * sizeof(u_int8_t));
 
     /* Start processing */
-
     run_processing_gpu(
         buffers, BUFFER_SIZE, buffers_num, /* input */
         result, /* output */
-        work_load, mode); /* configs */
+        mode);  /* configs */
 
     /* Clear up */
-
     for (int i=0; i<buffers_num; i++) {
         free(buffers[i]);
         circular_buf_free(cbufs[i]);
