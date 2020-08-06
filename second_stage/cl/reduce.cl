@@ -46,7 +46,7 @@ typedef union {
 
 #define PANES_PER_WINDOW 1L
 #define PANES_PER_SLIDE  1L
-#define PANE_SIZE        16L
+#define PANE_SIZE        1024L
 
 inline void initf (__local output_t *p) {
     p->tuple.t = 0;
@@ -166,7 +166,7 @@ __kernel void computeOffsetKernel (
 
 #ifdef RANGE_BASED
     __global input_t *curr = (__global input_t *) &input[tid * sizeof(input_t)];
-    currPaneId = __bswap64(curr->tuple.t) / PANE_SIZE;
+    currPaneId = curr->tuple.t / PANE_SIZE;
 #else
     currPaneId = ((start_pointer + (tid * sizeof(input_t))) / sizeof(input_t)) / PANE_SIZE;
 #endif
@@ -175,7 +175,7 @@ __kernel void computeOffsetKernel (
 
 #ifdef RANGE_BASED
     __global input_t *prev = (__global input_t *) &input[(tid - 1) * sizeof(input_t)];
-    prevPaneId = __bswap64(prev->tuple.t) / PANE_SIZE;
+    prevPaneId = prev->tuple.t / PANE_SIZE;
 #else
     prevPaneId = ((start_pointer + ((tid - 1) * sizeof(input_t))) / sizeof(input_t)) / PANE_SIZE;
 #endif
@@ -247,7 +247,7 @@ __kernel void computePointersKernel (
 
 #ifdef RANGE_BASED
     __global input_t *curr = (__global input_t *) &input[tid * sizeof(input_t)];
-    currPaneId = __bswap64(curr->tuple.t) / PANE_SIZE;
+    currPaneId = curr->tuple.t / PANE_SIZE;
 #else
     currPaneId = ((start_pointer + (tid * sizeof(input_t))) / sizeof(input_t)) / PANE_SIZE;
 #endif
@@ -256,7 +256,7 @@ __kernel void computePointersKernel (
 
 #ifdef RANGE_BASED
     __global input_t *prev = (__global input_t *) &input[(tid - 1) * sizeof(input_t)];
-    prevPaneId = __bswap64(prev->tuple.t) / PANE_SIZE;
+    prevPaneId = prev->tuple.t / PANE_SIZE;
 #else
     prevPaneId = ((start_pointer + ((tid - 1) * sizeof(input_t))) / sizeof(input_t)) / PANE_SIZE;
 #endif
