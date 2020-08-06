@@ -84,22 +84,22 @@ static void generate_filename(int id, char * filename) {
 }
 
 static char * generate_source(selection_p select, char const * filename) {
+    int const bytes_per_element = 16;
     char * source = (char *) malloc(1024 * 10 * sizeof(char));
 
     char * extensions = read_file("cl/templates/extensions.cl");
     char * headers = read_file("cl/templates/headers.cl");
 
     /* Input and output vector sizes */
-    char value [8] = "";
-    char define_in_size[32] = "#define INPUT_VECTOR_SIZE ";
-    sprintf(value, "%d", select->input_schema->size / 16);
-    strcat(define_in_size, value);
-    strcat(define_in_size, "\n");
+    char define_in_size[32], define_out_size[32];
 
-    char define_out_size[32] = "#define OUTPUT_VECTOR_SIZE ";
-    sprintf(value, "%d", select->output_schema->size / 16);
-    strcat(define_out_size, value);
-    strcat(define_out_size, "\n\n");
+    if (select->input_schema->size % bytes_per_element != 0 || select->output_schema->size % bytes_per_element != 0) {
+        fprintf(stderr, "error: input/output sizz is not a multiple of the vector `uchar%d`\n", bytes_per_element);
+        exit(1);
+    }
+
+    sprintf(define_in_size, "#define INPUT_VECTOR_SIZE %d\n", select->input_schema->size / bytes_per_element);
+    sprintf(define_out_size, "#define OUTPUT_VECTOR_SIZE %d\n\n", select->output_schema->size / bytes_per_element);
 
     /* TODO create the genrating function in schema.c */
     /* Input and output tuple struct */
