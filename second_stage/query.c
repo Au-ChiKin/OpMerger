@@ -62,10 +62,9 @@ void query_setup(query_p query) {
            multiple pipeline breaker */
         for (int i=0; i<query->operator_num; i++) {
             operator_p op = query->callbacks[i];
-            if (op->type == OPERATOR_SELECT) {
+            if (op->type == OPERATOR_REDUCE) {
                 if (i != query->operator_num-1) {
-                    fprintf(stderr, "error: OpMerge currently does not support query with multiple pipeline breakers \
-                        or with one which is not at the end\n (%s)", __FUNCTION__);
+                    fprintf(stderr, "error: OpMerge currently does not support query with multiple pipeline breakers or with one which is not at the end\n (%s)", __FUNCTION__);
                     exit(1);
                 }
             }
