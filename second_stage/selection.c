@@ -151,8 +151,8 @@ typedef union {\n\
 inline int selectf (__global input_t *p) {\n\
     /* r */ int value = 1;\n\
 \n\
-    int attribute_value = p->tuple._7; /* where category == 1*/\n\
-    value = value & (attribute_value == 9);\n\
+    int attribute_value = p->tuple._6; /* where category == 0*/\n\
+    value = value & (attribute_value == 0);\n\
 \n\
     /* r */ return value;\n\
 }\n";
@@ -318,6 +318,8 @@ void selection_print_output(selection_p select, batch_p outputs) {
 }
 
 void selection_process_output (void * select_ptr, batch_p outputs) {
+    printf("[SELECTION] Processing output\n");
+
     selection_p select = (selection_p) select_ptr;
 
     int work_group_num = select->threads[0] / select->threads_per_group[0];
@@ -328,12 +330,29 @@ void selection_process_output (void * select_ptr, batch_p outputs) {
     for (int i=0; i<work_group_num; i++) {
         count += partitions[i];
     }
+    printf("[SELECTION] This output has tuples %d\n", count);
     /* TODO: replace it with the least power of 2 number that bigger than count */
     // if ()
 
     /* TODO: initialise the extra tuples */
 
     /* Update pointers to use only the output array (tuples) and exclude flags and partitions */
-    outputs->start += select->output_entries[1];
-    outputs->size = 128; // count;
+    outputs->start += select->output_entries[2];
+
+    // outputs->size = count;
+    if (count > 4096) {
+        outputs->size = 4096;
+    } else if (count > 2048) {
+        outputs->size = 2048;
+    } else if (count > 1024) {
+        outputs->size = 1024;
+    } else if (count > 512) {
+        outputs->size = 512;
+    } else if (count > 256) {
+        outputs->size = 256;
+    } else if (count > 128) {
+        outputs->size = 128;
+    } else if (count > 64) {
+        outputs->size = 64;
+    }
 }
