@@ -166,6 +166,26 @@ int gpu_query_setKernel (gpu_query_p query,
 	return 0;
 }
 
+int gpu_query_resetKernel (gpu_query_p query,
+	int kernel_id,
+	const char * name,
+	void (*callback)(cl_kernel, gpu_config_p, int *, long *),
+	int *args1, long *args2) {
+
+	if (! query)
+		return -1;
+
+	if (kernel_id < 0 || kernel_id > query->configs[0]->kernel.count) {
+		fprintf(stderr, "error: kernel index [%d] out of bounds\n", kernel_id);
+		exit (1);
+	}
+	int i;
+	for (i = 0; i < NCONTEXTS; i++) {
+		gpu_config_resetKernel(query->configs[i], kernel_id, name, callback, args1, args2);
+	}
+	return 0;
+}
+
 // gpu_config_p gpu_switch_config(gpu_query_p query) {
 // 	if (! query) {
 // 		fprintf (stderr, "error: null query\n");

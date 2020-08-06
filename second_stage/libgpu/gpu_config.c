@@ -139,6 +139,26 @@ void gpu_config_setKernel (gpu_config_p query,
 	return;
 }
 
+void gpu_config_resetKernel (gpu_config_p query,
+	int ndx,
+	const char *name,
+	void (*callback)(cl_kernel, gpu_config_p, int *, long *),
+	int *args1, long *args2) {
+
+	printf("Enter resetKernel\n");
+
+	int i;
+	for (i = 0; i < 2; i++) {
+		if (! query->kernel.kernels[ndx]->kernel[i]) {
+			fprintf(stderr, "error: kernel %d has not been created (%s)\n", ndx, __FUNCTION__);
+			exit (1);
+		} else {
+			(*callback) (query->kernel.kernels[ndx]->kernel[i], query, args1, args2);
+		}
+	}
+	return;
+}
+
 void gpu_config_configureKernel (gpu_config_p q,
 	void (*callback)(cl_kernel, gpu_config_p, int *, long *),
 	int *args1, long *args2) {
@@ -149,32 +169,32 @@ void gpu_config_configureKernel (gpu_config_p q,
 	return;
 }
 
-void gpu_config_submitKernel (gpu_config_p query, size_t *threads, size_t *threadsPerGroup) {
+void gpu_config_submitKernel (gpu_config_p config, size_t *threads, size_t *threadsPerGroup) {
 	int i;
 	int error = 0;
 	/* Execute */
-	for (i = 0; i < query->kernel.count; i++) {
+	for (i = 0; i < config->kernel.count; i++) {
 		dbg("[DBG] submit kernel %d: %10zu threads %10zu threads/group\n", i, threads[i], threadsPerGroup[i]);
 #ifdef GPU_PROFILE
 		error |= clEnqueueNDRangeKernel (
-			query->command_queue[0],
-			query->kernel.kernels[i]->kernel[0],
+			config->command_queue[0],
+			config->kernel.kernels[i]->kernel[0],
 			1,
 			NULL,
 			&(threads[i]),
 			&(threadsPerGroup[i]),
-			0, NULL, &(query->exec_event[i]));
+			0, NULL, &(config->exec_event[i]));
 #else
 		error |= clEnqueueNDRangeKernel (
-			query->command_queue[0],
-			query->kernel.kernels[i]->kernel[0],
+			config->command_queue[0],
+			config->kernel.kernels[i]->kernel[0],
 			1,
 			NULL,
 			&(threads[i]),
 			&(threadsPerGroup[i]),
 			0, NULL, NULL);
 #endif
-
+		clFinish(config->command_queue[0]);
 		if (error != CL_SUCCESS) {
 			fprintf(stderr, "opencl error (%d): %s (%s)\n", error, getErrorMessage(error), __FUNCTION__);
 			exit (1);

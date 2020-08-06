@@ -67,6 +67,12 @@ void gpu_config_setKernel (gpu_config_p,
 		void (*callback)(cl_kernel, gpu_config_p, int *, long *),
 		int *, long *);
 
+void gpu_config_resetKernel (gpu_config_p,
+		int,
+		const char *,
+		void (*callback)(cl_kernel, gpu_config_p, int *, long *),
+		int *, long *);
+
 // void gpu_config_waitForReadEvent (gpu_config_p);
 
 // void gpu_config_waitForWriteEvent (gpu_config_p);

@@ -42,6 +42,13 @@ int gpu_query_setKernel (gpu_query_p,
 		void (*callback)(cl_kernel, gpu_config_p, int *, long *),
 		int *, long *);
 
+/* Reset ndx kernel of this query */
+int gpu_query_resetKernel (gpu_query_p,
+		int ndx,
+		const char *,
+		void (*callback)(cl_kernel, gpu_config_p, int *, long *),
+		int *, long *);
+
 /* Process batch */
 int gpu_query_exec (
 	gpu_query_p, 

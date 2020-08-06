@@ -24,6 +24,12 @@ int gpu_set_kernel (int qid, int ndx,
 	void (*callback)(cl_kernel, gpu_config_p, int *, long *),
 	int *args1, long *args2);
 
+/* Calls opencl api to reset kernel constants */
+int gpu_reset_kernel (int qid, int ndx,
+	const char *name,
+	void (*callback)(cl_kernel, gpu_config_p, int *, long *),
+	int *args1, long *args2);
+
 /* set kernel for aggregate operator
  * args1:int[] [0]tuples, inputSize, outputSize, tableSize, SystemConf.PARTIAL_WINDOWS, keyLength * numberOfThreadsPerGroup
  * args2:long[] [0]previous pane id, [1]input stream start pointer
@@ -35,6 +41,12 @@ void gpu_set_kernel_aggregate(int qid, int * _args1, long * _args2);
  * args2:long[] [0]previous pane id, [1]input stream start pointer
  */ 
 void gpu_set_kernel_reduce(int qid, int * args1, long * args2);
+
+/* Resets kernel constants for reduce operator
+ * args1:int[] [0]tuples, [1]inputSize, [2]SystemConf.PARTIAL_WINDOWS, [3]outputSize * numberOfThreadsPerGroup
+ * args2:long[] [0]previous pane id, [1]input stream start pointer
+ */
+void gpu_reset_kernel_reduce(int qid, int * args1, long * args2);
 
 void gpu_set_kernel_select(int qid, int * args);
 

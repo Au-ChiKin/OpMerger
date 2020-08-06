@@ -36,6 +36,8 @@ void callback_setKernelCompact (cl_kernel kernel, gpu_config_p context, int *arg
 void callback_setKernelReduce (cl_kernel kernel, gpu_config_p context, int *args1, long *args2);
 void callback_setKernelSelect (cl_kernel kernel, gpu_config_p context, int *args1, long *args2);
 
+void callback_resetConstReduce (cl_kernel kernel, gpu_config_p context, int *args1, long *args2);
+
 void callback_configureReduce (cl_kernel kernel, gpu_config_p context, int *args1, long *args2);
 
 void callback_readOutput (gpu_config_p context, int qid, int ndx, int mark);
@@ -199,6 +201,19 @@ int gpu_set_kernel (int qid, int ndx /* kernel index */,
 	return gpu_query_setKernel (p, ndx, name, callback, args1, args2);
 }
 
+int gpu_reset_kernel (int qid, int ndx /* kernel index */,
+	const char *name,
+	void (*callback)(cl_kernel, gpu_config_p, int *, long *),
+	int * args1, long * args2) {
+
+	if (qid < 0 || qid >= query_num) {
+		fprintf(stderr, "error: query index [%d] out of bounds\n", qid);
+		exit (1);
+	}
+	gpu_query_p p = queries[qid];
+	return gpu_query_resetKernel (p, ndx, name, callback, args1, args2);
+}
+
 int gpu_exec (int qid,
 	size_t *threads, size_t *threadsPerGroup,
 	query_operator_p operator,
@@ -344,6 +359,17 @@ void gpu_set_kernel_reduce(int qid, int * args1, long * args2) {
 	return;
 }
 
+void gpu_reset_kernel_reduce(int qid, int * args1, long * args2) {
+
+	/* Set kernel(s) */
+	gpu_reset_kernel (qid, 0, "clearKernel",           &callback_resetConstReduce, args1, args2);
+	gpu_reset_kernel (qid, 1, "computeOffsetKernel",   &callback_resetConstReduce, args1, args2);
+	gpu_reset_kernel (qid, 2, "computePointersKernel", &callback_resetConstReduce, args1, args2);
+	gpu_reset_kernel (qid, 3, "reduceKernel",          &callback_resetConstReduce, args1, args2);
+
+	return;
+}
+
 void gpu_execute (int qid, size_t * threads, size_t * threadsPerGroup, void ** input_batches, void ** output_batches, size_t addr_size) {
 
 	/* Create operator */
@@ -434,6 +460,37 @@ void callback_setKernelReduce (cl_kernel kernel, gpu_config_p context, int *args
 
 	/* Set local memory */
 	error |= clSetKernelArg (kernel, 11, (size_t)  cache_size, (void *) NULL);
+
+	if (error != CL_SUCCESS) {
+		fprintf(stderr, "opencl error (%d): %s\n", error, getErrorMessage(error));
+		exit (1);
+	}
+
+	return;
+}
+
+void callback_resetConstReduce (cl_kernel kernel, gpu_config_p context, int *args1, long *args2) {
+
+	int numberOfTuples = args1[0];
+	int numberOfBytes  = args1[1];
+
+	int maxNumberOfWindows = args1[2];
+
+	int cache_size = args1[3]; /* Local buffer memory size */
+
+	long previousPaneId = args2[0];
+	long startOffset    = args2[1];
+
+	int error = 0;
+
+	/* Set constant arguments */
+	error |= clSetKernelArg (kernel, 0, sizeof(int),  (void *)     &numberOfTuples);
+	error |= clSetKernelArg (kernel, 1, sizeof(int),  (void *)      &numberOfBytes);
+
+	error |= clSetKernelArg (kernel, 2, sizeof(int),  (void *) &maxNumberOfWindows);
+
+	error |= clSetKernelArg (kernel, 3, sizeof(long), (void *)     &previousPaneId);
+	error |= clSetKernelArg (kernel, 4, sizeof(long), (void *)        &startOffset);
 
 	if (error != CL_SUCCESS) {
 		fprintf(stderr, "opencl error (%d): %s\n", error, getErrorMessage(error));
