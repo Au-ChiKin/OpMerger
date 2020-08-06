@@ -52,7 +52,7 @@ selection_p selection(
         p->operator->setup = selection_setup;
         p->operator->process = selection_process;
         p->operator->process_output = selection_process_output;
-        p->operator->reset_threads = selection_reset_threads;
+        p->operator->reset = selection_reset;
         p->operator->print = selection_print_output;
 
         p->operator->type = OPERATOR_SELECT;
@@ -234,7 +234,7 @@ void selection_setup(void * select_ptr, int batch_size) {
     free(source);
 }
 
-void selection_reset_threads(void * select_ptr, int new_batch_size) {
+void selection_reset(void * select_ptr, int new_batch_size) {
     selection_p select = (selection_p) select_ptr;
 
     for (int i=0; i<SELECTION_KERNEL_NUM; i++) {

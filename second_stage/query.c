@@ -136,7 +136,9 @@ void query_process(query_p query, batch_p input, batch_p output) {
         for (int i=0; i<query->operator_num; i++) {
             printf("[QUERY] Excecuting operator %d\n", i);
             if (i != query->operator_num-1) {
-                (* query->callbacks[i]->reset_threads) (query->operators[i], input->size);
+                if (i != 0) {
+                    (* query->callbacks[i]->reset) (query->operators[i], input->size);
+                }
 
                 (* query->callbacks[i]->process) (
                     query->operators[i], 
@@ -156,7 +158,9 @@ void query_process(query_p query, batch_p input, batch_p output) {
                 inter = inter_swap;
                 inter_swap = tmp;
             } else  {
-                (* query->callbacks[i]->reset_threads) (query->operators[i], input->size);
+                if (i != 0) {
+                    (* query->callbacks[i]->reset) (query->operators[i], input->size);
+                }
 
                 (* query->callbacks[i]->process) (
                     query->operators[i], 

@@ -54,7 +54,7 @@ selection_p selection(schema_p input_schema, int ref, ref_value_p value, enum co
 void selection_setup(void * select_ptr, int batch_size);
 
 /* Reset threads[] and thread_per_group[] according to new_batch_size */
-void selection_reset_threads(void * select_ptr, int new_batch_size);
+void selection_reset(void * select_ptr, int new_batch_size);
 
 void selection_process(void * select_ptr, batch_p batch, int pane_size, bool is_range, batch_p output);
 

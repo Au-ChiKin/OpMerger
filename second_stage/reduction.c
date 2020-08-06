@@ -12,7 +12,7 @@ reduction_p reduction(schema_p input_schema, int ref) {
     p->operator = (operator_p) malloc(sizeof (operator_t));
     {
         p->operator->setup = (void *) reduction_setup;
-        p->operator->reset_threads = (void *) reduction_reset_threads;
+        p->operator->reset = (void *) reduction_reset;
         p->operator->process = (void *) reduction_process;
         p->operator->print = (void *) reduction_print_output;
 
@@ -161,7 +161,7 @@ void reduction_process_output(void * reduce_ptr, batch_p outputs) {
     /* Stud, reduction is a pipeline breaker so it does not need to pass any output to another operator in this attempt */
 }
 
-void reduction_reset_threads(void * reduce_ptr, int new_batch_size) {
+void reduction_reset(void * reduce_ptr, int new_batch_size) {
     reduction_p reduce = (reduction_p) reduce_ptr;
 
     int tuple_size = reduce->input_schema->size;
