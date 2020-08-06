@@ -16,7 +16,7 @@ query_p query(int id, int batch_size, int window_size, int window_side, bool is_
 
     query->window_size = window_size;
     query->window_slide = window_side;
-    query->window_type = COUNTER_BASE;
+    query->window_type = RANGE_BASE;
 
     query->pane_size = gcd(window_size, window_side);
 

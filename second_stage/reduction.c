@@ -12,7 +12,7 @@ reduction_p reduction(schema_p input_schema, int ref) {
     p->operator = (operator_p) malloc(sizeof (operator_t));
     {
         p->operator->setup = (void *) reduction_setup;
-        p->operator->reset_threads = (void *) reduction_rest_threads;
+        p->operator->reset_threads = (void *) reduction_reset_threads;
         p->operator->process = (void *) reduction_process;
         p->operator->print = (void *) reduction_print_output;
 
@@ -103,11 +103,17 @@ void reduction_process(void * reduce_ptr, batch_p batch, int pane_size, bool is_
                 args2[0] = ((s / (long) t) / p) - 1;
             }
         }
+        /* Force every batch to be a new window because the batch->start here is not the same with Saber's */
+        args2[0] = -1;
     
         args2[1] = s;
+        
+        /* Also the same to curent pane id */
+        args2[1] = 0;
     }
     
-    u_int8_t * inputs [1] = {batch->buffer + batch->start};
+    u_int8_t * inputs [1] = {
+        batch->buffer + batch->start};
 
     u_int8_t * outputs [2] = {
         output->buffer + output->start + reduce->output_entries[0], 
@@ -115,10 +121,10 @@ void reduction_process(void * reduce_ptr, batch_p batch, int pane_size, bool is_
 
     /* Execute */
     gpu_execute_reduce(
-        reduce->qid, 
-        reduce->threads, reduce->threads_per_group, 
-        args2, 
-        (void **) (inputs), (void **) (outputs), sizeof(u_int8_t)); 
+        reduce->qid,
+        reduce->threads, reduce->threads_per_group,
+        args2,
+        (void **) (inputs), (void **) (outputs), sizeof(u_int8_t));
         // passing the batch without deserialisation
 }
 
@@ -155,9 +161,12 @@ void reduction_process_output(void * reduce_ptr, batch_p outputs) {
     /* Stud, reduction is a pipeline breaker so it does not need to pass any output to another operator in this attempt */
 }
 
-void reduction_rest_threads(void * reduce_ptr, int new_batch_size) {
+void reduction_reset_threads(void * reduce_ptr, int new_batch_size) {
     reduction_p reduce = (reduction_p) reduce_ptr;
 
+    int tuple_size = reduce->input_schema->size;
+
+    /* Operator setup */
     for (int i=0; i<REDUCTION_KERNEL_NUM; i++) {
         reduce->threads[i] = new_batch_size;
 
@@ -166,5 +175,24 @@ void reduction_rest_threads(void * reduce_ptr, int new_batch_size) {
         } else {
             reduce->threads_per_group[i] = MAX_THREADS_PER_GROUP;
         }
-    }    
+    }
+    
+    /* GPU kernels setup */
+    int args1 [4];
+    args1[0] = new_batch_size; /* tuples */
+    args1[1] = new_batch_size * tuple_size; /* input size */
+    args1[2] = PARTIAL_WINDOWS; 
+    args1[3] = 16 * MAX_THREADS_PER_GROUP; /* local cache size */
+
+    fprintf(stderr, "After reset\n", args1[0]);
+    fprintf(stderr, "args1 0: %d\n", args1[0]);
+    fprintf(stderr, "args1 1: %d\n", args1[1]);
+    fprintf(stderr, "args1 2: %d\n", args1[2]);
+    fprintf(stderr, "args1 3: %d\n", args1[3]);
+
+    long args2 [2];
+    args2[0] = 0; /* Previous pane id   */
+    args2[1] = 0; /* Batch start offset */
+
+    gpu_reset_kernel_reduce(reduce->qid, args1, args2);
 }

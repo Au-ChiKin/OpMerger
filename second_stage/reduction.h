@@ -31,7 +31,7 @@ reduction_p reduction(schema_p input_schema, int ref);
 
 void reduction_setup(void * reduce_ptr, int batch_size);
 
-void reduction_rest_threads(void * reduce_ptr, int new_batch_size);
+void reduction_reset_threads(void * reduce_ptr, int new_batch_size);
 
 void reduction_process(void * reduce_ptr, batch_p batch, int pane_size, bool is_range, batch_p output);
 
