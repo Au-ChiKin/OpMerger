@@ -3,8 +3,6 @@
 #include <stdio.h>
 
 #include "helpers.h"
-#include "selection.h"
-
 
 query_p query(int id, int batch_size, window_p window, bool is_merging) {
     query_p query = (query_p) malloc(sizeof(query_t));

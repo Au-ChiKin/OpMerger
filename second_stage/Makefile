@@ -1,6 +1,6 @@
 # Compiler Configurations
 CC        = gcc
-CFLAGS    = -Wall -g
+CFLAGS    = -Wall -g -I$(shell pwd)
 UNAME := $(shell uname -s)
 LDLIBS    =
 DEPFLAGS  = -MT $@ -MMD -MP -MF $(DEPDIR)/$*.d
@@ -22,12 +22,12 @@ VPATH    = $(OBJDIR)
 
 # Targets
 PROGS   = test_gcd
-OPERATOR = aggregation.c reduction.c selection.c
-SRCS = test_gcd.c openclerrorcode.c config.c helpers.c schema.c query.c batch.c window.c generators.c $(OPERATOR)
+SRCS = test_gcd.c openclerrorcode.c config.c helpers.c schema.c query.c batch.c window.c generators.c
 
 # Submodules
 include ./libcirbuf/cirbuf.mk
 include ./libgpu/libgpu.mk
+include ./operators/operators.mk
 
 OBJECTS = $(patsubst %.c,%.o,$(SRCS))
 
