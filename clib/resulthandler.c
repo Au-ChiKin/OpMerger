@@ -11,6 +11,11 @@ static void *output_handler (void *args) {
 	JNIEnv *env = p->env;
 	JavaVM *jvm = p->jvm;
 
+	/* The JNI interface pointer (JNIEnv) is valid only in the current thread. Should another 
+	   thread need to access the Java VM, it must first call AttachCurrentThread() to attach itself 
+	   to the VM and obtain a JNI interface pointer. Once attached to the VM, a native thread works 
+	   just like an ordinary Java thread running inside a native method. The native thread remains 
+	   attached to the VM until it calls DetachCurrentThread() to detach itself. */
 	(*jvm)->AttachCurrentThread(jvm, (void **) &env, NULL);
 
 #ifndef __APPLE__
