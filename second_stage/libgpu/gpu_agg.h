@@ -9,8 +9,9 @@ typedef struct query_operator {
 	int  *args1;
 	long *args2;
 
+	/* For moving data acros JNI, so no use */
 	// void (*writeInput) (gpu_config_p, int, int);
-	void (*readOutput) (gpu_config_p, int, int, int);
+	// void (*readOutput) (gpu_config_p, int, int, int);
 
 	void (*configure) (cl_kernel, gpu_config_p, int *, long *);
 

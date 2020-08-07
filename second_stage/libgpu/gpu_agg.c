@@ -11,7 +11,7 @@
 #include "gpu_input_buffer.h"
 #include "gpu_output_buffer.h"
 #include "openclerrorcode.h"
-
+// #include "resulthandler.h"
 
 static cl_platform_id platform = NULL;
 static cl_device_id device = NULL;
@@ -139,6 +139,13 @@ void gpu_init (int _queries) {
 	for (int i = 0; i < MAX_QUERIES; i++)
 		queries[i] = NULL;
 
+	// #ifdef GPU_HANDLER
+	// /* Create result handler */
+	// resultHandler = result_handler_init (env);
+	// #else
+	// resultHandler = NULL;
+	// #endif
+
 	return;
 }
 
@@ -150,8 +157,8 @@ int gpu_get_query (const char *source, int _kernels, int _inputs, int _outputs) 
 		exit (1);
 	}
 	queries[query_id] = gpu_query_new (query_id, device, context, source, _kernels, _inputs, _outputs);
-	/* Set result handler */
-	// gpu_query_setResultHandler (queries[ndx], resultHandler); // TODO
+	// /* Set result handler */
+	// gpu_query_setResultHandler (queries[ndx], resultHandler);
 	
 	return query_id;
 }
@@ -386,7 +393,7 @@ void gpu_execute (int qid, size_t * threads, size_t * threadsPerGroup, void ** i
 	
 	operator->configure = NULL;
 
-	operator->readOutput = callback_readOutput;
+	// operator->readOutput = callback_readOutput;
 	operator->execKernel = callback_execKernel;
 
 	gpu_exec (qid, threads, threadsPerGroup, operator, input_batches, output_batches, addr_size);
@@ -517,7 +524,7 @@ void gpu_execute_reduce(int qid, size_t * threads, size_t * threads_per_group, l
 	operator->args1 = NULL;
 	operator->args2 = args2;
 	operator->configure = callback_configureReduce;
-	operator->readOutput = callback_readOutput;
+	// operator->readOutput = callback_readOutput;
 	operator->execKernel = callback_execKernel;
 
 	gpu_exec(qid, threads, threads_per_group, operator, input_batches, output_batches, addr_size);
