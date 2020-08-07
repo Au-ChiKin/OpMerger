@@ -29,7 +29,7 @@ static void *output_handler (void *args) {
 	fprintf(stdout, "[DBG] result handler attached to core 2\n");
 	fflush (stdout);
 
-	/* Unblocks thread waiting for this thread to attach to the JVM */
+	/* Unblocks the thread (which runs result_handler_init) waiting for this thread to attach to the JVM */
 	p->start = 1;
 
 	while (1) {
