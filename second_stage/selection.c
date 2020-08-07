@@ -79,15 +79,7 @@ static char * generate_source(selection_p select) {
     char * headers = read_file("cl/templates/headers.cl");
 
     /* Input and output vector sizes */
-    char define_in_size[32], define_out_size[32];
-
-    if (select->input_schema->size % bytes_per_element != 0 || select->output_schema->size % bytes_per_element != 0) {
-        fprintf(stderr, "error: input/output sizz is not a multiple of the vector `uchar%d`\n", bytes_per_element);
-        exit(1);
-    }
-
-    sprintf(define_in_size, "#define INPUT_VECTOR_SIZE %d\n", select->input_schema->size / bytes_per_element);
-    sprintf(define_out_size, "#define OUTPUT_VECTOR_SIZE %d\n\n", select->output_schema->size / bytes_per_element);
+    char * tuple_size = generate_tuple_size(select->input_schema->size, select->output_schema->size, 16);
 
     /* Input and output tuple struct */
     char * input_tuple = generate_input_tuple(select->output_schema, NULL, 16);
@@ -114,8 +106,7 @@ inline int selectf (__global input_t *p) {\n\
 
     strcat(source, headers);
 
-    strcat(source, define_in_size);
-    strcat(source, define_out_size);
+    strcat(source, tuple_size);
     
     strcat(source, input_tuple);
     strcat(source, output_tuple);
@@ -126,6 +117,7 @@ inline int selectf (__global input_t *p) {\n\
 
     free(extensions);
     free(headers);
+    free(tuple_size);
     free(input_tuple);
     free(output_tuple);
     free(template);

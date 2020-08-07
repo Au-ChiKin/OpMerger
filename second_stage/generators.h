@@ -14,4 +14,6 @@ char * generate_input_tuple (schema_p schema, char const * prefix, int vector);
 
 char * generate_output_tuple (schema_p schema, char const * prefix, int vector);
 
+char * generate_tuple_size(int input_size, int output_size, int vector);
+
 #endif

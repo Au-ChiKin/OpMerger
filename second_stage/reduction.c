@@ -49,16 +49,7 @@ static char * generate_source(reduction_p reduce, window_p window) {
     char * headers = read_file("cl/templates/headers.cl");
 
     /* Input and output vector sizes */
-    int const bytes_per_element = 16;
-    char define_in_size[32], define_out_size[32];
-
-    if (reduce->input_schema->size % bytes_per_element != 0 || reduce->output_schema->size % bytes_per_element != 0) {
-        fprintf(stderr, "error: input/output sizz is not a multiple of the vector `uchar%d`\n", bytes_per_element);
-        exit(1);
-    }
-
-    sprintf(define_in_size, "#define INPUT_VECTOR_SIZE %d\n", reduce->input_schema->size / bytes_per_element);
-    sprintf(define_out_size, "#define OUTPUT_VECTOR_SIZE %d\n\n", reduce->output_schema->size / bytes_per_element);
+    char * tuple_size = generate_tuple_size(reduce->input_schema->size, reduce->output_schema->size, 16);
 
     /* Input and output tuple struct */
     char * input_tuple = generate_input_tuple(reduce->input_schema, NULL, 16);
@@ -111,8 +102,7 @@ inline void copyf (__local output_t *p, __global output_t *q) {\n\
 
     strcat(source, headers);
     
-    strcat(source, define_in_size);
-    strcat(source, define_out_size);
+    strcat(source, tuple_size);
     
     strcat(source, input_tuple);
     strcat(source, output_tuple);
@@ -126,7 +116,7 @@ inline void copyf (__local output_t *p, __global output_t *q) {\n\
     /* Free inputed/generated source */
     free(extensions);
     free(headers);
-    free(input_tuple);
+    free(tuple_size);
     free(output_tuple);
     free(input_tuple);
     free(windows);
