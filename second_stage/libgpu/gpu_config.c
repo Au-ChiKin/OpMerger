@@ -145,8 +145,6 @@ void gpu_config_resetKernel (gpu_config_p query,
 	void (*callback)(cl_kernel, gpu_config_p, int *, long *),
 	int *args1, long *args2) {
 
-	printf("Enter resetKernel\n");
-
 	int i;
 	for (i = 0; i < 2; i++) {
 		if (! query->kernel.kernels[ndx]->kernel[i]) {
