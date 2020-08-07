@@ -58,7 +58,8 @@ void query_setup(query_p query) {
             operator_p op = query->callbacks[i];
             if (op->type == OPERATOR_REDUCE) {
                 if (i != query->operator_num-1) {
-                    fprintf(stderr, "error: OpMerge currently does not support query with multiple pipeline breakers or with one which is not at the end\n (%s)", __FUNCTION__);
+                    fprintf(stderr, "error: OpMerge currently does not support query with multiple pipeline \
+                        breakers or with one which is not at the end\n (%s)", __FUNCTION__);
                     exit(1);
                 }
             }
@@ -95,7 +96,8 @@ void query_process(query_p query, batch_p input, batch_p output) {
     }
 
     if (input->size != query->batch_size) {
-        fprintf(stderr, "error: input batch size (%d) does not match the set batch_size (%d) of the query (%s)\n", input->size, query->batch_size, __FUNCTION__);
+        fprintf(stderr, "error: input batch size (%d) does not match the set batch_size (%d) of the \
+            query (%s)\n", input->size, query->batch_size, __FUNCTION__);
         exit(1);        
     }
 
