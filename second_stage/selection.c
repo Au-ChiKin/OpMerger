@@ -6,10 +6,9 @@
 #include "helpers.h"
 #include "libgpu/gpu_agg.h"
 #include "config.h"
+#include "generators.h"
 
 static int free_id = 0;
-
-static void generate_filename(int id, char * filename);
 
 ref_value_p ref_value() {
 
@@ -72,18 +71,7 @@ selection_p selection(
     return p;
 }
 
-static void generate_filename(int id, char * filename) {
-    strcat(filename, SELECTION_CODE_FILENAME);
-
-    char subfix[64] = "";
-    sprintf(subfix, "%d", id);
-    strcat(filename, "_");
-    strcat(filename, subfix);
-
-    strcat(filename, ".cl");
-}
-
-static char * generate_source(selection_p select, char const * filename) {
+static char * generate_source(selection_p select) {
     int const bytes_per_element = 16;
     char * source = (char *) malloc(1024 * 10 * sizeof(char));
 
@@ -101,49 +89,10 @@ static char * generate_source(selection_p select, char const * filename) {
     sprintf(define_in_size, "#define INPUT_VECTOR_SIZE %d\n", select->input_schema->size / bytes_per_element);
     sprintf(define_out_size, "#define OUTPUT_VECTOR_SIZE %d\n\n", select->output_schema->size / bytes_per_element);
 
-    /* TODO create the genrating function in schema.c */
     /* Input and output tuple struct */
-    char input_tuple[1024] = 
-"typedef struct {\n\
-    long t;\n\
-    long _1;\n\
-    long _2;\n\
-    long _3;\n\
-    int _4;\n\
-    int _5;\n\
-    int _6;\n\
-    int _7;\n\
-    float _8;\n\
-    float _9;\n\
-    float _10;\n\
-    int _11;\n\
-} input_tuple_t __attribute__((aligned(1)));\n\
-\n\
-typedef union {\n\
-    input_tuple_t tuple;\n\
-    uchar16 vectors[INPUT_VECTOR_SIZE];\n\
-} input_t;\n\n";
+    char * input_tuple = generate_input_tuple(select->output_schema, NULL, 16);
 
-    char output_tuple[1024] = 
-"typedef struct {\n\
-    long t;\n\
-    long _1;\n\
-    long _2;\n\
-    long _3;\n\
-    int _4;\n\
-    int _5;\n\
-    int _6;\n\
-    int _7;\n\
-    float _8;\n\
-    float _9;\n\
-    float _10;\n\
-    int _11;\n\
-} output_tuple_t __attribute__((aligned(1)));\n\
-\n\
-typedef union {\n\
-    output_tuple_t tuple;\n\
-    uchar16 vectors[OUTPUT_VECTOR_SIZE];\n\
-} output_t;\n\n";
+    char * output_tuple = generate_output_tuple(select->output_schema, NULL, 16);
 
     /* TODO: generate according to select */
     char selecf[1024] =
@@ -158,20 +107,27 @@ inline int selectf (__global input_t *p) {\n\
 }\n";
 
     /* Template funcitons */
-    char * template = read_file("cl/templates/select_template.cl");
+    char * template = read_file(SELECTION_CODE_TEMPLATE);
 
     /* Assembling */
     strcpy(source, extensions);
+
     strcat(source, headers);
+
     strcat(source, define_in_size);
     strcat(source, define_out_size);
+    
     strcat(source, input_tuple);
     strcat(source, output_tuple);
+    
     strcat(source, selecf);
+    
     strcat(source, template);
 
     free(extensions);
     free(headers);
+    free(input_tuple);
+    free(output_tuple);
     free(template);
 
     return source;
@@ -203,10 +159,10 @@ void selection_setup(void * select_ptr, int batch_size, window_p window) {
     select->output_entries[2] = 4 * batch_size + 4 * work_group_num;
 
     /* Source generation */
-    char filename [64] = "";
-    generate_filename(select->id, filename);
+    char * source = generate_source(select);
 
-    char * source = generate_source(select, filename);
+    /* Output generated code */
+    char * filename = generate_filename(select->id, SELECTION_CODE_FILENAME);
     printf("[SELECTION] Printing the generated source code to file: %s\n", filename);
     print_to_file(filename, source);
 

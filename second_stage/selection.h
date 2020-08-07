@@ -8,7 +8,7 @@
 #define SELECTION_KERNEL_NUM 4
 #define SELECTION_TUPLES_PER_THREADS 2
 #define SELECTION_CODE_FILENAME "cl/select"
-#define SELECTION_CODE_TEMPLATE "cl/template/select_template.cl"
+#define SELECTION_CODE_TEMPLATE "cl/templates/select_template.cl"
 
 enum comparor {
     GREATER,
