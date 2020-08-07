@@ -3,11 +3,11 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "helpers.h"
 #include "libgpu/gpu_agg.h"
+
 #include "config.h"
 #include "generators.h"
-#include "string.h"
+#include "helpers.h"
 
 #define _sprintf(format, __VA_ARGS__...) \
 {\
@@ -80,7 +80,7 @@ selection_p selection(
     return p;
 }
 
-static char * generate_selecf(selection_p select) {
+static char * generate_selectf(selection_p select) {
     char * ret = (char *) malloc(1024 * sizeof(char)); *ret = '\0';
     char s [128] = "";
 
@@ -173,18 +173,8 @@ static char * generate_source(selection_p select) {
 
     char * output_tuple = generate_output_tuple(select->output_schema, NULL, 16);
 
-    /* TODO: generate according to select */
-//     char selecf[1024] =
-// "// select condition\n\
-// inline int selectf (__global input_t *p) {\n\
-//     /* r */ int value = 1;\n\
-// \n\
-//     int attribute_value = p->tuple._6; /* where category == 0*/\n\
-//     value = value & (attribute_value == 0);\n\
-// \n\
-//     /* r */ return value;\n\
-// }\n";
-    char * selecf = generate_selecf(select);
+    /* Inline function */
+    char * selectf = generate_selectf(select);
 
     /* Template funcitons */
     char * template = read_file(SELECTION_CODE_TEMPLATE);
@@ -199,7 +189,7 @@ static char * generate_source(selection_p select) {
     strcat(source, input_tuple);
     strcat(source, output_tuple);
     
-    strcat(source, selecf);
+    strcat(source, selectf);
     
     strcat(source, template);
 
@@ -208,7 +198,7 @@ static char * generate_source(selection_p select) {
     free(tuple_size);
     free(input_tuple);
     free(output_tuple);
-    free(selecf);
+    free(selectf);
     free(template);
 
     return source;
