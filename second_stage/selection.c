@@ -7,6 +7,13 @@
 #include "libgpu/gpu_agg.h"
 #include "config.h"
 #include "generators.h"
+#include "string.h"
+
+#define _sprintf(format, __VA_ARGS__...) \
+{\
+    sprintf(s, format, __VA_ARGS__);\
+    strcat(ret, s);\
+}
 
 static int free_id = 0;
 
@@ -62,8 +69,10 @@ selection_p selection(
     p->id = free_id++;
 
     p->input_schema = input_schema;
+
     p->ref = ref;
     p->value = value;
+    p->com = com;
 
     /* For selection, the input and output schema are the same */
     p->output_schema = input_schema;
@@ -71,8 +80,86 @@ selection_p selection(
     return p;
 }
 
+static char * generate_selecf(selection_p select) {
+    char * ret = (char *) malloc(1024 * sizeof(char)); *ret = '\0';
+    char s [128] = "";
+
+    /* TODO: support multiple predicates */
+    int const predicate_num = 1;
+
+    _sprintf("inline int selectf (__global input_t *p) {\n", NULL);
+    _sprintf("    int value = 1;\n", NULL);
+    for (int i = 0; i < predicate_num; i++) {
+
+        if (select->value->i != NULL) {
+            _sprintf("    int attr_%d = p->tuple._%d;\n", select->id, select->ref);
+        } else if (select->value->l != NULL) {
+            _sprintf("    long attr_%d = p->tuple._%d;\n", select->id, select->ref);
+        } else if (select->value->f != NULL) {
+            _sprintf("    float attr_%d = p->tuple._%d;\n", select->id, select->ref);
+        } else if (select->value->c != NULL) {
+            _sprintf("    char attr_%d = p->tuple._%d;\n", select->id, select->ref);
+        } else {
+            exit(1);
+        }
+        
+        /* Conditions */
+        {
+            _sprintf("    value = value & ", NULL);
+
+            _sprintf("(attr_%d ", select->id);
+
+            switch (select->com)
+            {
+            case GREATER:
+                _sprintf(">", NULL);
+                break;
+            case EQUAL:
+                _sprintf("==", NULL);
+                break;
+            case LESS:
+                _sprintf("<", NULL);
+                break;
+            case GREATER_EQUAL:
+                _sprintf(">=", NULL);
+                break;
+            case LESS_EQUAL:
+                _sprintf("<=", NULL);
+                break;
+            case UNEQUAL:
+                _sprintf("!=", NULL);
+                break;
+            default:
+                break;
+            }
+
+            if (select->value->i != NULL) {
+                _sprintf(" %d)", *(select->value->i));
+            } else if (select->value->l != NULL) {
+                _sprintf(" %ld)", *(select->value->l));
+            } else if (select->value->f != NULL) {
+                _sprintf(" %f)", *(select->value->f));
+            } else if (select->value->c != NULL) {
+                _sprintf(" %c)", *(select->value->c));
+            } else {
+                exit(1);
+            }
+
+            if (i == predicate_num - 1) {
+                _sprintf(";\n", NULL);
+            } else {
+                _sprintf(" & ", NULL);
+            }
+        }
+    }
+    _sprintf("    return value;\n", NULL);
+
+    _sprintf("}\n\n", NULL);
+
+    return ret;    
+}
+
 static char * generate_source(selection_p select) {
-    int const bytes_per_element = 16;
     char * source = (char *) malloc(1024 * 10 * sizeof(char));
 
     char * extensions = read_file("cl/templates/extensions.cl");
@@ -87,16 +174,17 @@ static char * generate_source(selection_p select) {
     char * output_tuple = generate_output_tuple(select->output_schema, NULL, 16);
 
     /* TODO: generate according to select */
-    char selecf[1024] =
-"// select condition\n\
-inline int selectf (__global input_t *p) {\n\
-    /* r */ int value = 1;\n\
-\n\
-    int attribute_value = p->tuple._6; /* where category == 0*/\n\
-    value = value & (attribute_value == 0);\n\
-\n\
-    /* r */ return value;\n\
-}\n";
+//     char selecf[1024] =
+// "// select condition\n\
+// inline int selectf (__global input_t *p) {\n\
+//     /* r */ int value = 1;\n\
+// \n\
+//     int attribute_value = p->tuple._6; /* where category == 0*/\n\
+//     value = value & (attribute_value == 0);\n\
+// \n\
+//     /* r */ return value;\n\
+// }\n";
+    char * selecf = generate_selecf(select);
 
     /* Template funcitons */
     char * template = read_file(SELECTION_CODE_TEMPLATE);
@@ -120,6 +208,7 @@ inline int selectf (__global input_t *p) {\n\
     free(tuple_size);
     free(input_tuple);
     free(output_tuple);
+    free(selecf);
     free(template);
 
     return source;

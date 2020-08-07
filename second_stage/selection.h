@@ -15,7 +15,8 @@ enum comparor {
     EQUAL,
     LESS,
     GREATER_EQUAL,
-    LESS_EQUAL
+    LESS_EQUAL,
+    UNEQUAL
 };
 
 typedef struct ref_value * ref_value_p;
@@ -34,13 +35,16 @@ typedef struct selection {
     int qid; /* id of gpu_query in libgpu where a query means an opeartor */
 
     schema_p input_schema;
+
     int ref;
     ref_value_p value;
-    size_t threads[SELECTION_KERNEL_NUM];
-    size_t threads_per_group [SELECTION_KERNEL_NUM];
+    enum comparor com;
 
     schema_p output_schema;
     long output_entries[3];
+
+    size_t threads[SELECTION_KERNEL_NUM];
+    size_t threads_per_group [SELECTION_KERNEL_NUM];
 
 } selection_t;
 
