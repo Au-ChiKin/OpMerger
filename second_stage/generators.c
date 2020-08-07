@@ -163,7 +163,7 @@ char * generate_output_tuple (schema_p schema, char const * prefix, int vector) 
     _sprintf("typedef union {\n", NULL);
     _sprintf("    output_tuple_t tuple;\n", NULL);
     _sprintf("    uchar%d vectors[OUTPUT_VECTOR_SIZE];\n", vector, NULL);
-    _sprintf("} output_t;\n", NULL);
+    _sprintf("} output_t;\n\n", NULL);
     
     return ret;
 }
