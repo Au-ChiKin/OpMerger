@@ -23,7 +23,7 @@ VPATH    = $(OBJDIR)
 # Targets
 PROGS   = test_gcd
 OPERATOR = aggregation.c reduction.c selection.c
-SRCS = test_gcd.c openclerrorcode.c config.c helpers.c schema.c query.c batch.c window.c $(OPERATOR)
+SRCS = test_gcd.c openclerrorcode.c config.c helpers.c schema.c query.c batch.c window.c generators.c $(OPERATOR)
 
 # Submodules
 include ./libcirbuf/cirbuf.mk

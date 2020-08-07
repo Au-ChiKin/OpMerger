@@ -7,6 +7,7 @@
 #include "config.h"
 #include "helpers.h"
 #include "libgpu/gpu_agg.h"
+#include "generators.h"
 
 static int free_id = 0;
 
@@ -40,38 +41,7 @@ reduction_p reduction(schema_p input_schema, int ref) {
     return p;    
 }
 
-static void generate_filename(int id, char * filename) {
-    strcat(filename, REDUCTION_CODE_FILENAME);
-
-    char subfix[64] = "";
-    sprintf(subfix, "%d", id);
-    strcat(filename, "_");
-    strcat(filename, subfix);
-
-    strcat(filename, ".cl");
-}
-
-static char * generate_window_definition(window_p window) {
-    char * ret = (char *) malloc(256 * sizeof(char)); *ret = '\0';
-    
-    if (window->type == RANGE_BASE)
-        strcat(ret, "#define RANGE_BASED\n\n");
-    else
-        strcat(ret, "#define COUNT_BASED\n\n");
-    
-    char s[64] = "";
-    sprintf(s, "#define PANES_PER_WINDOW %dL\n", window->size / window->pane_size);
-    strcat(ret, s);
-    sprintf(s, "#define PANES_PER_SLIDE  %dL\n", window->slide / window->pane_size);
-    strcat(ret, s);
-    sprintf(s, "#define PANE_SIZE        %dL\n", window->pane_size);
-    strcat(ret, s);
-    
-    return ret;
-}
-
-static char * generate_source(reduction_p reduce, char const * filename, window_p window) {
-    int const bytes_per_element = 16;
+static char * generate_source(reduction_p reduce, window_p window) {
     char * source = (char *) malloc(MAX_SOURCE_LENGTH * sizeof(char)); *source = '\0';
 
     char * extensions = read_file("cl/templates/extensions.cl");
@@ -79,6 +49,7 @@ static char * generate_source(reduction_p reduce, char const * filename, window_
     char * headers = read_file("cl/templates/headers.cl");
 
     /* Input and output vector sizes */
+    int const bytes_per_element = 16;
     char define_in_size[32], define_out_size[32];
 
     if (reduce->input_schema->size % bytes_per_element != 0 || reduce->output_schema->size % bytes_per_element != 0) {
@@ -89,46 +60,16 @@ static char * generate_source(reduction_p reduce, char const * filename, window_
     sprintf(define_in_size, "#define INPUT_VECTOR_SIZE %d\n", reduce->input_schema->size / bytes_per_element);
     sprintf(define_out_size, "#define OUTPUT_VECTOR_SIZE %d\n\n", reduce->output_schema->size / bytes_per_element);
 
-    /* TODO create the genrating function in schema.c */
     /* Input and output tuple struct */
-    char input_tuple[1024] = 
-"typedef struct {\n\
-    long t;\n\
-    long _1;\n\
-    long _2;\n\
-    long _3;\n\
-    int _4;\n\
-    int _5;\n\
-    int _6;\n\
-    int _7;\n\
-    float _8;\n\
-    float _9;\n\
-    float _10;\n\
-    int _11;\n\
-} input_tuple_t __attribute__((aligned(1)));\n\
-\n\
-typedef union {\n\
-    input_tuple_t tuple;\n\
-    uchar16 vectors[INPUT_VECTOR_SIZE];\n\
-} input_t;\n\n";
+    char * input_tuple = generate_input_tuple(reduce->input_schema, NULL, 16);
 
-    char output_tuple[1024] = 
-"typedef struct {\n\
-    long t; /* timestamp */\n\
-    float _1; /* sum */\n\
-    int _2; /* count */\n\
-} output_tuple_t __attribute__((aligned(1)));\n\
-\n\
-typedef union {\n\
-    output_tuple_t tuple;\n\
-    uchar16 vectors[OUTPUT_VECTOR_SIZE];\n\
-} output_t;\n\n";
+    char * output_tuple = generate_output_tuple(reduce->output_schema, NULL, 16);
 
     /* Window sizes */
     char * windows = generate_window_definition(window);
 
     /* TODO: generate according to reduce */
-    char funcs[1024] =
+    char funcs[] =
 "inline void initf (__local output_t *p) {\n\
     p->tuple.t = 0;\n\
     p->tuple._1 = 0;\n\
@@ -182,8 +123,12 @@ inline void copyf (__local output_t *p, __global output_t *q) {\n\
     
     strcat(source, template);
 
+    /* Free inputed/generated source */
     free(extensions);
     free(headers);
+    free(input_tuple);
+    free(output_tuple);
+    free(input_tuple);
     free(windows);
     free(template);
 
@@ -208,17 +153,19 @@ void reduction_setup(void * reduce_ptr, int batch_size, window_p window) {
     reduce->output_entries[0] = 0;
     reduce->output_entries[1] = 20;
 
-    /* TODO: Source generation */
-    char filename [64] = "";
-    generate_filename(reduce->id, filename);
+    /* Code generation */
+    char * source = generate_source(reduce, window);
 
-    char * source = generate_source(reduce, filename, window);
+    /* Output generated code */
+    char * filename = generate_filename(reduce->id, REDUCTION_CODE_FILENAME);
     printf("[REDUCTION] Printing the generated source code to file: %s\n", filename);
     print_to_file(filename, source);
+    free(filename);
     
     /* Build opencl program */
     int qid = gpu_get_query(source, 4, 1, 5);
     reduce->qid = qid;
+    free(source);
     
     /* GPU inputs and outputs setup */
     int tuple_size = reduce->input_schema->size;
