@@ -4,7 +4,7 @@
 #include <stdbool.h>
 
 #include "batch.h"
-#include "operator.h"
+#include "operators/operator.h"
 #include "window.h"
 
 /* TODO to support more than one operator */
