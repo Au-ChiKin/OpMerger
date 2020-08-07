@@ -193,7 +193,7 @@ void reduction_setup(void * reduce_ptr, int batch_size, window_p window) {
     gpu_set_kernel_reduce(qid, args1, args2);
 }
 
-void reduction_process(void * reduce_ptr, batch_p batch, int pane_size, bool is_range, batch_p output) {
+void reduction_process(void * reduce_ptr, batch_p batch, window_p window, batch_p output) {
     reduction_p reduce = (reduction_p) reduce_ptr;
     
     long args2[2];
@@ -202,9 +202,9 @@ void reduction_process(void * reduce_ptr, batch_p batch, int pane_size, bool is_
         args2[0] = -1;
         long s = batch->start;
         int  t = reduce->input_schema->size;
-        long p = pane_size;
+        long p = window->pane_size;
         if (batch->start > 0) {
-            if (is_range) {
+            if (window->type == RANGE_BASE) {
                 int offset = s - t;
                 args2[0] = batch_get_timestamp(batch, offset) / p;
             } else {

@@ -275,7 +275,7 @@ void selection_reset(void * select_ptr, int new_batch_size) {
     }
 }
 
-void selection_process(void * select_ptr, batch_p input, int pane_size, bool is_range, batch_p output) {
+void selection_process(void * select_ptr, batch_p input, window_p window, batch_p output) {
     selection_p select = (selection_p) select_ptr;
 
     int batch_size = input->size;

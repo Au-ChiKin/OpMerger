@@ -34,7 +34,7 @@ void reduction_setup(void * reduce_ptr, int batch_size, window_p window);
 
 void reduction_reset(void * reduce_ptr, int new_batch_size);
 
-void reduction_process(void * reduce_ptr, batch_p batch, int pane_size, bool is_range, batch_p output);
+void reduction_process(void * reduce_ptr, batch_p batch, window_p window, batch_p output);
 
 void reduction_print_output(batch_p outputs, int batch_size, int tuple_size);
 

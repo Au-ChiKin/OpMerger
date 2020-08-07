@@ -84,6 +84,7 @@ void query_setup(query_p query) {
 
     query->has_setup = true;
 
+    /* TODO: start a performance monitor thread */
 }
 
 void query_process(query_p query, batch_p input, batch_p output) {
@@ -99,7 +100,15 @@ void query_process(query_p query, batch_p input, batch_p output) {
     }
 
     if (query->is_merging) {
+        /* If operators have been merged, only the (new) last operator needs to be executed */
 
+        int last_op_id = query->operator_num - 1;
+
+        (* query->callbacks[last_op_id]->process) (
+            query->operators[last_op_id], 
+            input,
+            query->window,
+            output);
     } else {
         /* Create an intermediate buffer for data from operator to operator */
         u_int8_t * inter_buffer = malloc(4 * query->batch_size * 64 /* TODO: a more reasonable way to define the size */);
@@ -136,7 +145,8 @@ void query_process(query_p query, batch_p input, batch_p output) {
 
                 (* query->callbacks[i]->process) (
                     query->operators[i], 
-                    input, query->window->pane_size, query->window->type == RANGE_BASE, 
+                    input, 
+                    query->window,
                     inter);
 
                 /* Move the inter to input */
@@ -158,11 +168,14 @@ void query_process(query_p query, batch_p input, batch_p output) {
 
                 (* query->callbacks[i]->process) (
                     query->operators[i], 
-                    input, query->window->pane_size, query->window->type == RANGE_BASE,
+                    input, 
+                    query->window,
                     output);
             }
         }
     }
+
+    /* TODO: Add a measurment to the performance monitor */
 
 }
 
