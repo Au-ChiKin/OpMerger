@@ -624,35 +624,35 @@ void callback_setKernelCompact (cl_kernel kernel, gpu_config_p context, int *arg
 
 /* Data movement callbacks */
 
-void callback_readOutput (gpu_config_p context, int qid, int ndx, int mark) {
+// void callback_readOutput (gpu_config_p context, int qid, int ndx, int mark) {
 	
-	if (context->kernelOutput.outputs[ndx]->doNotMove)
-		return;
+// 	if (context->kernelOutput.outputs[ndx]->doNotMove)
+// 		return;
 	
-	/* Use the mark */
-	int size;
-	if (mark >= 0 && (! context->kernelOutput.outputs[ndx]->ignoreMark))
-		size = mark;
-	 else
-		size = context->kernelOutput.outputs[ndx]->size;
+// 	/* Use the mark */
+// 	int size;
+// 	if (mark >= 0 && (! context->kernelOutput.outputs[ndx]->ignoreMark))
+// 		size = mark;
+// 	 else
+// 		size = context->kernelOutput.outputs[ndx]->size;
 	
-	if (size > context->kernelOutput.outputs[ndx]->size) {
-		fprintf(stderr, "error: invalid mark for query's %d output buffer %d (marked %d bytes; size is %d bytes)\n",
-			qid, ndx, size, context->kernelOutput.outputs[ndx]->size);
-		exit(1);
-	}
+// 	if (size > context->kernelOutput.outputs[ndx]->size) {
+// 		fprintf(stderr, "error: invalid mark for query's %d output buffer %d (marked %d bytes; size is %d bytes)\n",
+// 			qid, ndx, size, context->kernelOutput.outputs[ndx]->size);
+// 		exit(1);
+// 	}
 	
-	/* Copy data across the JNI boundary */
-	// readMethod = (*env)->GetMethodID (env, class, "outputDataMovementCallback",  "(IIJI)V");
-	// (*env)->CallVoidMethod (
-	// 		env, obj, readMethod,
-	// 		qid,
-	// 		ndx,
-	// 		(long) (context->kernelOutput.outputs[ndx]->mapped_buffer),
-	// 		size);
+// 	/* Copy data across the JNI boundary */
+// 	// readMethod = (*env)->GetMethodID (env, class, "outputDataMovementCallback",  "(IIJI)V");
+// 	// (*env)->CallVoidMethod (
+// 	// 		env, obj, readMethod,
+// 	// 		qid,
+// 	// 		ndx,
+// 	// 		(long) (context->kernelOutput.outputs[ndx]->mapped_buffer),
+// 	// 		size);
 
-	return;
-}
+// 	return;
+// }
 
 gpu_config_p callback_execKernel(gpu_config_p config) {
 	// int i;
