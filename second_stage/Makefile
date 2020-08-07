@@ -22,7 +22,7 @@ VPATH    = $(OBJDIR)
 
 # Targets
 PROGS   = test_gcd
-SRCS = test_gcd.c openclerrorcode.c config.c helpers.c schema.c query.c batch.c window.c generators.c
+SRCS = test_gcd.c config.c helpers.c schema.c query.c batch.c window.c generators.c
 
 # Submodules
 include ./libcirbuf/cirbuf.mk
@@ -35,10 +35,10 @@ OBJECTS = $(patsubst %.c,%.o,$(SRCS))
 $(DEPDIR): ; mkdir -p $@
 $(OBJDIR): ; mkdir -p $@
 
-# Special case
-obj/openclerrorcode.o : ../clib/openclerrorcode.c obj/.deps/openclerrorcode.d | $(DEPDIR)
-		$(CC) -MT $@ -MMD -MP -MF obj/.deps/openclerrorcode.d $(CFLAGS) $(CPPFLAGS) $(TARGET_ARCH) -c \
-		$(OUTPUT_OPTION) $<
+# # Special case
+# obj/openclerrorcode.o : ../clib/openclerrorcode.c obj/.deps/openclerrorcode.d | $(DEPDIR)
+# 		$(CC) -MT $@ -MMD -MP -MF obj/.deps/openclerrorcode.d $(CFLAGS) $(CPPFLAGS) $(TARGET_ARCH) -c \
+# 		$(OUTPUT_OPTION) $<
 
 
 # Compile objects with auto dependency
