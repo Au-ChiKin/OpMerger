@@ -72,14 +72,6 @@ void gpu_config_resetKernel (gpu_config_p,
 		void (*callback)(cl_kernel, gpu_config_p, int *, long *),
 		int *, long *);
 
-// void gpu_config_waitForReadEvent (gpu_config_p);
-
-// void gpu_config_waitForWriteEvent (gpu_config_p);
-
-// void gpu_config_profileQuery (gpu_config_p);
-
-
-
 /**
  * host_addr - an array of addresses to input batches
  **/ 
@@ -105,5 +97,13 @@ void gpu_config_moveOutputBuffers (gpu_config_p config, void ** host_addr, size_
 void gpu_config_flush (gpu_config_p);
 
 void gpu_config_finish (gpu_config_p);
+
+/* Profiling related functions */
+
+void gpu_config_waitForReadEvent (gpu_config_p);
+
+void gpu_config_waitForWriteEvent (gpu_config_p);
+
+void gpu_config_profileQuery (gpu_config_p);
 
 #endif /* __GPU_CONFIG_H_ */

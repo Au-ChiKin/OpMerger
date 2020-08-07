@@ -229,23 +229,30 @@ static int gpu_query_exec_1 (
 	query_operator_p operator, 
 	void ** input_batches, void ** output_batches, size_t addr_size) {
 	
+	/* There is only one config for this prototype */
 	// gpu_config_p config = gpu_switch_config(query);
-	/* There is only one config */
 	gpu_config_p config = query->configs[0];
 
 	/* Write input */
 	gpu_config_moveInputBuffers (config, input_batches, addr_size);
 	
-	/* execute */
+	/* Execute */
 	if (operator->configure != NULL) {
 		gpu_config_configureKernel (config, operator->configure, operator->args1, operator->args2);
 	}
 	gpu_config_submitKernel (config, threads, threadsPerGroup);
 
-	/* output and clean up */
+	/* Output */
 	gpu_config_moveOutputBuffers (config, output_batches, addr_size);
+	
+	/* Clean up */
 	gpu_config_flush (config);
 	gpu_config_finish(config);
+
+#ifdef GPU_PROFILE
+	/* Profiling */
+	gpu_config_profileQuery (config);
+#endif
 
 	return 0;
 }

@@ -317,9 +317,9 @@ void gpu_config_moveOutputBuffers (gpu_config_p config, void ** host_addr, size_
 	return;
 }
 
-// void gpu_context_readOutput (gpuContextP q,
-// 	void (*callback)(gpuContextP, JNIEnv *, jobject, int, int, int),
-// 	JNIEnv *env, jobject obj, int qid) {
+/* TODO: could use these (readOutput + callback_readOut) to understand the usage of Mark
+   But not that useful for use*/
+// void gpu_context_readOutput (gpu_config_p q, int qid) {
 
 // 	int idx;
 // 	/* Find mark */
@@ -346,10 +346,87 @@ void gpu_config_moveOutputBuffers (gpu_config_p config, void ** host_addr, size_
 // 	// fprintf(stdout, "[DBG] mark is %10d\n", mark);
 // 	// fflush(stdout);
 
-// 	for (idx = 0; idx < q->kernelOutput.count; idx++)
-// 		(*callback) (q, env, obj, qid, idx, mark);
+// 	/* Use the mark */
+// 	int size;
+// 	if (mark >= 0 && (! q->kernelOutput.outputs[idx]->ignoreMark))
+// 		size = mark;
+// 	 else
+// 		size = q->kernelOutput.outputs[idx]->size;
+	
+// 	if (size > q->kernelOutput.outputs[idx]->size) {
+// 		fprintf(stderr, "error: invalid mark for query's %d output buffer %d (marked %d bytes; size is %d bytes)\n",
+// 			qid, idx, size, q->kernelOutput.outputs[idx]->size);
+// 		exit(1);
+// 	}
+
+// 	/* Not going to call the callback function */
+// 	// for (idx = 0; idx < q->kernelOutput.count; idx++)
+// 	// 	(*callback) (q, env, obj, qid, idx, mark);
 
 // 	return;
 // }
 
 
+#ifdef GPU_PROFILE
+static unsigned first = 1;
+static cl_ulong reference = 0;
+
+static float normalise (cl_ulong p, cl_ulong q) {
+	float result = ((float) (p - q) / 1000.);
+	return result;
+}
+
+static void printEventProfilingInfo (cl_event event, const char *acronym) {
+	cl_ulong q, s, x, f; /* queued, submitted, start, and finish timestamps */
+	float   _q,_s,_x,_f;
+	int error = 0;
+	error |= clGetEventProfilingInfo(event, CL_PROFILING_COMMAND_QUEUED, sizeof(cl_ulong), &q, NULL);
+	error |= clGetEventProfilingInfo(event, CL_PROFILING_COMMAND_SUBMIT, sizeof(cl_ulong), &s, NULL);
+	error |= clGetEventProfilingInfo(event, CL_PROFILING_COMMAND_START,  sizeof(cl_ulong), &x, NULL);
+	error |= clGetEventProfilingInfo(event, CL_PROFILING_COMMAND_END,    sizeof(cl_ulong), &f, NULL);
+
+	if (first) {
+		reference = q;
+		first = 0;
+	}
+
+	_q = normalise (q, reference);
+	_s = normalise (s, reference);
+	_x = normalise (x, reference);
+	_f = normalise (f, reference);
+
+	fprintf(stdout, "[PRF] %5s\tq %10.1f\ts %10.1f\t x %10.1f\t f %10.1f t %10.1f\n", 
+		acronym, _q, _s, _x, _f, ((float) (f - x)) / 1000.);
+}
+
+void gpu_config_profileQuery (gpu_config_p q) {
+	/*
+	 * This method should be called after we wait for the the read event.
+	 *
+	 * If the latter returns with no errors (CL_SUCCESS), then the query
+	 * kernels have been executed successfully as well.
+	 */
+	char msg[64];
+	int i;
+	int error = 0;
+	printEventProfilingInfo(q->write_event, "W");
+	error = clReleaseEvent(q->write_event);
+	if (error != CL_SUCCESS) {
+		fprintf(stderr, "warning: failed to release write event (%s)\n", __FUNCTION__);
+	}
+	for (i = 0; i < q->kernel.count; i++) {
+		memset(msg, 0, 64);
+		sprintf(msg, "K%02d", i);
+		printEventProfilingInfo(q->exec_event[i], msg);
+		error = clReleaseEvent(q->exec_event[i]);
+		if (error != CL_SUCCESS) {
+			fprintf(stderr, "warning: failed to release kernel event (%s)\n", __FUNCTION__);
+		}
+	}
+	printEventProfilingInfo(q->read_event, "R");
+	error = clReleaseEvent(q->read_event);
+	if (error != CL_SUCCESS) {
+		fprintf(stderr, "warning: failed to release read event (%s)\n", __FUNCTION__);
+	}
+}
+#endif

@@ -3,6 +3,7 @@
 
 #include "gpu_config.h"
 #include "gpu_agg.h"
+// #include "resulthandler.h"
 
 typedef struct gpu_query *gpu_query_p;
 typedef struct gpu_query {
@@ -13,17 +14,20 @@ typedef struct gpu_query {
 	cl_context  context;
 	cl_program  program;
 	
+	/* It seems that resultHandler is a thread created to monitor the performance of GPU but
+	   it is only used when there is a join (i.e. the exce2 is used) */
 	// resultHandlerP handler;
 
 	int ndx; // which config this query is currently using
-	gpu_config_p configs [NCONTEXTS]; /* keeps the configuration for a device that runs this query */
+	gpu_config_p configs [NCONTEXTS]; // each config (i.e. context in Saber) has two command queues. 
+	// Therefore when there are multiple configs, the higher layer can arrange (execute) the input and 
+	// output while the other congfigs is processing the data. Because this prototype does not aim for
+	// maximum efficiency, we could disable this functionality for now.
 
 } gpu_query_t;
 
 /* Constractor */
 gpu_query_p gpu_query_new (int, cl_device_id, cl_context, const char *, int, int, int);
-
-// void gpu_query_init (gpu_query_p, JNIEnv *, int);
 
 // void gpu_query_setResultHandler (gpu_query_p, resultHandlerP);
 
