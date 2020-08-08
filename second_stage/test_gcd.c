@@ -81,12 +81,12 @@ void run_processing_gpu(
                 schema_add_attr(schema1, TYPE_INT);   /* constraints */
                 printf("[MAIN] Created a schema of size %d\n", schema1->size);
 
-                /* Construct a select: where column 6 (category) == 1 */
+                /* Construct a select: where column 6 (category) == 0 */
                 int col1 = 6;
 
                 enum comparor com1 = EQUAL;
 
-                int i1 = 1;
+                int i1 = 0;
                 ref_value_p val1 = ref_value();
                 val1->i = &i1;
                 
@@ -250,7 +250,7 @@ void run_processing_gpu(
              * Query 2 - variant:
              *     select timestamp, category, sum(cpu) as totalCpu
              *     from TaskEvents [range 60 slide 1]
-             *     where category == 1
+             *     where category == 0
              * 
              * Output becomes
              * output: CPUusageForCategory1
@@ -276,7 +276,7 @@ void run_processing_gpu(
                 schema_add_attr(schema1, TYPE_INT);   /* constraints */
                 printf("[MAIN] Created a schema of size %d\n", schema1->size);
 
-                /* Construct a select: where column 6 (category) == 1 */
+                /* Construct a select: where column 6 (category) == 0 */
                 int col1 = 6;
 
                 enum comparor com1 = EQUAL;
@@ -321,6 +321,8 @@ void run_processing_gpu(
 }
 
 void print_tuples(cbuf_handle_t cbufs [], int n) {
+    float sum = 0;
+
     printf("[MAIN] Printing %d tuples as sample\n", n);
     for (int i=0; i<n; i++) {
         input_t tuple;
@@ -332,6 +334,12 @@ void print_tuples(cbuf_handle_t cbufs [], int n) {
             tuple.tuple.category,
             tuple.tuple.priority,
             tuple.tuple.cpu);
+
+        sum += tuple.tuple.cpu;
+        if (i % 32 == 31) {
+            printf("Sum is %09.5f\n", sum);
+            sum = 0;
+        }
     }
     printf("       ......\n");
 }
