@@ -2,6 +2,17 @@
 
 #include <stdlib.h>
 
+batch_p batch(int size, long start, long end, u_int8_t * buffer) {
+    batch_p batch = (batch_p) malloc(sizeof(batch_t));
+
+    batch->start = start;
+    batch->end = end;
+    batch->size = size;
+    batch->buffer = buffer;
+
+    return batch;    
+}
+
 long batch_get_timestamp(batch_p batch, int offset) {
     union long_u {
         long value;

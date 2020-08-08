@@ -29,33 +29,15 @@ void run_processing_gpu(
     u_int8_t * result, 
     enum test_cases mode, bool is_merging, bool is_debug) {
     
-    u_int8_t * batch [8812];
     /* TODO extend the batch struct into a real memoery manager that could create a batch 
     according to the start and end pointer */
-    batch_t wrapped_input [8812];
     batch_p input [8812];
     for (int b=0; b<buffer_num; b++) {
-        batch[b] = buffers[b];
-        {
-            wrapped_input[b].start = 0;
-            /* TODO: Move this outside of this function */
-            wrapped_input[b].end = buffer_size * TUPLE_SIZE;
-            wrapped_input[b].size = buffer_size;
-            wrapped_input[b].buffer = batch[b];
-        }
-        input[b] = &wrapped_input[b];
+        input[b] = batch(buffer_size, 0, buffer_size * TUPLE_SIZE, buffers[b]);
     }
 
     /* TODO: dynmaically decide the output buffer size */
-    batch_t wrapped_output;
-    {
-        wrapped_output.start = 0;
-        /* Move this outside of this function */
-        wrapped_output.end = 4 * buffer_size * TUPLE_SIZE;
-        wrapped_output.size = 4 * buffer_size;
-        wrapped_output.buffer = result;
-    }
-    batch_p output = &wrapped_output;
+    batch_p output = batch(4 * buffer_size, 0, 4 * buffer_size * TUPLE_SIZE, result);
 
     int const query_num = 2;
     gpu_init(query_num);
@@ -314,6 +296,12 @@ void run_processing_gpu(
             break;
         default: 
             break; 
+    }
+
+    free(output);
+
+    for (int b=0; b<buffer_num; b++) {
+        free(input[b]);
     }
 
     gpu_free();
