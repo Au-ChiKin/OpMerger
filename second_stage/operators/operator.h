@@ -17,7 +17,7 @@ enum operator_types {
 /* A collection of operator callbacks */
 typedef struct opmerger_operator * operator_p;
 typedef struct opmerger_operator {
-    void (* setup) (void * operator, int batch_size, window_p window);
+    void (* setup) (void * operator, int batch_size, window_p window, char const * patch);
     void (* process) (void * operator, batch_p input, window_p window, batch_p output);
     void (* process_output) (void * operator, batch_p output);
     void (* reset) (void * operator, int new_batch_size);
