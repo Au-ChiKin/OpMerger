@@ -21,8 +21,8 @@
 /* Input data of interest from files */
 void read_input_buffers(cbuf_handle_t cbufs [], int buffer_num);
 
-/* Print out 10 tuples for debug */
-void print_10_tuples(cbuf_handle_t cbufs []);
+/* Print out n tuples for debug */
+void print_tuples(cbuf_handle_t cbufs [], int n);
 
 void run_processing_gpu(
     u_int8_t * buffers [], int buffer_size, int buffer_num,
@@ -408,7 +408,7 @@ int main(int argc, char * argv[]) {
     bool is_merging = false;
     bool is_debug = false;
     int work_load = 1; // default to be 1MB
-    enum test_cases mode = MERGED_AGGREGATION;
+    enum test_cases mode = SELECTION;
 
     parse_arguments(argc, argv, &mode, &work_load, &is_merging, &is_debug);
 
