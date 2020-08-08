@@ -42,26 +42,26 @@ void run_processing_gpu(
     int const query_num = 2;
     gpu_init(query_num);
 
+    /* Construct schemas */
+    schema_p schema1 = schema();
+    schema_add_attr(schema1, TYPE_LONG);  /* time_stamp */
+    schema_add_attr(schema1, TYPE_LONG);  /* job_id */
+    schema_add_attr(schema1, TYPE_LONG);  /* task_id */
+    schema_add_attr(schema1, TYPE_LONG);  /* machine_id */
+    schema_add_attr(schema1, TYPE_INT);   /* user_id */
+    schema_add_attr(schema1, TYPE_INT);   /* event_type */
+    schema_add_attr(schema1, TYPE_INT);   /* category */
+    schema_add_attr(schema1, TYPE_INT);   /* priority */
+    schema_add_attr(schema1, TYPE_FLOAT); /* cpu */
+    schema_add_attr(schema1, TYPE_FLOAT); /* ram */
+    schema_add_attr(schema1, TYPE_FLOAT); /* disk */
+    schema_add_attr(schema1, TYPE_INT);   /* constraints */
+
     /* simplified query creation */
     switch (mode) {
         case SELECTION: 
             fprintf(stdout, "========== Running selection test ===========\n");
             {
-                /* Construct schemas */
-                schema_p schema1 = schema();
-                schema_add_attr(schema1, TYPE_LONG);  /* time_stamp */
-                schema_add_attr(schema1, TYPE_LONG);  /* job_id */
-                schema_add_attr(schema1, TYPE_LONG);  /* task_id */
-                schema_add_attr(schema1, TYPE_LONG);  /* machine_id */
-                schema_add_attr(schema1, TYPE_INT);   /* user_id */
-                schema_add_attr(schema1, TYPE_INT);   /* event_type */
-                schema_add_attr(schema1, TYPE_INT);   /* category */
-                schema_add_attr(schema1, TYPE_INT);   /* priority */
-                schema_add_attr(schema1, TYPE_FLOAT); /* cpu */
-                schema_add_attr(schema1, TYPE_FLOAT); /* ram */
-                schema_add_attr(schema1, TYPE_FLOAT); /* disk */
-                schema_add_attr(schema1, TYPE_INT);   /* constraints */
-
                 /* Construct a select: where column 6 (category) == 0 */
                 int col1 = 6;
 
@@ -97,21 +97,6 @@ void run_processing_gpu(
         case REDUCTION: 
             fprintf(stdout, "========== Running reduction test ===========\n");
             {
-                /* Construct schemas */
-                schema_p schema1 = schema();
-                schema_add_attr(schema1, TYPE_LONG);  /* time_stamp */
-                schema_add_attr(schema1, TYPE_LONG);  /* job_id */
-                schema_add_attr(schema1, TYPE_LONG);  /* task_id */
-                schema_add_attr(schema1, TYPE_LONG);  /* machine_id */
-                schema_add_attr(schema1, TYPE_INT);   /* user_id */
-                schema_add_attr(schema1, TYPE_INT);   /* event_type */
-                schema_add_attr(schema1, TYPE_INT);   /* category */
-                schema_add_attr(schema1, TYPE_INT);   /* priority */
-                schema_add_attr(schema1, TYPE_FLOAT); /* cpu */
-                schema_add_attr(schema1, TYPE_FLOAT); /* ram */
-                schema_add_attr(schema1, TYPE_FLOAT); /* disk */
-                schema_add_attr(schema1, TYPE_INT);   /* constraints */
-
                 /* Construct a reduce: sum column 8 (cpu) */
                 int col1 = 8;
 
@@ -139,21 +124,6 @@ void run_processing_gpu(
         case TWO_SELECTION: 
             fprintf(stdout, "========== Running separate selection test ===========\n");
             {
-                /* Construct schemas */
-                schema_p schema1 = schema();
-                schema_add_attr(schema1, TYPE_LONG);  /* time_stamp */
-                schema_add_attr(schema1, TYPE_LONG);  /* job_id */
-                schema_add_attr(schema1, TYPE_LONG);  /* task_id */
-                schema_add_attr(schema1, TYPE_LONG);  /* machine_id */
-                schema_add_attr(schema1, TYPE_INT);   /* user_id */
-                schema_add_attr(schema1, TYPE_INT);   /* event_type */
-                schema_add_attr(schema1, TYPE_INT);   /* category */
-                schema_add_attr(schema1, TYPE_INT);   /* priority */
-                schema_add_attr(schema1, TYPE_FLOAT); /* cpu */
-                schema_add_attr(schema1, TYPE_FLOAT); /* ram */
-                schema_add_attr(schema1, TYPE_FLOAT); /* disk */
-                schema_add_attr(schema1, TYPE_INT);   /* constraints */
-
                 /* Construct a select: where column 5 (eventType) == 0 */
                 int col1 = 5;
 
@@ -241,21 +211,6 @@ void run_processing_gpu(
              **/
             fprintf(stdout, "========== Running query2 of google cluster dataset ===========\n");
             {
-                /* Construct schemas */
-                schema_p schema1 = schema();
-                schema_add_attr(schema1, TYPE_LONG);  /* time_stamp */
-                schema_add_attr(schema1, TYPE_LONG);  /* job_id */
-                schema_add_attr(schema1, TYPE_LONG);  /* task_id */
-                schema_add_attr(schema1, TYPE_LONG);  /* machine_id */
-                schema_add_attr(schema1, TYPE_INT);   /* user_id */
-                schema_add_attr(schema1, TYPE_INT);   /* event_type */
-                schema_add_attr(schema1, TYPE_INT);   /* category */
-                schema_add_attr(schema1, TYPE_INT);   /* priority */
-                schema_add_attr(schema1, TYPE_FLOAT); /* cpu */
-                schema_add_attr(schema1, TYPE_FLOAT); /* ram */
-                schema_add_attr(schema1, TYPE_FLOAT); /* disk */
-                schema_add_attr(schema1, TYPE_INT);   /* constraints */
-
                 /* Construct a select: where column 6 (category) == 0 */
                 int col1 = 6;
 
