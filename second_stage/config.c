@@ -5,7 +5,7 @@
 #include <unistd.h>
 #include <stdlib.h>
 
-void parse_arguments(int argc, char * argv[], enum test_cases * mode, int * work_load, bool * is_merging) {
+void parse_arguments(int argc, char * argv[], enum test_cases * mode, int * work_load, bool * is_merging, bool * is_debug) {
 	extern char *optarg;
 	extern int optind;
 	int c, err = 0; 
@@ -17,7 +17,8 @@ void parse_arguments(int argc, char * argv[], enum test_cases * mode, int * work
 	while ((c = getopt(argc, argv, "dm:l:f")) != -1) {
 		switch (c) {
             case 'd':
-                debug = 1;
+                // debug = 1;
+                *is_debug = true;
                 break;
             case 'm':
                 mflag = 1;
