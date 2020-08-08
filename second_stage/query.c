@@ -73,13 +73,13 @@ void query_setup(query_p query) {
 
         /* Set up the last operator with the patch func */
         int last_idx = query->operator_num-1;
-        (* query->callbacks[last_idx]->setup) (query->operators[last_idx], query->batch_size, query->window);
+        (* query->callbacks[last_idx]->setup) (query->operators[last_idx], query->batch_size, query->window, patch_func);
     } else {
         /* If not merging, then set up the operator one by one */
 
         /* TODO: there is no checking of whether the operators[i] matches the callbacks[i] */
         for (int i=0; i<query->operator_num; i++) {
-            (* query->callbacks[i]->setup) (query->operators[i], query->batch_size, query->window);
+            (* query->callbacks[i]->setup) (query->operators[i], query->batch_size, query->window, NULL);
         }
     }
 

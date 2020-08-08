@@ -30,7 +30,7 @@ typedef struct reduction {
 
 reduction_p reduction(schema_p input_schema, int ref);
 
-void reduction_setup(void * reduce_ptr, int batch_size, window_p window);
+void reduction_setup(void * reduce_ptr, int batch_size, window_p window, char const * patch);
 
 void reduction_reset(void * reduce_ptr, int new_batch_size);
 

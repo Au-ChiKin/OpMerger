@@ -93,13 +93,13 @@ void selection_generate_patch(void * select_ptr, char * patch) {
     for (int i = 0; i < predicate_num; i++) {
 
         if (select->value->i != NULL) {
-            _sprintf("    int attr_%d = p->tuple._%d;\n", select->id, select->ref);
+            _sprintf("    int attr_%d = in->tuple._%d;\n", select->id, select->ref);
         } else if (select->value->l != NULL) {
-            _sprintf("    long attr_%d = p->tuple._%d;\n", select->id, select->ref);
+            _sprintf("    long attr_%d = in->tuple._%d;\n", select->id, select->ref);
         } else if (select->value->f != NULL) {
-            _sprintf("    float attr_%d = p->tuple._%d;\n", select->id, select->ref);
+            _sprintf("    float attr_%d = in->tuple._%d;\n", select->id, select->ref);
         } else if (select->value->c != NULL) {
-            _sprintf("    char attr_%d = p->tuple._%d;\n", select->id, select->ref);
+            _sprintf("    char attr_%d = in->tuple._%d;\n", select->id, select->ref);
         } else {
             exit(1);
         }
@@ -282,7 +282,7 @@ static char * generate_source(selection_p select) {
     return source;
 }
 
-void selection_setup(void * select_ptr, int batch_size, window_p window) {
+void selection_setup(void * select_ptr, int batch_size, window_p window, char const * patch) {
     selection_p select = (selection_p) select_ptr;
 
     int tuple_size = select->input_schema->size;

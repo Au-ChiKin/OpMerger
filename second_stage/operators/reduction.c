@@ -9,7 +9,7 @@
 #include "libgpu/gpu_agg.h"
 #include "generators.h"
 
-#define MAX_LINE_LENGTH 128
+#define MAX_LINE_LENGTH 256
 #define _sprintf(format, __VA_ARGS__...) \
 {\
     sprintf(s, format, __VA_ARGS__);\
@@ -48,7 +48,7 @@ reduction_p reduction(schema_p input_schema, int ref) {
     return p;    
 }
 
-static char * generate_reducef (reduction_p reduce) {
+static char * generate_reducef (reduction_p reduce, char const * patch) {
     char * ret = (char *) malloc(512 * sizeof(char)); *ret = '\0';
     char s [MAX_LINE_LENGTH] = "";
     int i;
@@ -62,10 +62,18 @@ static char * generate_reducef (reduction_p reduce) {
     /* Reserve for select */
     _sprintf("    int flag = 1;\n\n", NULL);
 
+    /* Insert patch */
+    if (patch) {
+        _sprintf(patch, NULL);
+    }
+
     /* Set timestamp */
     _sprintf("    out->tuple.t = (out->tuple.t == 0) ? : in->tuple.t;\n", NULL);
+    // _sprintf("    if (out->tuple.t == 0 || (out->tuple.t != 0 && out->tuple.t > in->tuple.t)) {\n", NULL);
+    // _sprintf("        out->tuple.t = in->tuple.t;\n", NULL);
+    // _sprintf("    }\n", NULL);
 
-    /* Aggregationo */
+    /* Aggregation */
     for (i = 0; i < aggregation_num; ++i) {
         
         int column = reduce->ref;
@@ -76,7 +84,8 @@ static char * generate_reducef (reduction_p reduce) {
         //     break;
         // case SUM:
         // case AVG:
-            _sprintf("    out->tuple._%d += in->tuple._%d * flag;\n", (i + 1), column);
+            _sprintf("    out->tuple._%d += in->tuple._%d * (float) flag;\n", (i + 1), column);
+            // _sprintf("    printf(\"Adding in->tuple.t->%%ld which has in->tuple._1->%%f and out->tuple._1->%%f\\n\", in->tuple.t, in->tuple._8 * flag, out->tuple._1);\n", NULL);
         //     break;
         // case MIN:
         //     _sprintf("    p->tuple._%d = (p->tuple._%d > __bswapfp(q->tuple._%d)) ? __bswapfp(q->tuple._%d) : p->tuple._%d;\n", 
@@ -92,7 +101,7 @@ static char * generate_reducef (reduction_p reduce) {
     }
 
     /* Increase counter */
-    _sprintf("    out->tuple._%d += 1;\n", (i + 1));
+    _sprintf("    out->tuple._%d += 1 * flag;\n", (i + 1));
     _sprintf("}\n", NULL);
     
     _sprintf("\n", NULL);
@@ -172,7 +181,7 @@ static char * generate_reducef (reduction_p reduce) {
 // }
 
 
-static char * generate_source(reduction_p reduce, window_p window) {
+static char * generate_source(reduction_p reduce, window_p window, char const * patch) {
     char * source = (char *) malloc(MAX_SOURCE_LENGTH * sizeof(char)); *source = '\0';
 
     char * extensions = read_file("cl/templates/extensions.cl");
@@ -191,7 +200,7 @@ static char * generate_source(reduction_p reduce, window_p window) {
     char * windows = generate_window_definition(window);
 
     /* Inline functions */
-    char * reducef = generate_reducef(reduce);
+    char * reducef = generate_reducef(reduce, patch);
 
     // printf("------- Generated reducef is:\n%s", reducef);
 
@@ -249,7 +258,7 @@ inline void copyf (__local output_t *p, __global output_t *q) {\n\
     return source;
 }
 
-void reduction_setup(void * reduce_ptr, int batch_size, window_p window) {
+void reduction_setup(void * reduce_ptr, int batch_size, window_p window, char const * patch) {
     reduction_p reduce = (reduction_p) reduce_ptr;
 
     /* Operator setup */
@@ -268,7 +277,7 @@ void reduction_setup(void * reduce_ptr, int batch_size, window_p window) {
     reduce->output_entries[1] = 20;
 
     /* Code generation */
-    char * source = generate_source(reduce, window);
+    char * source = generate_source(reduce, window, patch);
 
     /* Output generated code */
     char * filename = generate_filename(reduce->id, REDUCTION_CODE_FILENAME);
@@ -383,7 +392,12 @@ void reduction_print_output(batch_p outputs, int batch_size, int tuple_size) {
     printf("[Results] Closing Windows: %d    Pending Windows: %d    Complete Windows: %d    Opening Windows: %d    Mark: %d\n",
         window_counts[0], window_counts[1], window_counts[2], window_counts[3], window_counts[4]);
     printf("[Results] Tuple    Timestamp    Sum        Count\n");
-    for (int i=0; i<10; i++) {
+
+    int out_num = 10;
+    if (out_num > window_counts[4] / 16) {
+        out_num = window_counts[4] / 16;
+    }
+    for (int i=0; i<out_num; i++) {
         printf("[Results] %-8d %-12ld %09.5f  %d\n", i, output->t, output->_1, output->_2);
         output += 1;
     }
