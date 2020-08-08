@@ -424,7 +424,8 @@ __kernel void reduceKernel (
         }
 
         /* Write value to scratch memory */
-        __local output_t *cached_tuple = (__local output_t *) &scratch[lid * sizeof(output_t)];
+        __local output_t *cached_tuple = (__local output_t *) &scratch[lid * sizeof(output_t)]; 
+        /* ZO: each thread has a position to store the temp result */
         cachef (&tuple, cached_tuple);
 
         barrier(CLK_LOCAL_MEM_FENCE);
