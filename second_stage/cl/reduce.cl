@@ -54,25 +54,23 @@ inline void initf (__local output_t *p) {
     p->tuple._2 = 0;
 }
 
-// inline int selectf (__global input_t *in) {
-//     int value = 1;
-//     int attribute_value = in->tuple._7; /* where category == 1*/
-//     value = value & (attribute_value == 9); 
-//     return value;
-// }
+/* Projection */
+/* r */ inline float transformf (float input) {
+    /* r */ return input;
+/* r */ }
 
 /* r */ inline void reducef (__local output_t *out, __global input_t *in) {
 
     /* r */ int flag = 1;
 
-    /* Selection */
-    // int attribute_value = in->tuple._7; /* where category == 1*/
-    // flag = flag & (attribute_value == 9);
+            /* Selection */
+            // int attribute_value = in->tuple._7; /* where category == 1*/
+            // flag = flag & (attribute_value == 9);
 
     /* Reduce */
     /* r */ out->tuple.t = (out->tuple.t == 0) ? : in->tuple.t;
-    out->tuple._1 += in->tuple._8 * flag;
-    /* r */ out->tuple._2 += 1;
+            out->tuple._1 += transformf(in->tuple._8) * flag;
+    /* r */ out->tuple._2 += 1 * flag;
 /* r */ }
 
 inline void cachef (__local output_t *p, __local output_t *q) {
