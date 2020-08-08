@@ -423,7 +423,7 @@ void selection_print_output(selection_p select, batch_p outputs) {
 }
 
 void selection_process_output (void * select_ptr, batch_p outputs) {
-    printf("[SELECTION] Processing output\n");
+    // printf("[SELECTION] Processing output\n");
 
     selection_p select = (selection_p) select_ptr;
 
@@ -435,26 +435,13 @@ void selection_process_output (void * select_ptr, batch_p outputs) {
     for (int i=0; i<work_group_num; i++) {
         count += partitions[i];
     }
-    printf("[SELECTION] This output has tuples %d\n", count);
-    /* TODO: replace it with the least power of 2 number that bigger than count */
-    // if ()
-
-    /* TODO: initialise the extra tuples */
+    // printf("[SELECTION] This output has tuples %d\n", count);
 
     /* Update pointers to use only the output array (tuples) and exclude flags and partitions */
     outputs->start += select->output_entries[2];
 
-    // outputs->size = count;
-    if (count > 4096) {
-        outputs->size = 4096;
-    } else if (count > 2048) {
-        outputs->size = 2048;
-    } else if (count > 1024) {
-        outputs->size = 1024;
-    } else if (count > 512) {
-        outputs->size = 512;
-    } else if (count > 256) {
-        outputs->size = 256;
+    if (count >= 256) {
+        outputs->size = count / 256 * 256;
     } else if (count > 128) {
         outputs->size = 128;
     } else if (count > 64) {
