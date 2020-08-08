@@ -43,7 +43,6 @@ reduction_p reduction(schema_p input_schema, int ref) {
         schema_add_attr (p->output_schema, TYPE_FLOAT);
         schema_add_attr (p->output_schema, TYPE_INT);
     }
-    printf("Created output schema of size %d\n", p->output_schema->size);
 
     return p;    
 }
@@ -68,10 +67,7 @@ static char * generate_reducef (reduction_p reduce, char const * patch) {
     }
 
     /* Set timestamp */
-    _sprintf("    out->tuple.t = (out->tuple.t == 0) ? : in->tuple.t;\n", NULL);
-    // _sprintf("    if (out->tuple.t == 0 || (out->tuple.t != 0 && out->tuple.t > in->tuple.t)) {\n", NULL);
-    // _sprintf("        out->tuple.t = in->tuple.t;\n", NULL);
-    // _sprintf("    }\n", NULL);
+    _sprintf("    out->tuple.t = (out->tuple.t > in->tuple.t) ? out->tuple.t : in->tuple.t;\n", NULL);
 
     /* Aggregation */
     for (i = 0; i < aggregation_num; ++i) {
@@ -85,7 +81,6 @@ static char * generate_reducef (reduction_p reduce, char const * patch) {
         // case SUM:
         // case AVG:
             _sprintf("    out->tuple._%d += in->tuple._%d * (float) flag;\n", (i + 1), column);
-            // _sprintf("    printf(\"Adding in->tuple.t->%%ld which has in->tuple._1->%%f and out->tuple._1->%%f\\n\", in->tuple.t, in->tuple._8 * flag, out->tuple._1);\n", NULL);
         //     break;
         // case MIN:
         //     _sprintf("    p->tuple._%d = (p->tuple._%d > __bswapfp(q->tuple._%d)) ? __bswapfp(q->tuple._%d) : p->tuple._%d;\n", 
@@ -212,13 +207,16 @@ static char * generate_source(reduction_p reduce, window_p window, char const * 
     p->tuple._2 = 0;\n\
 }\n\
 \n\
-inline void cachef (__local output_t *p, __local output_t *q) {\n\
-    q->vectors[0] = p->vectors[0];\n\
+inline void cachef (__local output_t * tuple, __local output_t * cache) {\n\
+    cache->vectors[0] = tuple->vectors[0];\n\
 }\n\
 \n\
-inline void mergef (__local output_t *p, __local output_t *q) {\n\
-    p->tuple._1 += q->tuple._1;\n\
-    p->tuple._2 += q->tuple._2;\n\
+inline void mergef (__local output_t * mine, __local output_t * other) {\n\
+    if (mine->tuple.t < other->tuple.t) {\n\
+        mine->tuple.t = other->tuple.t;\n\
+    }\n\
+    mine->tuple._1 += other->tuple._1;\n\
+    mine->tuple._2 += other->tuple._2;\n\
 }\n\
 \n\
 inline void copyf (__local output_t *p, __global output_t *q) {\n\
@@ -314,11 +312,6 @@ void reduction_setup(void * reduce_ptr, int batch_size, window_p window, char co
     args1[2] = PARTIAL_WINDOWS; 
     args1[3] = 16 * MAX_THREADS_PER_GROUP; /* local cache size */
 
-    fprintf(stderr, "args1 0: %d\n", args1[0]);
-    fprintf(stderr, "args1 1: %d\n", args1[1]);
-    fprintf(stderr, "args1 2: %d\n", args1[2]);
-    fprintf(stderr, "args1 3: %d\n", args1[3]);
-
     long args2 [2];
     args2[0] = 0; /* Previous pane id   */
     args2[1] = 0; /* Batch start offset */
@@ -393,7 +386,7 @@ void reduction_print_output(batch_p outputs, int batch_size, int tuple_size) {
         window_counts[0], window_counts[1], window_counts[2], window_counts[3], window_counts[4]);
     printf("[Results] Tuple    Timestamp    Sum        Count\n");
 
-    int out_num = 10;
+    int out_num = 100;
     if (out_num > window_counts[4] / 16) {
         out_num = window_counts[4] / 16;
     }
@@ -429,12 +422,6 @@ void reduction_reset(void * reduce_ptr, int new_batch_size) {
     args1[1] = new_batch_size * tuple_size; /* input size */
     args1[2] = PARTIAL_WINDOWS; 
     args1[3] = 16 * MAX_THREADS_PER_GROUP; /* local cache size */
-
-    fprintf(stderr, "After reset\n");
-    fprintf(stderr, "args1 0: %d\n", args1[0]);
-    fprintf(stderr, "args1 1: %d\n", args1[1]);
-    fprintf(stderr, "args1 2: %d\n", args1[2]);
-    fprintf(stderr, "args1 3: %d\n", args1[3]);
 
     long args2 [2];
     args2[0] = 0; /* Previous pane id   */
