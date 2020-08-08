@@ -2,6 +2,7 @@
 
 #include <stdio.h>
 #include <string.h>
+#include <math.h>
 
 #include "libgpu/gpu_agg.h"
 
@@ -158,32 +159,37 @@ void selection_generate_patch(void * select_ptr, char * patch) {
     
 }
 
-static char * generate_selectf(selection_p select) {
+static char * generate_selectf(selection_p select, char const * patch) {
     char * ret = (char *) malloc(1024 * sizeof(char)); *ret = '\0';
     char s [128] = "";
 
     /* TODO: support multiple predicates */
     int const predicate_num = 1;
 
-    _sprintf("inline int selectf (__global input_t *p) {\n", NULL);
-    _sprintf("    int value = 1;\n", NULL);
+    _sprintf("inline int selectf (__global input_t *in) {\n", NULL);
+    _sprintf("    int flag = 1;\n\n", NULL);
+
+    if (patch) {
+        _sprintf(patch, NULL);
+    }
+
     for (int i = 0; i < predicate_num; i++) {
 
         if (select->value->i != NULL) {
-            _sprintf("    int attr_%d = p->tuple._%d;\n", select->id, select->ref);
+            _sprintf("    int attr_%d = in->tuple._%d;\n", select->id, select->ref);
         } else if (select->value->l != NULL) {
-            _sprintf("    long attr_%d = p->tuple._%d;\n", select->id, select->ref);
+            _sprintf("    long attr_%d = in->tuple._%d;\n", select->id, select->ref);
         } else if (select->value->f != NULL) {
-            _sprintf("    float attr_%d = p->tuple._%d;\n", select->id, select->ref);
+            _sprintf("    float attr_%d = in->tuple._%d;\n", select->id, select->ref);
         } else if (select->value->c != NULL) {
-            _sprintf("    char attr_%d = p->tuple._%d;\n", select->id, select->ref);
+            _sprintf("    char attr_%d = in->tuple._%d;\n", select->id, select->ref);
         } else {
             exit(1);
         }
         
         /* Conditions */
         {
-            _sprintf("    value = value & ", NULL);
+            _sprintf("    flag = flag & ", NULL);
 
             _sprintf("(attr_%d ", select->id);
 
@@ -224,20 +230,20 @@ static char * generate_selectf(selection_p select) {
             }
 
             if (i == predicate_num - 1) {
-                _sprintf(";\n", NULL);
+                _sprintf(";\n\n", NULL);
             } else {
                 _sprintf(" & ", NULL);
             }
         }
     }
-    _sprintf("    return value;\n", NULL);
+    _sprintf("    return flag;\n", NULL);
 
     _sprintf("}\n\n", NULL);
 
     return ret;    
 }
 
-static char * generate_source(selection_p select) {
+static char * generate_source(selection_p select, char const * patch) {
     char * source = (char *) malloc(1024 * 10 * sizeof(char));
 
     char * extensions = read_file("cl/templates/extensions.cl");
@@ -252,7 +258,7 @@ static char * generate_source(selection_p select) {
     char * output_tuple = generate_output_tuple(select->output_schema, NULL, 16);
 
     /* Inline function */
-    char * selectf = generate_selectf(select);
+    char * selectf = generate_selectf(select, patch);
 
     /* Template funcitons */
     char * template = read_file(SELECTION_CODE_TEMPLATE);
@@ -308,7 +314,7 @@ void selection_setup(void * select_ptr, int batch_size, window_p window, char co
     select->output_entries[2] = 4 * batch_size + 4 * work_group_num;
 
     /* Source generation */
-    char * source = generate_source(select);
+    char * source = generate_source(select, patch);
 
     /* Output generated code */
     char * filename = generate_filename(select->id, SELECTION_CODE_FILENAME);
@@ -413,9 +419,13 @@ void selection_print_output(selection_p select, batch_p outputs) {
     }
 
     /* print */
+    int print_num = 10;
+    if (print_num > count) {
+        print_num = count;
+    }
     printf("[Results] Output tuple numbers: %d\n", count);
     printf("[Results] Tuple    Timestamp    user-id     event-type    category    priority    cpu\n");
-    for (int i=0; i<10; i++) {
+    for (int i=0; i<print_num; i++) {
         printf("[Results] %-8d %-12ld %-11d %-13d %-11d %-11d %-6.5f\n", 
             i, output->t, output->_4, output->_5, output->_6, output->_7, output->_8);
         output += 1;
@@ -439,6 +449,8 @@ void selection_process_output (void * select_ptr, batch_p outputs) {
 
     /* Update pointers to use only the output array (tuples) and exclude flags and partitions */
     outputs->start += select->output_entries[2];
+
+    count = (int) powf(log2f(count), 2);
 
     if (count >= 256) {
         outputs->size = count / 256 * 256;

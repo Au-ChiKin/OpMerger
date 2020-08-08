@@ -2,6 +2,7 @@
 
 #include "helpers.h"
 
+#include <stdlib.h>
 #include <stdio.h>
 
 window_p window(int size, int slide, enum window_types type) {

@@ -210,7 +210,9 @@ void run_processing_gpu(
                     query_process(query1, input[b], output);
 
                     /* For debugging */
-                    selection_print_output(select1, output);
+                    if (is_debug) {
+                        selection_print_output(select2, output);
+                    }
                 }
             }
             break;
