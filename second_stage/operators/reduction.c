@@ -9,6 +9,13 @@
 #include "libgpu/gpu_agg.h"
 #include "generators.h"
 
+#define MAX_LINE_LENGTH 128
+#define _sprintf(format, __VA_ARGS__...) \
+{\
+    sprintf(s, format, __VA_ARGS__);\
+    strcat(ret, s);\
+}
+
 static int free_id = 0;
 
 reduction_p reduction(schema_p input_schema, int ref) {
@@ -41,6 +48,58 @@ reduction_p reduction(schema_p input_schema, int ref) {
     return p;    
 }
 
+static char * generate_reducef (reduction_p reduce) {
+    char * ret = (char *) malloc(512 * sizeof(char)); *ret = '\0';
+    char s [MAX_LINE_LENGTH] = "";
+    int i;
+
+    /* TODO support aggregation types and multiple of them */
+    int aggregation_num = 1;
+
+    /* reducef */
+    _sprintf("inline void reducef (__local output_t *out, __global input_t *in) {\n", NULL);
+    
+    /* Reserve for select */
+    _sprintf("    int flag = 1;\n\n", NULL);
+
+    /* Set timestamp */
+    _sprintf("    out->tuple.t = (out->tuple.t == 0) ? : in->tuple.t;\n", NULL);
+
+    /* Aggregationo */
+    for (i = 0; i < aggregation_num; ++i) {
+        
+        int column = reduce->ref;
+        
+        // switch (aggregationTypes[i]) {
+        // case CNT:
+        //     _sprintf("    p->tuple._%d += 1;\n", (i + 1)));
+        //     break;
+        // case SUM:
+        // case AVG:
+            _sprintf("    out->tuple._%d += in->tuple._%d * flag;\n", (i + 1), column);
+        //     break;
+        // case MIN:
+        //     _sprintf("    p->tuple._%d = (p->tuple._%d > __bswapfp(q->tuple._%d)) ? __bswapfp(q->tuple._%d) : p->tuple._%d;\n", 
+        //             (i + 1), (i + 1), column, column, (i + 1)));
+        //     break;
+        // case MAX:
+        //     _sprintf("    p->tuple._%d = (p->tuple._%d < __bswapfp(q->tuple._%d)) ? __bswapfp(q->tuple._%d) : p->tuple._%d;\n", 
+        //             (i + 1), (i + 1), column, column, (i + 1)));
+        //     break;
+        // default:
+        //     throw new IllegalArgumentException("error: invalid aggregation type");
+        // }
+    }
+
+    /* Increase counter */
+    _sprintf("    out->tuple._%d += 1;\n", (i + 1));
+    _sprintf("}\n", NULL);
+    
+    _sprintf("\n", NULL);
+
+    return ret;
+}
+
 static char * generate_source(reduction_p reduce, window_p window) {
     char * source = (char *) malloc(MAX_SOURCE_LENGTH * sizeof(char)); *source = '\0';
 
@@ -59,6 +118,11 @@ static char * generate_source(reduction_p reduce, window_p window) {
     /* Window sizes */
     char * windows = generate_window_definition(window);
 
+    /* Inline functions */
+    char * reducef = generate_reducef(reduce);
+
+    // printf("------- Generated reducef is:\n%s", reducef);
+
     /* TODO: generate according to reduce */
     char funcs[] =
 "inline void initf (__local output_t *p) {\n\
@@ -66,20 +130,6 @@ static char * generate_source(reduction_p reduce, window_p window) {
     p->tuple._1 = 0;\n\
     p->tuple._2 = 0;\n\
 }\n\
-\n\
-/* r */ inline void reducef (__local output_t *out, __global input_t *in) {\n\
-\n\
-    /* r */ int flag = 1;\n\
-\n\
-    /* Selection */\n\
-    // int attribute_value = in->tuple._7; /* where category == 1*/\n\
-    // flag = flag & (attribute_value == 9);\n\
-\n\
-    /* Reduce */\n\
-    /* r */ out->tuple.t = (out->tuple.t == 0) ? : in->tuple.t;\n\
-    out->tuple._1 += in->tuple._8 * flag;\n\
-    /* r */ out->tuple._2 += 1;\n\
-/* r */ }\n\
 \n\
 inline void cachef (__local output_t *p, __local output_t *q) {\n\
     q->vectors[0] = p->vectors[0];\n\
@@ -110,6 +160,7 @@ inline void copyf (__local output_t *p, __global output_t *q) {\n\
     strcat(source, windows);
     
     strcat(source, funcs);
+    strcat(source, reducef);
     
     strcat(source, template);
 
@@ -120,6 +171,7 @@ inline void copyf (__local output_t *p, __global output_t *q) {\n\
     free(output_tuple);
     free(input_tuple);
     free(windows);
+    free(reducef);
     free(template);
 
     return source;
