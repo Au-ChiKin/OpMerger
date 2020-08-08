@@ -1,6 +1,8 @@
 #ifndef WINDOW_H
 #define WINDOW_H 
 
+#define WINDOW_SIZE_LIMIT 256 /* Should not exceed maximum threads in a group (reduction) */
+
 enum window_types {
     RANGE_BASE,  /* Time based */
     COUNTER_BASE
