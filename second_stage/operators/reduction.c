@@ -100,6 +100,78 @@ static char * generate_reducef (reduction_p reduce) {
     return ret;
 }
 
+/* TODO */
+// static char * generate_cachef(reduction_p reduce) {
+//     /* cachef */
+//     b.append("inline void cachef (__local output_t *p, __local output_t *q) {\n");
+    
+//     for (i = 0; i < numberOfVectors; i++)
+//         b.append(String.format("\tq->vectors[%d] = p->vectors[%d];\n", i, i));
+    
+//     b.append ("}\n");
+    
+//     b.append("\n");
+// }
+
+// static char * generate_mergef(reduction_p reduce) {
+//     /* mergef */
+//     b.append("inline void mergef (__local output_t *p, __local output_t *q) {\n");
+    
+//     for (i = 0; i < aggregationTypes.length; ++i) {
+        
+//         switch (aggregationTypes[i]) {
+//         case CNT:
+//         case SUM:
+//         case AVG:
+//             b.append (String.format("\tp->tuple._%d += q->tuple._%d;\n", (i + 1), (i + 1)));
+//             break;
+//         case MIN:
+//             b.append (String.format("\tp->tuple._%d = (p->tuple._%d > q->tuple._%d) ? q->tuple._%d : p->tuple._%d;\n", 
+//                     (i + 1), (i + 1), (i + 1), (i + 1), (i + 1)));
+//             break;
+//         case MAX:
+//             b.append (String.format("\tp->tuple._%d = (p->tuple._%d < q->tuple._%d) ? q->tuple._%d : p->tuple._%d;\n", 
+//                     (i + 1), (i + 1), (i + 1), (i + 1), (i + 1)));
+//             break;
+//         default:
+//             throw new IllegalArgumentException("error: invalid aggregation type");
+//         }
+//     }
+//     b.append (String.format("\tp->tuple._%d += q->tuple._%d;\n", (i + 1), (i + 1)));
+//     b.append ("}\n");
+    
+//     b.append("\n");
+// }
+
+// static char * generate_copyf(reduction_p reduce) {
+//     /* copyf */
+//     b.append("inline void copyf (__local output_t *p, __global output_t *q) {\n");
+    
+//     /* Compute average */
+//     boolean containsAverage = false;
+//     for (i = 0; i < aggregationTypes.length; ++i)
+//         if (aggregationTypes[i] == AggregationType.AVG)
+//             containsAverage = true;
+    
+//     if (containsAverage) {
+        
+//         int countAttribute = aggregationTypes.length + 1;
+//         b.append (String.format("\tint count = p->tuple._%d;\n", countAttribute));
+        
+//         for (i = 0; i < aggregationTypes.length; ++i)
+//             if (aggregationTypes[i] == AggregationType.AVG)
+//                 b.append (String.format("\tp->tuple._%d = p->tuple._%d / (float) count;\n", (i + 1), (i + 1)));
+//     }
+    
+//     for (i = 0; i < numberOfVectors; i++)
+//         b.append(String.format("\tq->vectors[%d] = p->vectors[%d];\n", i, i));
+    
+//     b.append ("}\n");
+    
+//     b.append("\n");
+// }
+
+
 static char * generate_source(reduction_p reduce, window_p window) {
     char * source = (char *) malloc(MAX_SOURCE_LENGTH * sizeof(char)); *source = '\0';
 
