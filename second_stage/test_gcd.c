@@ -175,23 +175,23 @@ void run_processing_gpu(
                 schema_add_attr(schema1, TYPE_INT);   /* constraints */
                 printf("[MAIN] Created a schema of size %d\n", schema1->size);
 
-                /* Construct a select: where column 6 (category) == 1 */
-                int col1 = 6;
+                /* Construct a select: where column 5 (eventType) == 0 */
+                int col1 = 5;
 
                 enum comparor com1 = EQUAL;
 
-                int i1 = 1;
+                int i1 = 0;
                 ref_value_p val1 = ref_value();
                 val1->i = &i1;
                 
                 selection_p select1 = selection(schema1, col1, val1, com1);
 
-                /* Construct a select: where column 5 (event_type) == 1 */
-                int col2 = 5;
+                /* Construct a select: where column 6 (category) == 2 */
+                int col2 = 6;
 
                 enum comparor com2 = EQUAL;
 
-                int i2 = 1;
+                int i2 = 2;
                 ref_value_p val2 = ref_value();
                 val2->i = &i2;
                 
