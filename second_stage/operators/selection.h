@@ -68,5 +68,6 @@ void selection_print_output(selection_p select, batch_p outputs);
 /* To prepare the output batch from selection for being inserted to next operator */
 void selection_process_output (void * select_ptr, batch_p outputs);
 
+void selection_generate_patch(void * select_ptr, char * patch);
 
 #endif

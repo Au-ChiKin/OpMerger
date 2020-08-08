@@ -65,10 +65,10 @@ void query_setup(query_p query) {
             }
         }
 
-        /* TODO: merging operators apart from the first one and generate "patch" function */
-        char patch_func[10*1024];
+        /* Merge operators apart from the last one and generate "patch" function */
+        char patch_func[10*1024] = "";
         for (int i=0; i<query->operator_num - 1; i++) {
-            
+            (* query->callbacks[i]->generate_patch) (query->operators[i], patch_func);
         }
 
         /* Set up the last operator with the patch func */

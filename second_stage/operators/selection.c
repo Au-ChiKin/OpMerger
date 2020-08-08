@@ -59,6 +59,7 @@ selection_p selection(
         p->operator->process = selection_process;
         p->operator->process_output = selection_process_output;
         p->operator->reset = selection_reset;
+        p->operator->generate_patch = selection_generate_patch;
         p->operator->print = selection_print_output;
 
         p->operator->type = OPERATOR_SELECT;
@@ -78,6 +79,83 @@ selection_p selection(
     p->output_schema = input_schema;
 
     return p;
+}
+
+void selection_generate_patch(void * select_ptr, char * patch) {
+    selection_p select = (selection_p) select_ptr;
+
+    char * ret = patch; // Reuse the marcro funciton
+    char s [128] = "";
+
+    /* TODO: support multiple predicates */
+    int const predicate_num = 1;
+
+    for (int i = 0; i < predicate_num; i++) {
+
+        if (select->value->i != NULL) {
+            _sprintf("    int attr_%d = p->tuple._%d;\n", select->id, select->ref);
+        } else if (select->value->l != NULL) {
+            _sprintf("    long attr_%d = p->tuple._%d;\n", select->id, select->ref);
+        } else if (select->value->f != NULL) {
+            _sprintf("    float attr_%d = p->tuple._%d;\n", select->id, select->ref);
+        } else if (select->value->c != NULL) {
+            _sprintf("    char attr_%d = p->tuple._%d;\n", select->id, select->ref);
+        } else {
+            exit(1);
+        }
+        
+        /* Conditions */
+        {
+            _sprintf("    flag = flag & ", NULL);
+
+            _sprintf("(attr_%d ", select->id);
+
+            switch (select->com)
+            {
+            case GREATER:
+                _sprintf(">", NULL);
+                break;
+            case EQUAL:
+                _sprintf("==", NULL);
+                break;
+            case LESS:
+                _sprintf("<", NULL);
+                break;
+            case GREATER_EQUAL:
+                _sprintf(">=", NULL);
+                break;
+            case LESS_EQUAL:
+                _sprintf("<=", NULL);
+                break;
+            case UNEQUAL:
+                _sprintf("!=", NULL);
+                break;
+            default:
+                break;
+            }
+
+            if (select->value->i != NULL) {
+                _sprintf(" %d)", *(select->value->i));
+            } else if (select->value->l != NULL) {
+                _sprintf(" %ld)", *(select->value->l));
+            } else if (select->value->f != NULL) {
+                _sprintf(" %f)", *(select->value->f));
+            } else if (select->value->c != NULL) {
+                _sprintf(" %c)", *(select->value->c));
+            } else {
+                exit(1);
+            }
+
+            if (i == predicate_num - 1) {
+                _sprintf(";\n", NULL);
+            } else {
+                _sprintf(" & ", NULL);
+            }
+        }
+    }
+
+    _sprintf("\n", NULL);
+    
 }
 
 static char * generate_selectf(selection_p select) {
