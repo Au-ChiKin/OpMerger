@@ -49,7 +49,7 @@ char * generate_window_definition(window_p window) {
     
     _sprintf("#define PANES_PER_WINDOW %dL\n", window->size / window->pane_size);
     _sprintf("#define PANES_PER_SLIDE  %dL\n", window->slide / window->pane_size);
-    _sprintf("#define PANE_SIZE        %dL\n", window->pane_size);
+    _sprintf("#define PANE_SIZE        %dL\n\n", window->pane_size);
     
     return ret;
 }
