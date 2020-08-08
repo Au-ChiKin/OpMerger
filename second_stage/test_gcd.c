@@ -27,7 +27,7 @@ void print_10_tuples(cbuf_handle_t cbufs []);
 void run_processing_gpu(
     u_int8_t * buffers [], int buffer_size, int buffer_num,
     u_int8_t * result, 
-    enum test_cases mode, bool is_merging) {
+    enum test_cases mode, bool is_merging, bool is_debug) {
     
     u_int8_t * batch [8812];
     /* TODO extend the batch struct into a real memoery manager that could create a batch 
@@ -79,7 +79,6 @@ void run_processing_gpu(
                 schema_add_attr(schema1, TYPE_FLOAT); /* ram */
                 schema_add_attr(schema1, TYPE_FLOAT); /* disk */
                 schema_add_attr(schema1, TYPE_INT);   /* constraints */
-                printf("[MAIN] Created a schema of size %d\n", schema1->size);
 
                 /* Construct a select: where column 6 (category) == 0 */
                 int col1 = 6;
@@ -130,7 +129,6 @@ void run_processing_gpu(
                 schema_add_attr(schema1, TYPE_FLOAT); /* ram */
                 schema_add_attr(schema1, TYPE_FLOAT); /* disk */
                 schema_add_attr(schema1, TYPE_INT);   /* constraints */
-                printf("[MAIN] Created a schema of size %d\n", schema1->size);
 
                 /* Construct a reduce: sum column 8 (cpu) */
                 int col1 = 8;
@@ -138,7 +136,7 @@ void run_processing_gpu(
                 reduction_p reduce1 = reduction(schema1, col1);
 
                 /* Create a query */
-                window_p window1 = window(1024, 1024, RANGE_BASE);
+                window_p window1 = window(3000, 3000, RANGE_BASE);
 
                 int batch_size = buffer_size;
                 query_p query1 = query(0, batch_size, window1, is_merging);
@@ -173,7 +171,6 @@ void run_processing_gpu(
                 schema_add_attr(schema1, TYPE_FLOAT); /* ram */
                 schema_add_attr(schema1, TYPE_FLOAT); /* disk */
                 schema_add_attr(schema1, TYPE_INT);   /* constraints */
-                printf("[MAIN] Created a schema of size %d\n", schema1->size);
 
                 /* Construct a select: where column 5 (eventType) == 0 */
                 int col1 = 5;
@@ -274,7 +271,6 @@ void run_processing_gpu(
                 schema_add_attr(schema1, TYPE_FLOAT); /* ram */
                 schema_add_attr(schema1, TYPE_FLOAT); /* disk */
                 schema_add_attr(schema1, TYPE_INT);   /* constraints */
-                printf("[MAIN] Created a schema of size %d\n", schema1->size);
 
                 /* Construct a select: where column 6 (category) == 0 */
                 int col1 = 6;
@@ -308,7 +304,9 @@ void run_processing_gpu(
                     query_process(query1, input[b], output);
 
                     /* For debugging */
-                    reduction_print_output(output, input[b]->size, schema1->size);
+                    if (is_debug) {
+                        reduction_print_output(output, input[b]->size, schema1->size);
+                    }
                 }
             }
             break;
@@ -463,10 +461,11 @@ int main(int argc, char * argv[]) {
 
     /* Arguments */
     bool is_merging = false;
+    bool is_debug = false;
     int work_load = 1; // default to be 1MB
     enum test_cases mode = MERGED_AGGREGATION;
 
-    parse_arguments(argc, argv, &mode, &work_load, &is_merging);
+    parse_arguments(argc, argv, &mode, &work_load, &is_merging, &is_debug);
 
     /* Read input from files */
     static int const gcd_lines = 144370688; // maximum lines for input txts
@@ -493,7 +492,7 @@ int main(int argc, char * argv[]) {
     run_processing_gpu(
         buffers, BUFFER_SIZE, buffers_num, /* input */
         result, /* output */
-        mode, is_merging);  /* configs */
+        mode, is_merging, is_debug);  /* configs */
 
     /* Clear up */
     for (int i=0; i<buffers_num; i++) {
