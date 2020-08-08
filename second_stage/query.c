@@ -139,7 +139,7 @@ void query_process(query_p query, batch_p input, batch_p output) {
 
         /* TODO: there is no checking of whether the operators[i] matches the callbacks[i] */
         for (int i=0; i<query->operator_num; i++) {
-            printf("[QUERY] Excecuting operator %d\n", i);
+            // printf("[QUERY] Excecuting operator %d\n", i);
             if (i != query->operator_num-1) {
                 if (i != 0) {
                     (* query->callbacks[i]->reset) (query->operators[i], input->size);
