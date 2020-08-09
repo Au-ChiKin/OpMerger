@@ -218,9 +218,20 @@ inline void mergef (__local output_t * mine, __local output_t * other) {\n\
     mine->tuple._1 += other->tuple._1;\n\
     mine->tuple._2 += other->tuple._2;\n\
 }\n\
+inline void gmergef (__global output_t * mine, __local output_t * other) {\n\
+    if (mine->tuple.t < other->tuple.t) {\n\
+        mine->tuple.t = other->tuple.t;\n\
+    }\n\
+    mine->tuple._1 += other->tuple._1;\n\
+    mine->tuple._2 += other->tuple._2;\n\
+}\n\
 \n\
 inline void copyf (__local output_t *p, __global output_t *q) {\n\
-    q->vectors[0] = p->vectors[0];\n\
+    if (q->tuple.t != 0) {\n\
+        gmergef(q, p);\n\
+    } else {\n\
+        q->vectors[0] = p->vectors[0];\n\
+    }\n\
 }\n\n";
 
     /* Template funcitons */
