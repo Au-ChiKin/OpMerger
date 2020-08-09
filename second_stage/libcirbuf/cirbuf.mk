@@ -1,9 +1,9 @@
-OUTDIR=$(OBJDIR)/libcirbuf
-$(OUTDIR): ; mkdir -p $@
+CB_OBJDIR=$(OBJDIR)/libcirbuf
+$(CB_OBJDIR): ; mkdir -p $@
 
-DEPOUTDIR=$(DEPDIR)/libcirbuf
-$(DEPOUTDIR): ; mkdir -p $@
-
-FORCE: $(OUTDIR) $(DEPOUTDIR)
+CB_DEPDIR=$(DEPDIR)/libcirbuf
+$(CB_DEPDIR): ; mkdir -p $@
 
 SRCS += libcirbuf/circular_buffer.c
+
+LIBDIR += $(CB_OBJDIR) $(CB_DEPDIR)

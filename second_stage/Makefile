@@ -18,11 +18,15 @@ endif
 # Environmrnt
 OBJDIR  := obj
 DEPDIR  := $(OBJDIR)/.deps
-VPATH    = $(OBJDIR)
+LIBDIR  :=
 
 # Targets
 PROGS   = test_gcd
 SRCS = test_gcd.c config.c helpers.c schema.c query.c batch.c window.c generators.c
+
+# Scripts
+$(DEPDIR): ; mkdir -p $@
+$(OBJDIR): ; mkdir -p $@
 
 # Submodules
 include ./libcirbuf/cirbuf.mk
@@ -31,18 +35,8 @@ include ./operators/operators.mk
 
 OBJECTS = $(patsubst %.c,%.o,$(SRCS))
 
-# Scripts
-$(DEPDIR): ; mkdir -p $@
-$(OBJDIR): ; mkdir -p $@
-
-# # Special case
-# obj/openclerrorcode.o : ../clib/openclerrorcode.c obj/.deps/openclerrorcode.d | $(DEPDIR)
-# 		$(CC) -MT $@ -MMD -MP -MF obj/.deps/openclerrorcode.d $(CFLAGS) $(CPPFLAGS) $(TARGET_ARCH) -c \
-# 		$(OUTPUT_OPTION) $<
-
-
 # Compile objects with auto dependency
-$(OBJDIR)/%.o : %.c $(DEPDIR)/%.d | $(DEPDIR)
+$(OBJDIR)/%.o : %.c $(DEPDIR)/%.d | $(OBJDIR) $(DEPDIR) $(LIBDIR)
 		$(COMPILE.c) $(OUTPUT_OPTION) $<
 
 DEPFILES := $(SRCS:%.c=$(DEPDIR)/%.d)
@@ -53,7 +47,7 @@ include $(wildcard $(DEPFILES))
 # Compile the main program
 OBJPROG = $(addprefix $(OBJDIR)/, $(PROGS))
 
-all: $(OUTDIR) $(DEPOUTDIR) $(OBJPROG)
+all: $(OBJPROG)
 
 $(OBJPROG): $(addprefix $(OBJDIR)/, $(OBJECTS)) 
 		$(LINK.o) $^ $(LDLIBS) -o $@
@@ -62,4 +56,4 @@ $(OBJPROG): $(addprefix $(OBJDIR)/, $(OBJECTS))
 # clean
 .PHONY: clean
 clean:
-	rm -f $(OBJDIR)/*.o $(DEPDIR)/*.d $(OBJPROG) *~
+	rm -f $(OBJDIR)/**/*.o $(DEPDIR)/**/*.d $(OBJPROG) *~

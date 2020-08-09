@@ -1,13 +1,11 @@
-OUTDIR=$(OBJDIR)/operators
-$(OUTDIR): ; mkdir -p $@
+OP_OBJDIR=$(OBJDIR)/operators
+$(OP_OBJDIR): ; mkdir -p $@
 
-DEPOUTDIR=$(DEPDIR)/operators
-$(DEPOUTDIR): ; mkdir -p $@
-
-FORCE: $(OUTDIR) $(DEPOUTDIR)
+OP_DEPDIR=$(DEPDIR)/operators
+$(OP_DEPDIR): ; mkdir -p $@
 
 OPERATOR = aggregation.c reduction.c selection.c
 OPERATOR := $(foreach file,$(OPERATOR),operators/$(file))
 SRCS += $(OPERATOR)
 
-FORCE: $(echo $(OPERATOR))
+LIBDIR += $(OP_OBJDIR) $(OP_DEPDIR)
