@@ -33,11 +33,11 @@ void run_processing_gpu(
     according to the start and end pointer */
     batch_p input [8812];
     for (int b=0; b<buffer_num; b++) {
-        input[b] = batch(buffer_size, 0, buffer_size * TUPLE_SIZE, buffers[b]);
+        input[b] = batch(buffer_size, 0, buffers[b], buffer_size, TUPLE_SIZE);
     }
 
     /* TODO: dynmaically decide the output buffer size */
-    batch_p output = batch(4 * buffer_size, 0, 4 * buffer_size * TUPLE_SIZE, result);
+    batch_p output = batch(4 * buffer_size, 0, result, 4 * buffer_size, TUPLE_SIZE);
 
     int const query_num = 2;
     gpu_init(query_num);

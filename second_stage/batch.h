@@ -11,7 +11,7 @@ typedef struct batch {
     u_int8_t * buffer;
 } batch_t;
 
-batch_p batch(int size, long start, long end, u_int8_t * buffer);
+batch_p batch(int size, long start, u_int8_t * buffer, int buffer_size, int tuple_size);
 
 long batch_get_timestamp(batch_p batch, int offset);
 

@@ -1,13 +1,25 @@
 #include "batch.h"
 
 #include <stdlib.h>
+#include <stdio.h>
 
-batch_p batch(int size, long start, long end, u_int8_t * buffer) {
+batch_p batch(int size, long start, u_int8_t * buffer, int buffer_size, int tuple_size) {
     batch_p batch = (batch_p) malloc(sizeof(batch_t));
 
-    batch->start = start;
-    batch->end = end;
+    if (buffer_size % size != 0) {
+        fprintf(stderr, "error: Currently OpMerger does not support batch size that is not diviser of the buffer size\n");
+        exit(1);
+    }
     batch->size = size;
+
+    batch->start = start;
+
+    if (start + size * tuple_size > buffer_size * tuple_size) {
+        fprintf(stderr, "error: Currently OpMerger does not support batch crossing the tail of the buffer\n");
+        exit(1);
+    }
+    batch->end = start + size * tuple_size;
+
     batch->buffer = buffer;
 
     return batch;    
