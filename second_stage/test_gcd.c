@@ -18,6 +18,9 @@
 #include "window.h"
 #include "query.h"
 
+#define GCD_LINE_NUM 144370688 // maximum lines for input txts
+
+
 /* Input data of interest from files */
 void read_input_buffers(cbuf_handle_t cbufs [], int buffer_num);
 
@@ -413,8 +416,7 @@ int main(int argc, char * argv[]) {
     parse_arguments(argc, argv, &mode, &work_load, &is_merging, &is_debug);
 
     /* Read input from files */
-    static int const gcd_lines = 144370688; // maximum lines for input txts
-    static int buffers_num = gcd_lines / BUFFER_SIZE; // about 8812
+    static int buffers_num = GCD_LINE_NUM / BUFFER_SIZE; // about 8812
     u_int8_t * buffers [buffers_num];
     cbuf_handle_t cbufs [buffers_num];
 
