@@ -56,7 +56,7 @@ static char * generate_reducef (reduction_p reduce, char const * patch) {
     int aggregation_num = 1;
 
     /* reducef */
-    _sprintf("inline void reducef (__local output_t *out, __global input_t *in) {\n", NULL);
+    _sprintf("inline void reducef (output_t *out, __global input_t *in) {\n", NULL);
     
     /* Reserve for select */
     _sprintf("    int flag = 1;\n\n", NULL);
@@ -67,7 +67,7 @@ static char * generate_reducef (reduction_p reduce, char const * patch) {
     }
 
     /* Set timestamp */
-    _sprintf("    out->tuple.t = (out->tuple.t > in->tuple.t) ? out->tuple.t : in->tuple.t;\n", NULL);
+    _sprintf("    out->tuple.t = (!flag || (flag && out->tuple.t > in->tuple.t)) ? out->tuple.t : in->tuple.t;\n", NULL);
 
     /* Aggregation */
     for (i = 0; i < aggregation_num; ++i) {
@@ -80,7 +80,7 @@ static char * generate_reducef (reduction_p reduce, char const * patch) {
         //     break;
         // case SUM:
         // case AVG:
-            _sprintf("    out->tuple._%d += in->tuple._%d * (float) flag;\n", (i + 1), column);
+            _sprintf("    out->tuple._%d += in->tuple._%d * flag;\n", (i + 1), column);
         //     break;
         // case MIN:
         //     _sprintf("    p->tuple._%d = (p->tuple._%d > __bswapfp(q->tuple._%d)) ? __bswapfp(q->tuple._%d) : p->tuple._%d;\n", 
@@ -201,13 +201,13 @@ static char * generate_source(reduction_p reduce, window_p window, char const * 
 
     /* TODO: generate according to reduce */
     char funcs[] =
-"inline void initf (__local output_t *p) {\n\
+"inline void initf (output_t *p) {\n\
     p->tuple.t = 0;\n\
     p->tuple._1 = 0;\n\
     p->tuple._2 = 0;\n\
 }\n\
 \n\
-inline void cachef (__local output_t * tuple, __local output_t * cache) {\n\
+inline void cachef (output_t * tuple, __local output_t * cache) {\n\
     cache->vectors[0] = tuple->vectors[0];\n\
 }\n\
 \n\
@@ -218,20 +218,9 @@ inline void mergef (__local output_t * mine, __local output_t * other) {\n\
     mine->tuple._1 += other->tuple._1;\n\
     mine->tuple._2 += other->tuple._2;\n\
 }\n\
-inline void gmergef (__global output_t * mine, __local output_t * other) {\n\
-    if (mine->tuple.t < other->tuple.t) {\n\
-        mine->tuple.t = other->tuple.t;\n\
-    }\n\
-    mine->tuple._1 += other->tuple._1;\n\
-    mine->tuple._2 += other->tuple._2;\n\
-}\n\
 \n\
 inline void copyf (__local output_t *p, __global output_t *q) {\n\
-    if (q->tuple.t != 0) {\n\
-        gmergef(q, p);\n\
-    } else {\n\
-        q->vectors[0] = p->vectors[0];\n\
-    }\n\
+    q->vectors[0] = p->vectors[0];\n\
 }\n\n";
 
     /* Template funcitons */

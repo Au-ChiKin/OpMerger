@@ -321,7 +321,7 @@ __kernel void reduceKernel (
 
         int idx = lid * sizeof(input_t) + start;
 
-        __local output_t tuple;
+        output_t tuple;
         initf (&tuple);
 
         /* The sequential part */
@@ -331,6 +331,7 @@ __kernel void reduceKernel (
             __global input_t *p = (__global input_t *) &input[idx];
 
             reducef (&tuple, p);
+            // printf("(W%d) Reducing tuple %d with value %f\n", wid, tuple.tuple.t, tuple.tuple._1);
 
             idx += group_offset;
         }
@@ -338,6 +339,7 @@ __kernel void reduceKernel (
         /* Write value to scratch memory */
         __local output_t *cached_tuple = (__local output_t *) &scratch[lid * sizeof(output_t)];
         cachef (&tuple, cached_tuple);
+        // printf("(W%d) Cached tuple %d to tuple %d in thread %d\n", wid, tuple.tuple.t, cached_tuple->tuple.t, lid);
 
         barrier(CLK_LOCAL_MEM_FENCE);
 
@@ -350,6 +352,7 @@ __kernel void reduceKernel (
                 __local output_t *mine  = (__local output_t *) &scratch[lid         * sizeof(output_t)];
                 __local output_t *other = (__local output_t *) &scratch[(lid + pos) * sizeof(output_t)];
 
+                // printf("(W%d) Merging tuple %d to tuple %d\n", wid, mine->tuple.t, other->tuple.t);
                 mergef (mine, other);
             }
 
