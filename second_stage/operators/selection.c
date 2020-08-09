@@ -450,7 +450,9 @@ void selection_process_output (void * select_ptr, batch_p outputs) {
     /* Update pointers to use only the output array (tuples) and exclude flags and partitions */
     outputs->start += select->output_entries[2];
 
-    count = (int) pow(log2(count), 2);
+    // printf("Before: count = %d\n", count);
+    count = (int) powf(2, log2f(count));
+    // printf("After: count = %d\n", count);
 
     if (count >= 256) {
         outputs->size = count / 256 * 256;
