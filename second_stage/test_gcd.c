@@ -231,7 +231,7 @@ void run_processing_gpu(
                 reduction_p reduce1 = reduction(schema1, col2);
 
                 /* Create a query */
-                window_p window1 = window(256, 256, RANGE_BASE);
+                window_p window1 = window(1024, 1024, RANGE_BASE);
 
                 int batch_size = buffer_size;
                 query_p query1 = query(0, batch_size, window1, is_merging);
