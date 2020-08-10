@@ -43,9 +43,15 @@ void query_add_operator(query_p query, void * new_operator, operator_p operator_
 }
 
 void query_setup(query_p query) {
+    bool is_profiling;
     if (query->operator_num == 0) {
         fprintf(stderr, "error: No operator has been added to this query (%s)\n", __FUNCTION__);
         exit(1);
+    }
+
+    if (is_profiling) {
+        /* Start the monitor (worker) thread */
+
     }
 
     if (query->is_merging) {
@@ -84,8 +90,6 @@ void query_setup(query_p query) {
     }
 
     query->has_setup = true;
-
-    /* TODO: start a performance monitor thread */
 }
 
 void query_process(query_p query, batch_p input, batch_p output) {

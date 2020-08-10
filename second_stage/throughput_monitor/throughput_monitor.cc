@@ -89,24 +89,25 @@ int job_queue_fetch(deque<JobInfo *> *  job_queue, int &duration, deque<int> * i
 
 
 
+/* We should actually use this main to be the main function of the OpMerger or add similar content to the current main */
 
 int main (int argc, char **argv) {
-  int queue_size;
-  int job_num;  // Each producer produces the same number of jobs
-  int producer_num;
-  int consumer_num;
-  int args [4]; 
-  key_t key; 
+  int queue_size = -1; // (Should be removed) There should be no restriction on the event on the queue
+  int job_num = -1;  // (Should be removed) Each producer produces the same number of jobs
+  int producer_num = 1; // query
+  int consumer_num = 1; // 
+  int args [4];
+  key_t key;
   int sem_id;
-  pthread_t * producer_ids, * consumer_ids; 
+  pthread_t * producer_ids, * consumer_ids;
 
   /* read in fout command line parameters */
-  input_arg(argc, argv, args);
-  queue_size = args[0];
-  job_num = args[1];
-  producer_num = args[2];
-  consumer_num = args[3]; 
-  cerr << "Read in parameters successful" << endl; 
+//   input_arg(argc, argv, args);
+//   queue_size = args[0];
+//   job_num = args[1];
+//   producer_num = args[2];
+//   consumer_num = args[3]; 
+//   cerr << "Read in parameters successful" << endl; 
 
   /* Initialise data structures and variables */
   deque<JobInfo *> job_queue;
