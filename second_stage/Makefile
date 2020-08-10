@@ -29,7 +29,7 @@ $(DEPDIR): ; mkdir -p $@
 $(OBJDIR): ; mkdir -p $@
 
 # Submodules
-include ./libcirbuf/cirbuf.mk
+include ./cirbuf/cirbuf.mk
 include ./libgpu/libgpu.mk
 include ./operators/operators.mk
 

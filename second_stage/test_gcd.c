@@ -9,7 +9,7 @@
 #include <stdbool.h>
 #include <string.h>
 
-#include "libcirbuf/circular_buffer.h"
+#include "cirbuf/circular_buffer.h"
 #include "config.h"
 #include "operators/selection.h"
 #include "operators/reduction.h"
