@@ -5,7 +5,7 @@
 
 #include "event_manager.h"
 
-#define THROUGHPUT_MONITOR_INTERVAL 1 // second
+#define THROUGHPUT_MONITOR_INTERVAL 1.0 // second
 
 typedef struct monitor * monitor_p;
 typedef struct monitor {

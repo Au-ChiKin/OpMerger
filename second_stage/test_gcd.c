@@ -446,6 +446,7 @@ int main(int argc, char * argv[]) {
         mode, is_merging, is_debug);  /* configs */
 
     /* Clear up */
+    /* Temperory using 1 buffer */
     for (int i=0; i<1; i++) {
         free(buffers[i]);
         circular_buf_free(cbufs[i]);

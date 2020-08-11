@@ -63,11 +63,12 @@ event_manager_p event_manager_init() {
 
 void event_manager_add_event (event_manager_p p, query_event_p e) {
 	pthread_mutex_lock (p->mutex);
-        p->event_tail = (p->event_tail + 1) % EVENT_MANAGER_QUEUE_LIMIT;
-        if (p->events[p->event_tail] != NULL) {
-            free(p->events[p->event_tail]);
-        }
+        // if (p->events[p->event_tail] != NULL) {
+        //     free(p->events[p->event_tail]);
+        //     p->events[p->event_tail] = NULL;
+        // }
     	p->events[p->event_tail] = e;
+        p->event_tail = (p->event_tail + 1) % EVENT_MANAGER_QUEUE_LIMIT;
     pthread_mutex_unlock (p->mutex);
 	
     pthread_cond_signal (p->added);

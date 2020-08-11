@@ -54,8 +54,11 @@ static void print_data(monitor_p p) {
         return;
     }
 
-    float throughput = (processed_data / 1024) / THROUGHPUT_MONITOR_INTERVAL; /* MB/s */
-    float latency_avg = (latency_sum / 1000) / event_num; /* ms */
+    float throughput = ((float) processed_data / 1024.0 / 1024.0) / THROUGHPUT_MONITOR_INTERVAL; /* MB/s */
+    float latency_avg = latency_sum / (float) event_num; /* us */
 
-    printf("[THROUGHPUT] t: %7.3f MB/s    l: %7.3f ms\n", throughput, latency_avg);
+	// printf("processed_data %ld\n", processed_data);
+	// printf("latency_sum %ld    event_num %d\n", latency_sum, event_num);
+
+    printf("[MONITOR] t: %9.3f MB/s    l: %9.3f us\n", throughput, latency_avg);
 }

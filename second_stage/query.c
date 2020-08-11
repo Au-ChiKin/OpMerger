@@ -1,10 +1,9 @@
 #include "query.h"
 
 #include <stdio.h>
+#include <time.h>
 
 #include "helpers.h"
-#include "monitor/monitor.h"
-#include "monitor/event_manager.h"
 
 query_p query(int id, int batch_size, window_p window, bool is_merging) {
     query_p query = (query_p) malloc(sizeof(query_t));
@@ -53,9 +52,10 @@ void query_setup(query_p query) {
 
     if (is_profiling) {
         /* Start the monitor (worker) thread */
-        event_manager_p manager = event_manager_init();
+        query->manager = event_manager_init();
 
-        monitor_p monitor = monitor_init(manager);
+        query->monitor = monitor_init(query->manager);
+
     }
 
     if (query->is_merging) {
@@ -97,6 +97,8 @@ void query_setup(query_p query) {
 }
 
 void query_process(query_p query, batch_p input, batch_p output) {
+    bool is_profiling = true;
+
     if (!query->has_setup) {
 
         fprintf(stderr, "error: This query has not been setup (%s)\n", __FUNCTION__);
@@ -108,6 +110,10 @@ void query_process(query_p query, batch_p input, batch_p output) {
             query (%s)\n", input->size, query->batch_size, __FUNCTION__);
         exit(1);        
     }
+
+    /* Start time */
+    struct timespec start, end;
+    clock_gettime(CLOCK_MONOTONIC_RAW, &start);
 
     if (query->is_merging) {
         /* If operators have been merged, only the (new) last operator needs to be executed */
@@ -186,7 +192,20 @@ void query_process(query_p query, batch_p input, batch_p output) {
     }
 
     /* TODO: Add a measurment to the performance monitor */
+    clock_gettime(CLOCK_MONOTONIC_RAW, &end);
 
+    query_event_p event = (query_event_p) malloc(sizeof(query_event_t));
+    {
+        event->start = start.tv_sec * 1000000 + start.tv_nsec / 1000;
+        event->end = end.tv_sec * 1000000 + end.tv_nsec / 1000;
+        event->tuples = query->batch_size;
+        /* TODO need to somehow pass the tuple size from query to monitor */
+        event->tuple_size = 64;
+    }
+
+    if (is_profiling) {
+        event_manager_add_event(query->manager, event);
+    }
 }
 
 void query_free(query_p query) {

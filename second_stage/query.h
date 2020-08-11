@@ -4,8 +4,10 @@
 #include <stdbool.h>
 
 #include "batch.h"
-#include "operators/operator.h"
 #include "window.h"
+#include "operators/operator.h"
+#include "monitor/monitor.h"
+#include "monitor/event_manager.h"
 
 /* TODO to support more than one operator */
 #define QUERY_MAX_OPERATOR_NUM 2
@@ -22,6 +24,10 @@ typedef struct query {
     void * operators[QUERY_MAX_OPERATOR_NUM];
     operator_p callbacks[QUERY_MAX_OPERATOR_NUM];
     bool is_merging;
+
+    /* Profiling */
+    event_manager_p manager;
+    monitor_p monitor;
 } query_t;
 
 query_p query(int id, int batch_size, window_p window, bool is_merging);
