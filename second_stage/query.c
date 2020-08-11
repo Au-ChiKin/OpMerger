@@ -3,6 +3,8 @@
 #include <stdio.h>
 
 #include "helpers.h"
+#include "monitor/monitor.h"
+#include "monitor/event_manager.h"
 
 query_p query(int id, int batch_size, window_p window, bool is_merging) {
     query_p query = (query_p) malloc(sizeof(query_t));
@@ -43,7 +45,7 @@ void query_add_operator(query_p query, void * new_operator, operator_p operator_
 }
 
 void query_setup(query_p query) {
-    bool is_profiling;
+    bool is_profiling = true;
     if (query->operator_num == 0) {
         fprintf(stderr, "error: No operator has been added to this query (%s)\n", __FUNCTION__);
         exit(1);
@@ -51,7 +53,9 @@ void query_setup(query_p query) {
 
     if (is_profiling) {
         /* Start the monitor (worker) thread */
+        event_manager_p manager = event_manager_init();
 
+        monitor_p monitor = monitor_init(manager);
     }
 
     if (query->is_merging) {

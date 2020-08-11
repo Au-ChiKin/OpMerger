@@ -32,6 +32,7 @@ $(OBJDIR): ; mkdir -p $@
 include ./cirbuf/cirbuf.mk
 include ./libgpu/libgpu.mk
 include ./operators/operators.mk
+include ./monitor/monitor.mk
 
 OBJECTS = $(patsubst %.c,%.o,$(SRCS))
 
