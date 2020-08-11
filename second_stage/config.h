@@ -7,7 +7,8 @@
 #define MAX_THREADS_PER_GROUP 256 /* Should be queried from the device */
 #define PARTIAL_WINDOWS 1024 * 1024 /* window limit in a batch */
 
-#define OPMERGER_DEBUG
+#undef OPMERGER_DEBUG
+// #define OPMERGER_DEBUG
 
 #include "stdbool.h"
 
