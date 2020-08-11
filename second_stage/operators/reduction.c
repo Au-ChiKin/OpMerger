@@ -277,11 +277,13 @@ void reduction_setup(void * reduce_ptr, int batch_size, window_p window, char co
     /* Code generation */
     char * source = generate_source(reduce, window, patch);
 
+#ifdef OPMERGER_DEBUG
     /* Output generated code */
     char * filename = generate_filename(reduce->id, REDUCTION_CODE_FILENAME);
     printf("[REDUCTION] Printing the generated source code to file: %s\n", filename);
     print_to_file(filename, source);
     free(filename);
+#endif
     
     /* Build opencl program */
     int qid = gpu_get_query(source, 4, 1, 5);

@@ -316,10 +316,12 @@ void selection_setup(void * select_ptr, int batch_size, window_p window, char co
     /* Source generation */
     char * source = generate_source(select, patch);
 
+#ifdef OPMERGER_DEBUG
     /* Output generated code */
     char * filename = generate_filename(select->id, SELECTION_CODE_FILENAME);
     printf("[SELECTION] Printing the generated source code to file: %s\n", filename);
     print_to_file(filename, source);
+#endif
 
     /* Build opencl program */
     int qid = gpu_get_query(source, 2, 1, 4);
