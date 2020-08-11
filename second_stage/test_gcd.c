@@ -88,10 +88,12 @@ void run_processing_gpu(
 
                 for (int b=0; b<buffer_num; b++) {
                     /* Execute */
-                    query_process(query1, input[b], output);
+                    query_process(query1, input[0], output);
 
                     /* For debugging */
-                    selection_print_output(select1, output);
+                    if (is_debug) {
+                        selection_print_output(select1, output);
+                    }
                 }
             }
 
@@ -444,7 +446,7 @@ int main(int argc, char * argv[]) {
         mode, is_merging, is_debug);  /* configs */
 
     /* Clear up */
-    for (int i=0; i<buffers_num; i++) {
+    for (int i=0; i<1; i++) {
         free(buffers[i]);
         circular_buf_free(cbufs[i]);
     }
