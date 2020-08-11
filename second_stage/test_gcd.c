@@ -243,7 +243,8 @@ void run_processing_gpu(
 
                 for (int b=0; b<buffer_num; b++) {
                     /* Execute */
-                    query_process(query1, input[b], output);
+                    /* Temparory using the first buffer */
+                    query_process(query1, input[0], output);
 
                     /* For debugging */
                     if (is_debug) {
@@ -424,11 +425,12 @@ int main(int argc, char * argv[]) {
         buffers_num =work_load;
     }
 
-    for (int i=0; i<buffers_num; i++) {
+    /* Temperory use only 1 buffer */
+    for (int i=0; i<1; i++) {
         buffers[i] = (u_int8_t *) malloc(BUFFER_SIZE * TUPLE_SIZE * sizeof(u_int8_t)); // creates 8812 ByteBuffers
         cbufs[i] = circular_buf_init(buffers[i], BUFFER_SIZE * TUPLE_SIZE);
     }
-    read_input_buffers(cbufs, buffers_num);
+    read_input_buffers(cbufs, 1);
 
     print_tuples(cbufs, 32);
 
