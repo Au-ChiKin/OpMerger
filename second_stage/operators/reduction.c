@@ -104,22 +104,31 @@ static char * generate_reducef (reduction_p reduce, char const * patch) {
     return ret;
 }
 
-/* TODO */
-// static char * generate_cachef(reduction_p reduce) {
-//     /* cachef */
-//     b.append("inline void cachef (__local output_t *p, __local output_t *q) {\n");
-    
-//     for (i = 0; i < numberOfVectors; i++)
-//         b.append(String.format("\tq->vectors[%d] = p->vectors[%d];\n", i, i));
-    
-//     b.append ("}\n");
-    
-//     b.append("\n");
-// }
+static char * generate_cachef(reduction_p reduce) {
+    char * ret = (char *) malloc(512 * sizeof(char)); *ret = '\0';
+    char s [MAX_LINE_LENGTH] = "";
 
+    /* TODO */
+    int numberOfVectors = 1;
+
+    /* cachef */
+    _sprintf("inline void cachef (output_t * tuple, __local output_t * cache) {\n", NULL);
+    
+    for (int i = 0; i < numberOfVectors; i++) {
+        _sprintf("    cache->vectors[%d] = tuple->vectors[%d];\n", i, i);
+    }
+    
+    _sprintf("}\n", NULL);
+    
+    _sprintf("\n", NULL);
+
+    return ret;
+}
+
+/* TODO */
 // static char * generate_mergef(reduction_p reduce) {
 //     /* mergef */
-//     b.append("inline void mergef (__local output_t *p, __local output_t *q) {\n");
+//     _sprintf("inline void mergef (__local output_t *p, __local output_t *q) {\n");
     
 //     for (i = 0; i < aggregationTypes.length; ++i) {
         
@@ -127,29 +136,29 @@ static char * generate_reducef (reduction_p reduce, char const * patch) {
 //         case CNT:
 //         case SUM:
 //         case AVG:
-//             b.append (String.format("\tp->tuple._%d += q->tuple._%d;\n", (i + 1), (i + 1)));
+//             _sprintf("\tp->tuple._%d += q->tuple._%d;\n", (i + 1), (i + 1)));
 //             break;
 //         case MIN:
-//             b.append (String.format("\tp->tuple._%d = (p->tuple._%d > q->tuple._%d) ? q->tuple._%d : p->tuple._%d;\n", 
+//             _sprintf("\tp->tuple._%d = (p->tuple._%d > q->tuple._%d) ? q->tuple._%d : p->tuple._%d;\n", 
 //                     (i + 1), (i + 1), (i + 1), (i + 1), (i + 1)));
 //             break;
 //         case MAX:
-//             b.append (String.format("\tp->tuple._%d = (p->tuple._%d < q->tuple._%d) ? q->tuple._%d : p->tuple._%d;\n", 
+//             _sprintf("\tp->tuple._%d = (p->tuple._%d < q->tuple._%d) ? q->tuple._%d : p->tuple._%d;\n", 
 //                     (i + 1), (i + 1), (i + 1), (i + 1), (i + 1)));
 //             break;
 //         default:
 //             throw new IllegalArgumentException("error: invalid aggregation type");
 //         }
 //     }
-//     b.append (String.format("\tp->tuple._%d += q->tuple._%d;\n", (i + 1), (i + 1)));
-//     b.append ("}\n");
+//     _sprintf("\tp->tuple._%d += q->tuple._%d;\n", (i + 1), (i + 1)));
+//     _sprintf("}\n");
     
-//     b.append("\n");
+//     _sprintf("\n");
 // }
 
 // static char * generate_copyf(reduction_p reduce) {
 //     /* copyf */
-//     b.append("inline void copyf (__local output_t *p, __global output_t *q) {\n");
+//     _sprintf("inline void copyf (__local output_t *p, __global output_t *q) {\n");
     
 //     /* Compute average */
 //     boolean containsAverage = false;
@@ -160,19 +169,19 @@ static char * generate_reducef (reduction_p reduce, char const * patch) {
 //     if (containsAverage) {
         
 //         int countAttribute = aggregationTypes.length + 1;
-//         b.append (String.format("\tint count = p->tuple._%d;\n", countAttribute));
+//         _sprintf("\tint count = p->tuple._%d;\n", countAttribute));
         
 //         for (i = 0; i < aggregationTypes.length; ++i)
 //             if (aggregationTypes[i] == AggregationType.AVG)
-//                 b.append (String.format("\tp->tuple._%d = p->tuple._%d / (float) count;\n", (i + 1), (i + 1)));
+//                 _sprintf("\tp->tuple._%d = p->tuple._%d / (float) count;\n", (i + 1), (i + 1)));
 //     }
     
 //     for (i = 0; i < numberOfVectors; i++)
-//         b.append(String.format("\tq->vectors[%d] = p->vectors[%d];\n", i, i));
+//         _sprintf("\tq->vectors[%d] = p->vectors[%d];\n", i, i));
     
-//     b.append ("}\n");
+//     _sprintf("}\n");
     
-//     b.append("\n");
+//     _sprintf("\n");
 // }
 
 
@@ -196,6 +205,7 @@ static char * generate_source(reduction_p reduce, window_p window, char const * 
 
     /* Inline functions */
     char * reducef = generate_reducef(reduce, patch);
+    char * cachef = generate_cachef(reduce);
 
     // printf("------- Generated reducef is:\n%s", reducef);
 
@@ -205,10 +215,6 @@ static char * generate_source(reduction_p reduce, window_p window, char const * 
     p->tuple.t = 0;\n\
     p->tuple._1 = 0;\n\
     p->tuple._2 = 0;\n\
-}\n\
-\n\
-inline void cachef (output_t * tuple, __local output_t * cache) {\n\
-    cache->vectors[0] = tuple->vectors[0];\n\
 }\n\
 \n\
 inline void mergef (__local output_t * mine, __local output_t * other) {\n\
@@ -240,6 +246,7 @@ inline void copyf (__local output_t *p, __global output_t *q) {\n\
     
     strcat(source, funcs);
     strcat(source, reducef);
+    strcat(source, cachef);
     
     strcat(source, template);
 
@@ -251,6 +258,7 @@ inline void copyf (__local output_t *p, __global output_t *q) {\n\
     free(input_tuple);
     free(windows);
     free(reducef);
+    free(cachef);
     free(template);
 
     return source;
