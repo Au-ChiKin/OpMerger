@@ -47,6 +47,43 @@ reduction_p reduction(schema_p input_schema, int ref) {
     return p;    
 }
 
+static char * generate_initf(reduction_p reduce) {
+    char * ret = (char *) malloc(512 * sizeof(char)); *ret = '\0';
+    char s [MAX_LINE_LENGTH] = "";
+
+    /* TODO support aggregation types and multiple of them */
+    int aggregation_num = 1;
+
+    /* initf */
+    _sprintf("inline void initf (output_t *p) {\n", NULL);
+    
+    /* Set timestamp */
+    _sprintf("    p->tuple.t = 0;\n", NULL);
+
+    int i;
+    for (i = 0; i < aggregation_num; ++i) {
+        
+        // switch (aggregationTypes[i]) {
+        // case CNT:
+        // case SUM:
+        // case AVG: 
+            _sprintf("    p->tuple._%d = %s;\n", (i + 1),       "0", NULL); 
+            // break;
+        // case MIN: _sprintf("    p->tuple._%d = %s;\n", (i + 1), "FLT_MIN")); break;
+        // case MAX: _sprintf("    p->tuple._%d = %s;\n", (i + 1), "FLT_MAX")); break;
+        // default:
+            // throw new IllegalArgumentException("error: invalid aggregation type");
+        // }
+    }
+    /* Set count to zero */
+    _sprintf("    p->tuple._%d = 0;\n", (i + 1), NULL);
+    _sprintf("}\n", NULL);
+    
+    _sprintf("\n", NULL);
+
+    return ret;
+}
+
 static char * generate_reducef (reduction_p reduce, char const * patch) {
     char * ret = (char *) malloc(512 * sizeof(char)); *ret = '\0';
     char s [MAX_LINE_LENGTH] = "";
@@ -135,6 +172,7 @@ static char * generate_mergef(reduction_p reduce) {
     /* mergef */
     _sprintf("inline void mergef (__local output_t * mine, __local output_t * other) {\n", NULL);
 
+    /* Always pick the largest timestamp as the new timestamp */
     _sprintf("   if (mine->tuple.t < other->tuple.t) {\n", NULL);
     _sprintf("        mine->tuple.t = other->tuple.t;\n", NULL);
     _sprintf("    }\n", NULL);
@@ -226,18 +264,11 @@ static char * generate_source(reduction_p reduce, window_p window, char const * 
     char * windows = generate_window_definition(window);
 
     /* Inline functions */
+    char * initf = generate_initf(reduce);
     char * reducef = generate_reducef(reduce, patch);
     char * cachef = generate_cachef(reduce);
     char * mergef = generate_mergef(reduce);
     char * copyf = generate_copyf(reduce);
-
-    /* TODO: generate according to reduce */
-    char funcs[] =
-"inline void initf (output_t *p) {\n\
-    p->tuple.t = 0;\n\
-    p->tuple._1 = 0;\n\
-    p->tuple._2 = 0;\n\
-}\n\n";
 
     /* Template funcitons */
     char * template = read_file(REDUCTION_CODE_TEMPLATE);
@@ -254,7 +285,7 @@ static char * generate_source(reduction_p reduce, window_p window, char const * 
     
     strcat(source, windows);
     
-    strcat(source, funcs);
+    strcat(source, initf);
     strcat(source, reducef);
     strcat(source, cachef);
     strcat(source, mergef);
@@ -264,15 +295,22 @@ static char * generate_source(reduction_p reduce, window_p window, char const * 
 
     /* Free inputed/generated source */
     free(extensions);
+
     free(headers);
+
     free(tuple_size);
+
     free(output_tuple);
     free(input_tuple);
+    
     free(windows);
+
+    free(initf);
     free(reducef);
     free(cachef);
     free(mergef);
     free(copyf);
+    
     free(template);
 
     return source;
