@@ -64,7 +64,7 @@ static char * generate_initf(reduction_p reduce) {
     char s [MAX_LINE_LENGTH] = "";
 
     /* TODO support aggregation types and multiple of them */
-    int aggregation_num = 1;
+    int aggregation_num = reduce->ref_num;
 
     /* initf */
     _sprintf("inline void initf (output_t *p) {\n", NULL);
@@ -75,17 +75,18 @@ static char * generate_initf(reduction_p reduce) {
     int i;
     for (i = 0; i < aggregation_num; ++i) {
         
-        // switch (aggregationTypes[i]) {
+        switch (reduce->expressions[i]) {
         // case CNT:
-        // case SUM:
+        case SUM:
         // case AVG: 
             _sprintf("    p->tuple._%d = %s;\n", (i + 1),       "0", NULL); 
-            // break;
+            break;
         // case MIN: _sprintf("    p->tuple._%d = %s;\n", (i + 1), "FLT_MIN")); break;
         // case MAX: _sprintf("    p->tuple._%d = %s;\n", (i + 1), "FLT_MAX")); break;
-        // default:
+        default:
             // throw new IllegalArgumentException("error: invalid aggregation type");
-        // }
+            break;
+        }
     }
     /* Set count to zero */
     _sprintf("    p->tuple._%d = 0;\n", (i + 1), NULL);
@@ -102,7 +103,7 @@ static char * generate_reducef (reduction_p reduce, char const * patch) {
     int i;
 
     /* TODO support aggregation types and multiple of them */
-    int aggregation_num = 1;
+    int aggregation_num = reduce->ref_num;
 
     /* reducef */
     _sprintf("inline void reducef (output_t *out, __global input_t *in) {\n", NULL);
@@ -123,14 +124,14 @@ static char * generate_reducef (reduction_p reduce, char const * patch) {
         
         int column = reduce->refs[i];
         
-        // switch (aggregationTypes[i]) {
+        switch (reduce->expressions[i]) {
         // case CNT:
         //     _sprintf("    p->tuple._%d += 1;\n", (i + 1)));
         //     break;
-        // case SUM:
+        case SUM:
         // case AVG:
             _sprintf("    out->tuple._%d += in->tuple._%d * flag;\n", (i + 1), column);
-        //     break;
+            break;
         // case MIN:
         //     _sprintf("    p->tuple._%d = (p->tuple._%d > __bswapfp(q->tuple._%d)) ? __bswapfp(q->tuple._%d) : p->tuple._%d;\n", 
         //             (i + 1), (i + 1), column, column, (i + 1)));
@@ -139,9 +140,10 @@ static char * generate_reducef (reduction_p reduce, char const * patch) {
         //     _sprintf("    p->tuple._%d = (p->tuple._%d < __bswapfp(q->tuple._%d)) ? __bswapfp(q->tuple._%d) : p->tuple._%d;\n", 
         //             (i + 1), (i + 1), column, column, (i + 1)));
         //     break;
-        // default:
+        default:
         //     throw new IllegalArgumentException("error: invalid aggregation type");
-        // }
+            break;
+        }
     }
 
     /* Increase counter */
@@ -179,7 +181,7 @@ static char * generate_mergef(reduction_p reduce) {
     char s [MAX_LINE_LENGTH] = "";
 
     /* TODO */
-    int aggregation_num = 1;
+    int aggregation_num = reduce->ref_num;
 
     /* mergef */
     _sprintf("inline void mergef (__local output_t * mine, __local output_t * other) {\n", NULL);
@@ -192,12 +194,12 @@ static char * generate_mergef(reduction_p reduce) {
     int i;
     for (i = 0; i < aggregation_num; ++i) {
         
-        // switch (aggregationTypes[i]) {
+        switch (reduce->expressions[i]) {
         // case CNT:
-        // case SUM:
+        case SUM:
         // case AVG:
             _sprintf("    mine->tuple._%d += other->tuple._%d;\n", (i + 1), (i + 1), NULL);
-            // break;
+            break;
         // case MIN:
         //     _sprintf("    p->tuple._%d = (p->tuple._%d > q->tuple._%d) ? q->tuple._%d : p->tuple._%d;\n", 
         //             (i + 1), (i + 1), (i + 1), (i + 1), (i + 1)));
@@ -206,9 +208,10 @@ static char * generate_mergef(reduction_p reduce) {
         //     _sprintf("    p->tuple._%d = (p->tuple._%d < q->tuple._%d) ? q->tuple._%d : p->tuple._%d;\n", 
         //             (i + 1), (i + 1), (i + 1), (i + 1), (i + 1)));
         //     break;
-        // default:
+        default:
         //     throw new IllegalArgumentException("error: invalid aggregation type");
-        // }
+            break;
+        }
     }
     _sprintf("    mine->tuple._%d += other->tuple._%d;\n", (i + 1), (i + 1));
     _sprintf("}\n", NULL);
