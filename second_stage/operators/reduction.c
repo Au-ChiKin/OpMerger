@@ -168,34 +168,43 @@ static char * generate_mergef(reduction_p reduce) {
     return ret;
 }
 
-/* TODO */
-// static char * generate_copyf(reduction_p reduce) {
-//     /* copyf */
-//     _sprintf("inline void copyf (__local output_t *p, __global output_t *q) {\n");
+static char * generate_copyf(reduction_p reduce) {
+    char * ret = (char *) malloc(512 * sizeof(char)); *ret = '\0';
+    char s [MAX_LINE_LENGTH] = "";
+
+    /* TODO */
+    int aggregation_num = 1;
+    int numberOfVectors = 1;
+
+    /* copyf */
+    _sprintf("inline void copyf (__local output_t *p, __global output_t *q) {\n", NULL);
     
-//     /* Compute average */
-//     boolean containsAverage = false;
-//     for (i = 0; i < aggregationTypes.length; ++i)
-//         if (aggregationTypes[i] == AggregationType.AVG)
-//             containsAverage = true;
+    /* Compute average */
+    // bool containsAverage = false;
+    // for (i = 0; i < aggregation_num; ++i)
+    //     if (aggregationTypes[i] == AggregationType.AVG)
+    //         containsAverage = true;
     
-//     if (containsAverage) {
+    // if (containsAverage) {
         
-//         int countAttribute = aggregationTypes.length + 1;
-//         _sprintf("    int count = p->tuple._%d;\n", countAttribute));
+    //     int countAttribute = aggregation_num + 1;
+    //     _sprintf("    int count = p->tuple._%d;\n", countAttribute));
         
-//         for (i = 0; i < aggregationTypes.length; ++i)
-//             if (aggregationTypes[i] == AggregationType.AVG)
-//                 _sprintf("    p->tuple._%d = p->tuple._%d / (float) count;\n", (i + 1), (i + 1)));
-//     }
+    //     for (i = 0; i < aggregation_num; ++i)
+    //         if (aggregationTypes[i] == AggregationType.AVG)
+    //             _sprintf("    p->tuple._%d = p->tuple._%d / (float) count;\n", (i + 1), (i + 1)));
+    // }
     
-//     for (i = 0; i < numberOfVectors; i++)
-//         _sprintf("    q->vectors[%d] = p->vectors[%d];\n", i, i));
+    for (int i = 0; i < numberOfVectors; i++) {
+        _sprintf("    q->vectors[%d] = p->vectors[%d];\n", i, i);
+    }
     
-//     _sprintf("}\n");
+    _sprintf("}\n", NULL);
     
-//     _sprintf("\n");
-// }
+    _sprintf("\n", NULL);
+
+    return ret;
+}
 
 
 static char * generate_source(reduction_p reduce, window_p window, char const * patch) {
@@ -220,6 +229,7 @@ static char * generate_source(reduction_p reduce, window_p window, char const * 
     char * reducef = generate_reducef(reduce, patch);
     char * cachef = generate_cachef(reduce);
     char * mergef = generate_mergef(reduce);
+    char * copyf = generate_copyf(reduce);
 
     /* TODO: generate according to reduce */
     char funcs[] =
@@ -227,10 +237,6 @@ static char * generate_source(reduction_p reduce, window_p window, char const * 
     p->tuple.t = 0;\n\
     p->tuple._1 = 0;\n\
     p->tuple._2 = 0;\n\
-}\n\
-\n\
-inline void copyf (__local output_t *p, __global output_t *q) {\n\
-    q->vectors[0] = p->vectors[0];\n\
 }\n\n";
 
     /* Template funcitons */
@@ -252,6 +258,7 @@ inline void copyf (__local output_t *p, __global output_t *q) {\n\
     strcat(source, reducef);
     strcat(source, cachef);
     strcat(source, mergef);
+    strcat(source, copyf);
     
     strcat(source, template);
 
@@ -265,6 +272,7 @@ inline void copyf (__local output_t *p, __global output_t *q) {\n\
     free(reducef);
     free(cachef);
     free(mergef);
+    free(copyf);
     free(template);
 
     return source;
