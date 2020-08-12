@@ -125,37 +125,50 @@ static char * generate_cachef(reduction_p reduce) {
     return ret;
 }
 
-/* TODO */
-// static char * generate_mergef(reduction_p reduce) {
-//     /* mergef */
-//     _sprintf("inline void mergef (__local output_t *p, __local output_t *q) {\n");
-    
-//     for (i = 0; i < aggregationTypes.length; ++i) {
-        
-//         switch (aggregationTypes[i]) {
-//         case CNT:
-//         case SUM:
-//         case AVG:
-//             _sprintf("\tp->tuple._%d += q->tuple._%d;\n", (i + 1), (i + 1)));
-//             break;
-//         case MIN:
-//             _sprintf("\tp->tuple._%d = (p->tuple._%d > q->tuple._%d) ? q->tuple._%d : p->tuple._%d;\n", 
-//                     (i + 1), (i + 1), (i + 1), (i + 1), (i + 1)));
-//             break;
-//         case MAX:
-//             _sprintf("\tp->tuple._%d = (p->tuple._%d < q->tuple._%d) ? q->tuple._%d : p->tuple._%d;\n", 
-//                     (i + 1), (i + 1), (i + 1), (i + 1), (i + 1)));
-//             break;
-//         default:
-//             throw new IllegalArgumentException("error: invalid aggregation type");
-//         }
-//     }
-//     _sprintf("\tp->tuple._%d += q->tuple._%d;\n", (i + 1), (i + 1)));
-//     _sprintf("}\n");
-    
-//     _sprintf("\n");
-// }
+static char * generate_mergef(reduction_p reduce) {
+    char * ret = (char *) malloc(512 * sizeof(char)); *ret = '\0';
+    char s [MAX_LINE_LENGTH] = "";
 
+    /* TODO */
+    int aggregation_num = 1;
+
+    /* mergef */
+    _sprintf("inline void mergef (__local output_t * mine, __local output_t * other) {\n", NULL);
+
+    _sprintf("   if (mine->tuple.t < other->tuple.t) {\n", NULL);
+    _sprintf("        mine->tuple.t = other->tuple.t;\n", NULL);
+    _sprintf("    }\n", NULL);
+    
+    int i;
+    for (i = 0; i < aggregation_num; ++i) {
+        
+        // switch (aggregationTypes[i]) {
+        // case CNT:
+        // case SUM:
+        // case AVG:
+            _sprintf("    mine->tuple._%d += other->tuple._%d;\n", (i + 1), (i + 1), NULL);
+            // break;
+        // case MIN:
+        //     _sprintf("    p->tuple._%d = (p->tuple._%d > q->tuple._%d) ? q->tuple._%d : p->tuple._%d;\n", 
+        //             (i + 1), (i + 1), (i + 1), (i + 1), (i + 1)));
+        //     break;
+        // case MAX:
+        //     _sprintf("    p->tuple._%d = (p->tuple._%d < q->tuple._%d) ? q->tuple._%d : p->tuple._%d;\n", 
+        //             (i + 1), (i + 1), (i + 1), (i + 1), (i + 1)));
+        //     break;
+        // default:
+        //     throw new IllegalArgumentException("error: invalid aggregation type");
+        // }
+    }
+    _sprintf("    mine->tuple._%d += other->tuple._%d;\n", (i + 1), (i + 1));
+    _sprintf("}\n", NULL);
+    
+    _sprintf("\n", NULL);
+
+    return ret;
+}
+
+/* TODO */
 // static char * generate_copyf(reduction_p reduce) {
 //     /* copyf */
 //     _sprintf("inline void copyf (__local output_t *p, __global output_t *q) {\n");
@@ -169,15 +182,15 @@ static char * generate_cachef(reduction_p reduce) {
 //     if (containsAverage) {
         
 //         int countAttribute = aggregationTypes.length + 1;
-//         _sprintf("\tint count = p->tuple._%d;\n", countAttribute));
+//         _sprintf("    int count = p->tuple._%d;\n", countAttribute));
         
 //         for (i = 0; i < aggregationTypes.length; ++i)
 //             if (aggregationTypes[i] == AggregationType.AVG)
-//                 _sprintf("\tp->tuple._%d = p->tuple._%d / (float) count;\n", (i + 1), (i + 1)));
+//                 _sprintf("    p->tuple._%d = p->tuple._%d / (float) count;\n", (i + 1), (i + 1)));
 //     }
     
 //     for (i = 0; i < numberOfVectors; i++)
-//         _sprintf("\tq->vectors[%d] = p->vectors[%d];\n", i, i));
+//         _sprintf("    q->vectors[%d] = p->vectors[%d];\n", i, i));
     
 //     _sprintf("}\n");
     
@@ -206,8 +219,7 @@ static char * generate_source(reduction_p reduce, window_p window, char const * 
     /* Inline functions */
     char * reducef = generate_reducef(reduce, patch);
     char * cachef = generate_cachef(reduce);
-
-    // printf("------- Generated reducef is:\n%s", reducef);
+    char * mergef = generate_mergef(reduce);
 
     /* TODO: generate according to reduce */
     char funcs[] =
@@ -215,14 +227,6 @@ static char * generate_source(reduction_p reduce, window_p window, char const * 
     p->tuple.t = 0;\n\
     p->tuple._1 = 0;\n\
     p->tuple._2 = 0;\n\
-}\n\
-\n\
-inline void mergef (__local output_t * mine, __local output_t * other) {\n\
-    if (mine->tuple.t < other->tuple.t) {\n\
-        mine->tuple.t = other->tuple.t;\n\
-    }\n\
-    mine->tuple._1 += other->tuple._1;\n\
-    mine->tuple._2 += other->tuple._2;\n\
 }\n\
 \n\
 inline void copyf (__local output_t *p, __global output_t *q) {\n\
@@ -247,6 +251,7 @@ inline void copyf (__local output_t *p, __global output_t *q) {\n\
     strcat(source, funcs);
     strcat(source, reducef);
     strcat(source, cachef);
+    strcat(source, mergef);
     
     strcat(source, template);
 
@@ -259,6 +264,7 @@ inline void copyf (__local output_t *p, __global output_t *q) {\n\
     free(windows);
     free(reducef);
     free(cachef);
+    free(mergef);
     free(template);
 
     return source;
