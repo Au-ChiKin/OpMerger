@@ -103,9 +103,11 @@ void run_processing_gpu(
             fprintf(stdout, "========== Running reduction test ===========\n");
             {
                 /* Construct a reduce: sum column 8 (cpu) */
-                int col1 = 8;
+                int ref_num = 1;
+                int cols [1] = {8};
+                enum reduction_types exps [1] = {SUM};
 
-                reduction_p reduce1 = reduction(schema1, col1);
+                reduction_p reduce1 = reduction(schema1, ref_num, cols, exps);
 
                 /* Create a query */
                 window_p window1 = window(256, 256, RANGE_BASE);
@@ -205,7 +207,7 @@ void run_processing_gpu(
              * 
              * Query 2 - variant:
              *     select timestamp, category, sum(cpu) as totalCpu
-             *     from TaskEvents [range 60 slide 1]
+             *     from TaskEvents [range 1024 slide 1024]
              *     where category == 0
              * 
              * Output becomes
@@ -228,9 +230,11 @@ void run_processing_gpu(
                 selection_p select1 = selection(schema1, col1, val1, com1);
 
                 /* Construct a reduce: sum column 8 (cpu) */
-                int col2 = 8;
+                int ref_num = 1;
+                int cols [1] = {8};
+                enum reduction_types exps [1] = {SUM};
 
-                reduction_p reduce1 = reduction(schema1, col2);
+                reduction_p reduce1 = reduction(schema1, ref_num, cols, exps);
 
                 /* Create a query */
                 window_p window1 = window(1024, 1024, RANGE_BASE);

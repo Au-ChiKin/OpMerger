@@ -18,7 +18,9 @@
 
 static int free_id = 0;
 
-reduction_p reduction(schema_p input_schema, int ref) {
+reduction_p reduction(schema_p input_schema, 
+    int ref_num, int const columns[], enum reduction_types const expressions[]) {
+
     reduction_p p = (reduction_p) malloc(sizeof(reduction_t));
     p->operator = (operator_p) malloc(sizeof (operator_t));
     {
@@ -34,8 +36,18 @@ reduction_p reduction(schema_p input_schema, int ref) {
 
     p->id = free_id++;
 
+    p->ref_num = ref_num;
+    if (ref_num > REDUCITON_MAX_REFERENCE) {
+        fprintf(stderr, "error: the number of reference has exceeded the limit (%d)\n", 
+            REDUCITON_MAX_REFERENCE);
+        exit(1);
+    }
+    for (int i=0; i<ref_num; i++) {
+        p->refs[i] = columns[i];
+        p->expressions[i] = expressions[i];
+    }
+
     p->input_schema = input_schema;
-    p->ref = ref;
 
     p->output_schema = schema();
     {
@@ -109,7 +121,7 @@ static char * generate_reducef (reduction_p reduce, char const * patch) {
     /* Aggregation */
     for (i = 0; i < aggregation_num; ++i) {
         
-        int column = reduce->ref;
+        int column = reduce->refs[i];
         
         // switch (aggregationTypes[i]) {
         // case CNT:
@@ -302,7 +314,7 @@ static char * generate_source(reduction_p reduce, window_p window, char const * 
 
     free(output_tuple);
     free(input_tuple);
-    
+
     free(windows);
 
     free(initf);
