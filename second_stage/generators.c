@@ -84,9 +84,9 @@ char * generate_input_tuple (schema_p schema, char const * prefix, int vector) {
         }
     }
     
-    /* TODO: add padding feature */
-    // if (schema.getPad().length > 0)
-    //     _sprintf("    uchar pad[%d];\n", schema.getPad().length));
+    if (schema_get_pad(schema, vector) > 0) {
+        _sprintf("    uchar pad[%d];\n", schema_get_pad(schema, vector));
+    }
     
     if (prefix == NULL) {
         _sprintf("} input_tuple_t __attribute__((aligned(1)));\n", NULL);
@@ -154,9 +154,9 @@ char * generate_output_tuple (schema_p schema, char const * prefix, int vector) 
         }
     }
     
-    /* TODO */
-    // if (schema.getPad().length > 0)
-    //     _sprintf("    uchar pad[%d];\n", schema.getPad().length);
+    if (schema_get_pad(schema, vector) > 0) {
+        _sprintf("    uchar pad[%d];\n", schema_get_pad(schema, vector));
+    }
     
     _sprintf("} output_tuple_t __attribute__((aligned(1)));\n\n", NULL);
     
@@ -168,17 +168,20 @@ char * generate_output_tuple (schema_p schema, char const * prefix, int vector) 
     return ret;
 }
 
-char * generate_tuple_size(int input_size, int output_size, int vector) {
+char * generate_tuple_size(schema_p input_schema, schema_p output_schema, int vector) {
     char * ret = (char *) malloc(MAX_OUTPUT_TUPLE_LENGTH * sizeof(char)); *ret = '\0';
     char s[MAX_LINE_LENGTH] = "";
 
-    if (input_size % vector != 0 || output_size % vector != 0) {
+    if ((input_schema->size + schema_get_pad(input_schema, vector)) % vector != 0 || 
+        (output_schema->size + schema_get_pad(output_schema, vector)) % vector != 0) {
         fprintf(stderr, "error: input/output size is not a multiple of the vector `uchar%d`\n", vector);
         exit(1);
     }
 
-    _sprintf("#define INPUT_VECTOR_SIZE %d\n", input_size / vector);
-    _sprintf("#define OUTPUT_VECTOR_SIZE %d\n\n", output_size / vector);
+    _sprintf("#define INPUT_VECTOR_SIZE %d\n", 
+        (input_schema->size + schema_get_pad(input_schema, vector)) / vector);
+    _sprintf("#define OUTPUT_VECTOR_SIZE %d\n\n", 
+        (output_schema->size + schema_get_pad(output_schema, vector)) / vector);
 
     return ret;
 }
