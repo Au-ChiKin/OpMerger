@@ -250,7 +250,7 @@ static char * generate_source(selection_p select, char const * patch) {
     char * headers = read_file("cl/templates/headers.cl");
 
     /* Input and output vector sizes */
-    char * tuple_size = generate_tuple_size(select->input_schema->size, select->output_schema->size, 16);
+    char * tuple_size = generate_tuple_size(select->input_schema, select->output_schema, 16);
 
     /* Input and output tuple struct */
     char * input_tuple = generate_input_tuple(select->output_schema, NULL, 16);
