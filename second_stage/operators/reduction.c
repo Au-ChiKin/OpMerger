@@ -52,7 +52,9 @@ reduction_p reduction(schema_p input_schema,
     p->output_schema = schema();
     {
         schema_add_attr (p->output_schema, TYPE_LONG);
-        schema_add_attr (p->output_schema, TYPE_FLOAT);
+        for (int i=0; i<ref_num; i++) {
+            schema_add_attr (p->output_schema, TYPE_FLOAT);
+        }
         schema_add_attr (p->output_schema, TYPE_INT);
     }
 
@@ -76,20 +78,18 @@ static char * generate_initf(reduction_p reduce) {
     for (i = 0; i < aggregation_num; ++i) {
         
         switch (reduce->expressions[i]) {
-        // case CNT:
+        case CNT:
         case SUM:
-        // case AVG: 
-            _sprintf("    p->tuple._%d = %s;\n", (i + 1),       "0", NULL); 
-            break;
-        // case MIN: _sprintf("    p->tuple._%d = %s;\n", (i + 1), "FLT_MIN")); break;
-        // case MAX: _sprintf("    p->tuple._%d = %s;\n", (i + 1), "FLT_MAX")); break;
+        case AVG: _sprintf("    p->tuple._%d = %s;\n", (i + 1), "0"); break;
+        case MIN: _sprintf("    p->tuple._%d = %s;\n", (i + 1), "FLT_MAX"); break;
+        case MAX: _sprintf("    p->tuple._%d = %s;\n", (i + 1), "FLT_MIN"); break;
         default:
             // throw new IllegalArgumentException("error: invalid aggregation type");
             break;
         }
     }
     /* Set count to zero */
-    _sprintf("    p->tuple._%d = 0;\n", (i + 1), NULL);
+    _sprintf("    p->tuple._%d = 0;\n", (i + 1));
     _sprintf("}\n", NULL);
     
     _sprintf("\n", NULL);
@@ -125,21 +125,21 @@ static char * generate_reducef (reduction_p reduce, char const * patch) {
         int column = reduce->refs[i];
         
         switch (reduce->expressions[i]) {
-        // case CNT:
-        //     _sprintf("    p->tuple._%d += 1;\n", (i + 1)));
-        //     break;
-        case SUM:
-        // case AVG:
-            _sprintf("    out->tuple._%d += in->tuple._%d * flag;\n", (i + 1), column);
+        case CNT: 
+            _sprintf("    out->tuple._%d += 1 * flag;\n", (i + 1)); 
             break;
-        // case MIN:
-        //     _sprintf("    p->tuple._%d = (p->tuple._%d > __bswapfp(q->tuple._%d)) ? __bswapfp(q->tuple._%d) : p->tuple._%d;\n", 
-        //             (i + 1), (i + 1), column, column, (i + 1)));
-        //     break;
-        // case MAX:
-        //     _sprintf("    p->tuple._%d = (p->tuple._%d < __bswapfp(q->tuple._%d)) ? __bswapfp(q->tuple._%d) : p->tuple._%d;\n", 
-        //             (i + 1), (i + 1), column, column, (i + 1)));
-        //     break;
+        case SUM:
+        case AVG: 
+            _sprintf("    out->tuple._%d += in->tuple._%d * flag;\n", (i + 1), column); 
+            break;
+        case MIN:
+            _sprintf("    out->tuple._%d = (flag && out->tuple._%d > in->tuple._%d) ? in->tuple._%d : out->tuple._%d;\n",
+                    (i + 1), (i + 1), column, column, (i + 1));
+            break;
+        case MAX:
+            _sprintf("    out->tuple._%d = (flag && out->tuple._%d < in->tuple._%d) ? in->tuple._%d : out->tuple._%d;\n", 
+                    (i + 1), (i + 1), column, column, (i + 1));
+            break;
         default:
         //     throw new IllegalArgumentException("error: invalid aggregation type");
             break;
@@ -195,19 +195,19 @@ static char * generate_mergef(reduction_p reduce) {
     for (i = 0; i < aggregation_num; ++i) {
         
         switch (reduce->expressions[i]) {
-        // case CNT:
+        case CNT:
         case SUM:
-        // case AVG:
-            _sprintf("    mine->tuple._%d += other->tuple._%d;\n", (i + 1), (i + 1), NULL);
+        case AVG:
+            _sprintf("    mine->tuple._%d += other->tuple._%d;\n", (i + 1), (i + 1));
             break;
-        // case MIN:
-        //     _sprintf("    p->tuple._%d = (p->tuple._%d > q->tuple._%d) ? q->tuple._%d : p->tuple._%d;\n", 
-        //             (i + 1), (i + 1), (i + 1), (i + 1), (i + 1)));
-        //     break;
-        // case MAX:
-        //     _sprintf("    p->tuple._%d = (p->tuple._%d < q->tuple._%d) ? q->tuple._%d : p->tuple._%d;\n", 
-        //             (i + 1), (i + 1), (i + 1), (i + 1), (i + 1)));
-        //     break;
+        case MIN:
+            _sprintf("    mine->tuple._%d = (mine->tuple._%d > other->tuple._%d) ? other->tuple._%d : mine->tuple._%d;\n", 
+                    (i + 1), (i + 1), (i + 1), (i + 1), (i + 1));
+            break;
+        case MAX:
+            _sprintf("    mine->tuple._%d = (mine->tuple._%d < other->tuple._%d) ? other->tuple._%d : mine->tuple._%d;\n", 
+                    (i + 1), (i + 1), (i + 1), (i + 1), (i + 1));
+            break;
         default:
         //     throw new IllegalArgumentException("error: invalid aggregation type");
             break;
@@ -221,32 +221,35 @@ static char * generate_mergef(reduction_p reduce) {
     return ret;
 }
 
-static char * generate_copyf(reduction_p reduce) {
+static char * generate_copyf(reduction_p reduce, int vector) {
     char * ret = (char *) malloc(512 * sizeof(char)); *ret = '\0';
     char s [MAX_LINE_LENGTH] = "";
 
     /* TODO */
-    int aggregation_num = 1;
-    int numberOfVectors = 1;
+    int aggregation_num = reduce->ref_num;
+    int numberOfVectors = (reduce->output_schema->size + schema_get_pad(reduce->output_schema, vector)) / vector;
 
     /* copyf */
     _sprintf("inline void copyf (__local output_t *p, __global output_t *q) {\n", NULL);
     
     /* Compute average */
-    // bool containsAverage = false;
-    // for (i = 0; i < aggregation_num; ++i)
-    //     if (aggregationTypes[i] == AggregationType.AVG)
-    //         containsAverage = true;
+    bool containsAverage = false;
+    for (int i = 0; i < aggregation_num; ++i) {
+        if (reduce->expressions[i] == AVG) {
+            containsAverage = true;
+        }
+    }
     
-    // if (containsAverage) {
+    if (containsAverage) {
         
-    //     int countAttribute = aggregation_num + 1;
-    //     _sprintf("    int count = p->tuple._%d;\n", countAttribute));
+        int countAttribute = aggregation_num + 1;
+        _sprintf("    int count = p->tuple._%d;\n", countAttribute);
         
-    //     for (i = 0; i < aggregation_num; ++i)
-    //         if (aggregationTypes[i] == AggregationType.AVG)
-    //             _sprintf("    p->tuple._%d = p->tuple._%d / (float) count;\n", (i + 1), (i + 1)));
-    // }
+        for (int i = 0; i < aggregation_num; ++i)
+            if (reduce->expressions[i] == AVG) {
+                _sprintf("    p->tuple._%d = p->tuple._%d / (float) count;\n", (i + 1), (i + 1));
+            }
+    }
     
     for (int i = 0; i < numberOfVectors; i++) {
         _sprintf("    q->vectors[%d] = p->vectors[%d];\n", i, i);
@@ -261,6 +264,8 @@ static char * generate_copyf(reduction_p reduce) {
 
 
 static char * generate_source(reduction_p reduce, window_p window, char const * patch) {
+    int vector = 16;
+
     char * source = (char *) malloc(MAX_SOURCE_LENGTH * sizeof(char)); *source = '\0';
 
     char * extensions = read_file("cl/templates/extensions.cl");
@@ -268,12 +273,12 @@ static char * generate_source(reduction_p reduce, window_p window, char const * 
     char * headers = read_file("cl/templates/headers.cl");
 
     /* Input and output vector sizes */
-    char * tuple_size = generate_tuple_size(reduce->input_schema->size, reduce->output_schema->size, 16);
+    char * tuple_size = generate_tuple_size(reduce->input_schema, reduce->output_schema, vector);
 
     /* Input and output tuple struct */
-    char * input_tuple = generate_input_tuple(reduce->input_schema, NULL, 16);
+    char * input_tuple = generate_input_tuple(reduce->input_schema, NULL, vector);
 
-    char * output_tuple = generate_output_tuple(reduce->output_schema, NULL, 16);
+    char * output_tuple = generate_output_tuple(reduce->output_schema, NULL, vector);
 
     /* Window sizes */
     char * windows = generate_window_definition(window);
@@ -283,7 +288,7 @@ static char * generate_source(reduction_p reduce, window_p window, char const * 
     char * reducef = generate_reducef(reduce, patch);
     char * cachef = generate_cachef(reduce);
     char * mergef = generate_mergef(reduce);
-    char * copyf = generate_copyf(reduce);
+    char * copyf = generate_copyf(reduce, vector);
 
     /* Template funcitons */
     char * template = read_file(REDUCTION_CODE_TEMPLATE);
@@ -387,7 +392,7 @@ void reduction_setup(void * reduce_ptr, int batch_size, window_p window, char co
     args1[0] = batch_size; /* tuples */
     args1[1] = batch_size * tuple_size; /* input size */
     args1[2] = PARTIAL_WINDOWS; 
-    args1[3] = 16 * MAX_THREADS_PER_GROUP; /* local cache size */
+    args1[3] = 32 * MAX_THREADS_PER_GROUP; /* local cache size */
 
     long args2 [2];
     args2[0] = 0; /* Previous pane id   */

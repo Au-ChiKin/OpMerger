@@ -11,7 +11,11 @@
 #define REDUCITON_MAX_REFERENCE 2
 
 enum reduction_types {
-    SUM
+    CNT,
+    SUM,
+    AVG,
+    MIN,
+    MAX
 };
 
 typedef struct reduction * reduction_p;
