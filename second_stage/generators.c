@@ -173,7 +173,7 @@ char * generate_tuple_size(int input_size, int output_size, int vector) {
     char s[MAX_LINE_LENGTH] = "";
 
     if (input_size % vector != 0 || output_size % vector != 0) {
-        fprintf(stderr, "error: input/output sizz is not a multiple of the vector `uchar%d`\n", vector);
+        fprintf(stderr, "error: input/output size is not a multiple of the vector `uchar%d`\n", vector);
         exit(1);
     }
 
