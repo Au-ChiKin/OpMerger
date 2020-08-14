@@ -1,5 +1,7 @@
 #include "schema.h"
 
+#include "math.h"
+
 schema_p schema() {
     schema_p schema = (schema_p) malloc(sizeof(schema_t));
     schema->attr_num = 0;
@@ -25,5 +27,11 @@ void schema_add_attr(schema_p schema, enum attr_type attr) {
     default:
         break;
     }
+}
+
+int schema_get_pad(schema_p schema, int vector) {
+    int size_after_padding = ceil(schema->size / (double) vector) * vector;
+
+    return size_after_padding - schema->size;
 }
 

@@ -23,4 +23,6 @@ schema_p schema();
 
 void schema_add_attr(schema_p schema, enum attr_type attr);
 
+int schema_get_pad(schema_p schema, int vector);
+
 #endif
