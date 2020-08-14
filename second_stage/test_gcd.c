@@ -30,7 +30,7 @@ void print_tuples(cbuf_handle_t cbufs [], int n);
 void run_processing_gpu(
     u_int8_t * buffers [], int buffer_size, int buffer_num,
     u_int8_t * result, 
-    enum test_cases mode, bool is_merging, bool is_debug) {
+    enum test_cases mode, int work_load, bool is_merging, bool is_debug) {
     
     /* TODO extend the batch struct into a real memoery manager that could create a batch 
     according to the start and end pointer */
@@ -86,14 +86,17 @@ void run_processing_gpu(
 
                 query_setup(query1);
 
-                for (int b=0; b<buffer_num; b++) {
+                int b = 0;
+                for (int l=0; l<work_load; l++) {
                     /* Execute */
-                    query_process(query1, input[0], output);
+                    query_process(query1, input[b], output);
 
                     /* For debugging */
                     if (is_debug) {
                         selection_print_output(select1, output);
                     }
+
+                    b = (b + 1) % buffer_num;
                 }
             }
 
@@ -119,12 +122,15 @@ void run_processing_gpu(
 
                 query_setup(query1);
 
-                for (int b=0; b<buffer_num; b++) {
+                int b = 0;
+                for (int l=0; l<work_load; l++) {
                     /* Execute */
                     query_process(query1, input[b], output);
 
                     /* For debugging */
                     reduction_print_output(output, buffer_size, schema1->size);
+
+                    b = (b + 1) % buffer_num;
                 }
             }
             break;
@@ -164,7 +170,8 @@ void run_processing_gpu(
 
                 query_setup(query1);
 
-                for (int b=0; b<buffer_num; b++) {
+                int b = 0;
+                for (int l=0; l<work_load; l++) {
                     /* Execute */
                     query_process(query1, input[b], output);
 
@@ -172,6 +179,8 @@ void run_processing_gpu(
                     if (is_debug) {
                         selection_print_output(select2, output);
                     }
+
+                    b = (b + 1) % buffer_num;
                 }
             }
             break;
@@ -247,7 +256,8 @@ void run_processing_gpu(
 
                 query_setup(query1);
 
-                for (int b=0; b<buffer_num; b++) {
+                int b = 0;
+                for (int l=0; l<work_load; l++) {
                     /* Execute */
                     /* Temparory using the first buffer */
                     query_process(query1, input[0], output);
@@ -256,6 +266,8 @@ void run_processing_gpu(
                     if (is_debug) {
                         reduction_print_output(output, input[b]->size, schema1->size);
                     }
+            
+                    b = (b + 1) % buffer_num;
                 }
             }
             break;
@@ -418,21 +430,23 @@ int main(int argc, char * argv[]) {
     bool is_merging = false;
     bool is_debug = false;
     int work_load = 1; // default to be 1MB
+    int buffer_num = 1;
     enum test_cases mode = SELECTION;
 
-    parse_arguments(argc, argv, &mode, &work_load, &is_merging, &is_debug);
+    parse_arguments(argc, argv, &mode, &work_load, &buffer_num, &is_merging, &is_debug);
 
     /* Read input from files */
-    static int buffers_num = GCD_LINE_NUM / BUFFER_SIZE; // about 8812
-    u_int8_t * buffers [buffers_num];
-    cbuf_handle_t cbufs [buffers_num];
+    static int max_buffer_num = GCD_LINE_NUM / BUFFER_SIZE; // about 8812
+    u_int8_t * buffers [max_buffer_num];
+    cbuf_handle_t cbufs [max_buffer_num];
 
-    if (buffers_num > work_load) {
-        buffers_num =work_load;
+    if (buffer_num > max_buffer_num) {
+        printf("[MAIN] the requested buffer number has exceeded the limit (%d) and is reset it\n", max_buffer_num);
+        buffer_num = max_buffer_num;
     }
 
     /* Temperory use only 1 buffer */
-    for (int i=0; i<1; i++) {
+    for (int i=0; i<buffer_num; i++) {
         buffers[i] = (u_int8_t *) malloc(BUFFER_SIZE * TUPLE_SIZE * sizeof(u_int8_t)); // creates 8812 ByteBuffers
         cbufs[i] = circular_buf_init(buffers[i], BUFFER_SIZE * TUPLE_SIZE);
     }
@@ -445,13 +459,13 @@ int main(int argc, char * argv[]) {
 
     /* Start processing */
     run_processing_gpu(
-        buffers, BUFFER_SIZE, buffers_num, /* input */
+        buffers, BUFFER_SIZE, buffer_num, /* input */
         result, /* output */
-        mode, is_merging, is_debug);  /* configs */
+        mode, work_load, is_merging, is_debug);  /* configs */
 
     /* Clear up */
     /* Temperory using 1 buffer */
-    for (int i=0; i<1; i++) {
+    for (int i=0; i<buffer_num; i++) {
         free(buffers[i]);
         circular_buf_free(cbufs[i]);
     }

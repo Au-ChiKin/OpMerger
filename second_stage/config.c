@@ -5,16 +5,18 @@
 #include <unistd.h>
 #include <stdlib.h>
 
-void parse_arguments(int argc, char * argv[], enum test_cases * mode, int * work_load, bool * is_merging, bool * is_debug) {
+void parse_arguments(int argc, char * argv[], 
+    enum test_cases * mode, int * work_load, int * buffer_num, bool * is_merging, bool * is_debug) {
+
 	extern char *optarg;
 	extern int optind;
 	int c, err = 0; 
     int debug = 0;
-	int lflag=0, mflag=0, fflag=0; /* f --> fused */
+	int lflag=0, mflag=0, fflag=0, iflag=0; /* f --> fused */
 	char *mname = "merged-aggregation";
-	static char usage[] = "usage: %s [-d] -m test-case [-l work-load-in-bytes] [-f]\n";
+	static char usage[] = "usage: %s [-d] -m test-case [-i input-buffers] [-l work-load-in-bytes] [-f]\n";
 
-	while ((c = getopt(argc, argv, "dm:l:f")) != -1) {
+	while ((c = getopt(argc, argv, "dm:l:fi:")) != -1) {
 		switch (c) {
             case 'd':
                 // debug = 1;
@@ -32,6 +34,10 @@ void parse_arguments(int argc, char * argv[], enum test_cases * mode, int * work
             case 'l':
                 lflag = 1;
                 *work_load = atoi(optarg);
+                break;
+            case 'i':
+                iflag = 1;
+                *buffer_num = atoi(optarg);
                 break;
             case 'f':
                 fflag = 1;
@@ -62,6 +68,7 @@ void parse_arguments(int argc, char * argv[], enum test_cases * mode, int * work
         printf("debug = %d\n", debug);
         printf("mflag = %d\n", mflag);
         printf("fflag = %d\n", fflag);
+        printf("iflag = %d\n", fflag);
         
         if (optind < argc)	/* these are the arguments after the command-line options */
             for (; optind < argc; optind++)
