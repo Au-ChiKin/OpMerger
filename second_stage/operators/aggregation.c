@@ -28,7 +28,7 @@ aggregation_p aggregation(schema_p input_schema,
         p->operator->setup = (void *) aggregation_setup;
         // p->operator->reset = (void *) aggregation_reset;
         p->operator->process = (void *) aggregation_process;
-        // p->operator->print = (void *) aggregation_print_output;
+        p->operator->print = (void *) aggregation_print_output;
 
         p->operator->type = OPERATOR_AGGREGATE;
 
@@ -120,7 +120,7 @@ void aggregation_setup(void * aggregate_ptr, int batch_size, window_p window, ch
     int offset_size = 16; /* The size of two longs */
     gpu_set_output(qid, 3, offset_size, 0, 1, 0, 0, 1);
     
-    int window_counts_size = 24; /* 4 integers, +1 that is the mark */
+    int window_counts_size = 20; /* 4 integers, +1 that is the mark */
     gpu_set_output(qid, 4, window_counts_size, 0, 0, 1, 0, 1);
     
     /* Set partial window results */
@@ -131,11 +131,11 @@ void aggregation_setup(void * aggregate_ptr, int batch_size, window_p window, ch
     gpu_set_output(qid, 8, output_size, 1, 0, 0, 1, 1);
 
     /* Refer to selection.c */
-    aggregate->output_entries[0] = 0;
-    aggregate->output_entries[1] = 24;
-    aggregate->output_entries[2] = 24 + output_size;
-    aggregate->output_entries[3] = 24 + output_size * 2;
-    aggregate->output_entries[4] = 24 + output_size * 3;
+    aggregate->output_entries[0] = 0; /* window_count */
+    aggregate->output_entries[1] = 20; /* closing window */
+    aggregate->output_entries[2] = 20 + output_size; /* pending window */
+    aggregate->output_entries[3] = 20 + output_size * 2; /* complete window */
+    aggregate->output_entries[4] = 20 + output_size * 3; /* opening window */
     
     /* GPU kernels setup */
     int args1 [6];
@@ -196,3 +196,84 @@ void aggregation_process(void * aggregate_ptr, batch_p batch, window_p window, b
         (void **) (inputs), (void **) (outputs), sizeof(u_int8_t));
         // passing the batch without deserialisation
 }
+
+void aggregation_print_output(batch_p outputs, int batch_size, int tuple_size) {
+    typedef struct {
+        long t; /* timestamp */
+        int _1; /* category */
+        float _2; /* sum */
+    } output_tuple_t;
+
+    /* Deserialise output buffer */
+    int current_offset = 0;
+    
+    int window_counts_size = 20; /* 4 integers, +1 that is the complete windows mark, +1 that is the mark */
+    int * window_counts = (int *) (outputs->buffer + current_offset);
+    current_offset += window_counts_size;
+
+    int output_size = batch_size * tuple_size; /* SystemConf.UNBOUNDED_BUFFER_SIZE */
+    output_tuple_t * output[4];
+    for (int i=0; i<4; i++) {
+        output[i] = (output_tuple_t *) (outputs->buffer + current_offset);
+        current_offset += output_size;
+    }
+
+    /* print */
+    printf("[Results] Required Output buffer size is %d\n", current_offset);
+    printf("[Results] Closing Windows: %d    Pending Windows: %d    Complete Windows: %d    \
+Opening Windows: %d    Mark:%d\n",
+        window_counts[0], window_counts[1], window_counts[2], 
+        window_counts[3], window_counts[4]);
+
+    for (int t=0; t<4; t++) {
+
+        int out_num = 100;
+        if (out_num > window_counts[t]) {
+            out_num = window_counts[t];
+        }
+
+        if (out_num > 0) {
+            printf("Window type: %d\n", t);
+            printf("[Results] Tuple    Timestamp    Sum        Count\n");
+        }
+
+        for (int i=0; i<out_num; i++) {
+            printf("[Results] %-8d %-12ld %-8d %09.5f\n", i, output[t]->t, output[t]->_1, output[t]->_2);
+            output[t] += 1;
+        }
+    }
+}
+
+void aggregation_process_output(void * aggregate_ptr, batch_p outputs) {
+    /* Stud, reduction is a pipeline breaker so it does not need to pass any output to another operator in this attempt */
+}
+
+// void reduction_reset(void * reduce_ptr, int new_batch_size) {
+//     reduction_p reduce = (reduction_p) reduce_ptr;
+
+//     int tuple_size = reduce->input_schema->size;
+
+//     /* Operator setup */
+//     for (int i=0; i<REDUCTION_KERNEL_NUM; i++) {
+//         reduce->threads[i] = new_batch_size;
+
+//         if (new_batch_size < MAX_THREADS_PER_GROUP) {
+//             reduce->threads_per_group[i] = new_batch_size;
+//         } else {
+//             reduce->threads_per_group[i] = MAX_THREADS_PER_GROUP;
+//         }
+//     }
+    
+//     /* GPU kernels setup */
+//     int args1 [4];
+//     args1[0] = new_batch_size; /* tuples */
+//     args1[1] = new_batch_size * tuple_size; /* input size */
+//     args1[2] = PARTIAL_WINDOWS; 
+//     args1[3] = 16 * MAX_THREADS_PER_GROUP; /* local cache size */
+
+//     long args2 [2];
+//     args2[0] = 0; /* Previous pane id   */
+//     args2[1] = 0; /* Batch start offset */
+
+//     gpu_reset_kernel_reduce(reduce->qid, args1, args2);
+// }
