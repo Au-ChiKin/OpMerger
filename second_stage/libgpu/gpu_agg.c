@@ -37,6 +37,7 @@ void callback_setKernelReduce (cl_kernel kernel, gpu_config_p context, int *args
 void callback_setKernelSelect (cl_kernel kernel, gpu_config_p context, int *args1, long *args2);
 
 void callback_resetConstReduce (cl_kernel kernel, gpu_config_p context, int *args1, long *args2);
+void callback_resetConstAggregate (cl_kernel kernel, gpu_config_p config, int *args1, long *args2);
 
 void callback_configureReduce (cl_kernel kernel, gpu_config_p context, int *args1, long *args2);
 void callback_configureAggregate (cl_kernel kernel, gpu_config_p context, int *args1, long *args2);
@@ -255,6 +256,26 @@ void gpu_set_kernel_aggregate(int qid, int * args1, long * args2) {
 	return;
 }
 
+void gpu_reset_kernel_aggregate(int qid, int * args1, long * args2) {
+    /**
+     * TODO
+     * Defence for wrong args format
+     **/
+
+	/* Set kernel(s) */
+	gpu_reset_kernel (qid, 0, "clearKernel",                    &callback_resetConstAggregate, args1, args2);
+	gpu_reset_kernel (qid, 1, "computeOffsetKernel",            &callback_resetConstAggregate, args1, args2);
+	gpu_reset_kernel (qid, 2, "computePointersKernel",          &callback_resetConstAggregate, args1, args2);
+	gpu_reset_kernel (qid, 3, "countWindowsKernel",             &callback_resetConstAggregate, args1, args2);
+	gpu_reset_kernel (qid, 4, "aggregateClosingWindowsKernel",  &callback_resetConstAggregate, args1, args2);
+	gpu_reset_kernel (qid, 5, "aggregateCompleteWindowsKernel", &callback_resetConstAggregate, args1, args2);
+	gpu_reset_kernel (qid, 6, "aggregateOpeningWindowsKernel",  &callback_resetConstAggregate, args1, args2);
+	gpu_reset_kernel (qid, 7, "aggregatePendingWindowsKernel",  &callback_resetConstAggregate, args1, args2);
+	gpu_reset_kernel (qid, 8, "packKernel",                     &callback_resetConstAggregate, args1, args2);
+	
+	return;
+}
+
 void callback_setKernelAggregate (cl_kernel kernel, gpu_config_p config, int *args1, long *args2) {
 	int numberOfTuples = args1[0];
 
@@ -347,6 +368,42 @@ void callback_setKernelAggregate (cl_kernel kernel, gpu_config_p config, int *ar
 	
 	/* Set local memory */
 	error |= clSetKernelArg (kernel, 17, (size_t) cache_size, (void *) NULL);
+	
+	if (error != CL_SUCCESS) {
+		fprintf(stderr, "opencl error (%d): %s\n", error, getErrorMessage(error));
+		exit (1);
+	}
+	
+	return;
+}
+
+void callback_resetConstAggregate (cl_kernel kernel, gpu_config_p config, int *args1, long *args2) {
+	int numberOfTuples = args1[0];
+
+	int numberOfInputBytes  = args1[1];
+	int numberOfOutputBytes = args1[2];
+
+	int hashTableSize = args1[3];
+
+	int maxNumberOfWindows = args1[4];
+
+	// int cache_size = args1[5];
+	
+	long previousPaneId = args2[0];
+	long startOffset    = args2[1];
+	
+	int error = 0;
+	
+	error |= clSetKernelArg (kernel, 0, sizeof(int),  (void *)      &numberOfTuples);
+
+	error |= clSetKernelArg (kernel, 1, sizeof(int),  (void *)  &numberOfInputBytes);
+	error |= clSetKernelArg (kernel, 2, sizeof(int),  (void *) &numberOfOutputBytes);
+
+	error |= clSetKernelArg (kernel, 3, sizeof(int),  (void *)       &hashTableSize);
+	error |= clSetKernelArg (kernel, 4, sizeof(int),  (void *)  &maxNumberOfWindows);
+
+	error |= clSetKernelArg (kernel, 5, sizeof(long), (void *)      &previousPaneId);
+	error |= clSetKernelArg (kernel, 6, sizeof(long), (void *)         &startOffset);
 	
 	if (error != CL_SUCCESS) {
 		fprintf(stderr, "opencl error (%d): %s\n", error, getErrorMessage(error));

@@ -248,32 +248,37 @@ void aggregation_process_output(void * aggregate_ptr, batch_p outputs) {
     /* Stud, reduction is a pipeline breaker so it does not need to pass any output to another operator in this attempt */
 }
 
-// void reduction_reset(void * reduce_ptr, int new_batch_size) {
-//     reduction_p reduce = (reduction_p) reduce_ptr;
+void aggregation_reset(void * aggregate_ptr, int new_batch_size) {
+    aggregation_p aggregate = (aggregation_p) aggregate_ptr;
 
-//     int tuple_size = reduce->input_schema->size;
+    int tuple_size = aggregate->input_schema->size;
 
-//     /* Operator setup */
-//     for (int i=0; i<REDUCTION_KERNEL_NUM; i++) {
-//         reduce->threads[i] = new_batch_size;
+    /* Operator setup */
+    for (int i=0; i<AGGREGATION_KERNEL_NUM; i++) {
+        aggregate->threads[i] = new_batch_size;
 
-//         if (new_batch_size < MAX_THREADS_PER_GROUP) {
-//             reduce->threads_per_group[i] = new_batch_size;
-//         } else {
-//             reduce->threads_per_group[i] = MAX_THREADS_PER_GROUP;
-//         }
-//     }
+        if (new_batch_size < MAX_THREADS_PER_GROUP) {
+            aggregate->threads_per_group[i] = new_batch_size;
+        } else {
+            aggregate->threads_per_group[i] = MAX_THREADS_PER_GROUP;
+        }
+    }
     
-//     /* GPU kernels setup */
-//     int args1 [4];
-//     args1[0] = new_batch_size; /* tuples */
-//     args1[1] = new_batch_size * tuple_size; /* input size */
-//     args1[2] = PARTIAL_WINDOWS; 
-//     args1[3] = 16 * MAX_THREADS_PER_GROUP; /* local cache size */
+    /* TODO */
+    int output_size = new_batch_size * tuple_size;
 
-//     long args2 [2];
-//     args2[0] = 0; /* Previous pane id   */
-//     args2[1] = 0; /* Batch start offset */
+    /* GPU kernels setup */
+    int args1 [6];
+    args1[0] = new_batch_size; /* tuples */
+    args1[1] = new_batch_size * tuple_size; /* input size */
+    args1[2] = output_size;
+    args1[3] = HASH_TABLE_SIZE;
+    args1[4] = PARTIAL_WINDOWS;
+    args1[5] = aggregate->key_length * MAX_THREADS_PER_GROUP; /* local cache size */
 
-//     gpu_reset_kernel_reduce(reduce->qid, args1, args2);
-// }
+    long args2 [2];
+    args2[0] = 0; /* Previous pane id   */
+    args2[1] = 0; /* Batch start offset */
+
+    gpu_reset_kernel_aggregate(aggregate->qid, args1, args2);
+}
