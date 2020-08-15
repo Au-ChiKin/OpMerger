@@ -46,7 +46,7 @@ typedef union {
 
 #define PANES_PER_WINDOW 1L
 #define PANES_PER_SLIDE  1L
-#define PANE_SIZE        1L
+#define PANE_SIZE        1024L
 
 // What is this?
 typedef struct {
@@ -78,9 +78,9 @@ inline void pack_key (__local key_t *q, __global input_t *p) {
 	q->key_1 = p->tuple._6;
 }
 inline void storef (__global intermediate_t *q, __global input_t *p) {
-	q->tuple.t = __bswap64(p->tuple.t);
+	q->tuple.t = p->tuple.t;
 	q->tuple.key_1 = p->tuple._6;
-	q->tuple.value1 = __bswapfp(p->tuple._8);
+	q->tuple.value1 = p->tuple._8;
 	q->tuple.count = 1;
 }
 
@@ -91,7 +91,7 @@ inline int comparef (__local key_t *q, __global input_t *p) {
 }
 
 inline void updatef (__global intermediate_t *out, __global input_t *p) {
-	atomic_add ((global int *) &(out->tuple.value1), convert_int_rtp(__bswapfp(p->tuple._8)));
+	atomic_add ((global int *) &(out->tuple.value1), convert_int_rtp(p->tuple._8));
 	atomic_inc ((global int *) &(out->tuple.count));
 }
 
@@ -863,14 +863,14 @@ __kernel void computeOffsetKernel (
 	/* Every thread is assigned a tuple */
 #ifdef RANGE_BASED
 	__global input_t *curr = (__global input_t *) &input[tid * sizeof(input_t)];
-	currPaneId = __bswap64(curr->tuple.t) / PANE_SIZE;
+	currPaneId = curr->tuple.t / PANE_SIZE;
 #else
 	currPaneId = ((batchOffset + (tid * sizeof(input_t))) / sizeof(input_t)) / PANE_SIZE;
 #endif
 	if (tid > 0) {
 #ifdef RANGE_BASED
 		__global input_t *prev = (__global input_t *) &input[(tid - 1) * sizeof(input_t)];
-		prevPaneId = __bswap64(prev->tuple.t) / PANE_SIZE;
+		prevPaneId = prev->tuple.t / PANE_SIZE;
 #else
 		prevPaneId = ((batchOffset + ((tid - 1) * sizeof(input_t))) / sizeof(input_t)) / PANE_SIZE;
 #endif
@@ -943,7 +943,7 @@ __kernel void computePointersKernel (
 #ifdef RANGE_BASED // Coresponding to range-based is row-based window, my guess is row-based counts how 
                    // many rows, while number of tuples in a window is not fixed for range-based window
 	__global input_t *curr = (__global input_t *) &input[tid * sizeof(input_t)];
-	currPaneId = __bswap64(curr->tuple.t) / PANE_SIZE;
+	currPaneId = curr->tuple.t / PANE_SIZE;
 #else
 	// location (which 2 bytes) of the first tuple of the batch + offset of the tuple belonging to this thread
 	// dividing input_t size gives tuples number
@@ -954,7 +954,7 @@ __kernel void computePointersKernel (
 	if (tid > 0) {
 #ifdef RANGE_BASED
 		__global input_t *prev = (__global input_t *) &input[(tid - 1) * sizeof(input_t)];
-		prevPaneId = __bswap64(prev->tuple.t) / PANE_SIZE;
+		prevPaneId = prev->tuple.t / PANE_SIZE;
 #else
 		prevPaneId = ((batchOffset + ((tid - 1) * sizeof(input_t))) / sizeof(input_t)) / PANE_SIZE;
 #endif
