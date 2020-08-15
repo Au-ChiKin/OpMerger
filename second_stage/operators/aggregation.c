@@ -19,7 +19,8 @@
 static int free_id = 0;
 
 aggregation_p aggregation(schema_p input_schema, 
-    int ref_num, int const columns[], enum aggregation_types const expressions[]) {
+    int ref_num, int const columns[], enum aggregation_types const expressions[],
+    int group_num, int const groups[]) {
 
     aggregation_p p = (aggregation_p) malloc(sizeof(aggregation_t));
     p->operator = (operator_p) malloc(sizeof (operator_t));
@@ -49,14 +50,27 @@ aggregation_p aggregation(schema_p input_schema,
 
     p->input_schema = input_schema;
 
+    /* Generate output schema */
+    int key_length = 0;
     p->output_schema = schema();
     {
+        /* timestamp */
         schema_add_attr (p->output_schema, TYPE_LONG);
+
+        /* aggregations */
         for (int i=0; i<ref_num; i++) {
             schema_add_attr (p->output_schema, TYPE_FLOAT);
         }
-        schema_add_attr (p->output_schema, TYPE_INT);
+
+        /* group by attributes */
+        for (int i=0; i<group_num; i++) {
+            enum attr_types attr = input_schema->attr[groups[i]];
+
+            key_length += attr_types_get_size(attr);
+            schema_add_attr (p->output_schema, attr);
+        }
     }
+    p->key_length = key_length;
 
     return p;    
 }
