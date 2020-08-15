@@ -8,7 +8,7 @@
 #define REDUCTION_KERNEL_NUM 4
 #define REDUCTION_CODE_FILENAME "cl/reduce"
 #define REDUCTION_CODE_TEMPLATE "cl/templates/reduce_template.cl"
-#define REDUCITON_MAX_REFERENCE 2
+#define REDUCTION_MAX_REFERENCE 2
 
 enum reduction_types {
     CNT,
@@ -26,8 +26,8 @@ typedef struct reduction {
     int qid;
 
     int ref_num;
-    int refs[REDUCITON_MAX_REFERENCE];
-    enum reduction_types expressions [REDUCITON_MAX_REFERENCE];
+    int refs[REDUCTION_MAX_REFERENCE];
+    enum reduction_types expressions [REDUCTION_MAX_REFERENCE];
 
     schema_p input_schema;
     size_t threads[REDUCTION_KERNEL_NUM];
