@@ -80,8 +80,8 @@ void parse_arguments(int argc, char * argv[],
 }
 
 void set_test_case(char const * mname, enum test_cases * mode) {
-    if (strcmp(mname, "merged-aggregation") == 0) {
-        *mode = MERGED_AGGREGATION; 
+    if (strcmp(mname, "aggregation") == 0) {
+        *mode = AGGREGATION; 
     } else if (strcmp(mname, "reduction") == 0) {
         *mode = REDUCTION;
     } else if (strcmp(mname, "selection") == 0) {

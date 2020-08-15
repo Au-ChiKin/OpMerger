@@ -40,7 +40,7 @@ void run_processing_gpu(
     }
 
     /* TODO: dynmaically decide the output buffer size */
-    batch_p output = batch(4 * buffer_size, 0, result, 4 * buffer_size, TUPLE_SIZE);
+    batch_p output = batch(6 * buffer_size, 0, result, 6 * buffer_size, TUPLE_SIZE);
 
     int const query_num = 2;
     gpu_init(query_num);
@@ -108,7 +108,7 @@ void run_processing_gpu(
                 /* Construct a reduce: sum column 8 (cpu) */
                 int ref_num = 1;
                 int cols [1] = {8};
-                enum reduction_types exps [1] = {SUM};
+                enum aggregation_types exps [1] = {SUM};
 
                 reduction_p reduce1 = reduction(schema1, ref_num, cols, exps);
 
@@ -241,7 +241,7 @@ void run_processing_gpu(
                 /* Construct a reduce: sum column 8 (cpu) */
                 int ref_num = 1;
                 int cols [1] = {8};
-                enum reduction_types exps [1] = {SUM};
+                enum aggregation_types exps [1] = {SUM};
 
                 reduction_p reduce1 = reduction(schema1, ref_num, cols, exps);
 
@@ -271,6 +271,43 @@ void run_processing_gpu(
                 }
             }
             break;
+        case AGGREGATION:
+            fprintf(stdout, "========== Running query2 of google cluster dataset ===========\n");
+            {
+                /* Construct an aggregation: sum cpu, group by column 6 (category) */
+                int ref_num = 1;
+                int cols [1] = {8};
+                enum aggregation_types exps [1] = {SUM};
+
+                int group_num = 1;
+                int groups[1] = {6};
+
+                aggregation_p aggregate1 = aggregation(schema1, ref_num, cols, exps, group_num, groups);
+
+                /* Create a query */
+                window_p window1 = window(1024, 1024, RANGE_BASE);
+
+                int batch_size = buffer_size;
+                query_p query1 = query(0, batch_size, window1, is_merging);
+
+                query_add_operator(query1, (void *) aggregate1, aggregate1->operator);
+
+                query_setup(query1);
+
+                int b = 0;
+                for (int l=0; l<work_load; l++) {
+                    /* Execute */
+                    /* Temparory using the first buffer */
+                    query_process(query1, input[0], output);
+
+                    /* For debugging */
+                    if (is_debug) {
+                        aggregation_print_output(output, input[b]->size, schema1->size);
+                    }
+            
+                    b = (b + 1) % buffer_num;
+                }                            
+            }
         default: 
             break; 
     }

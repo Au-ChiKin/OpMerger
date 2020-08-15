@@ -20,7 +20,7 @@
  */
 enum test_cases {
     CPU,
-    MERGED_AGGREGATION, 
+    AGGREGATION, 
     REDUCTION,
     SELECTION,
     TWO_SELECTION,
