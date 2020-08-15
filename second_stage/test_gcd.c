@@ -212,7 +212,8 @@ void run_processing_gpu(
              *     from TaskEvents [range 60 slide 1]
              *     group by category
              * 
-             * Since we have not yet implemented aggregation
+             * Since we have not yet implemented aggregation, also there is only one operator
+             * if using aggregation, 
              * 
              * Query 2 - variant:
              *     select timestamp, category, sum(cpu) as totalCpu
