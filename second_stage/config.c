@@ -92,6 +92,8 @@ void set_test_case(char const * mname, enum test_cases * mode) {
         *mode = QUERY2;
     } else if (strcmp(mname, "cpu") == 0) {
         *mode = CPU;
+    } else if (strcmp(mname, "query1") == 0) {
+        *mode = QUERY1;
     } else {
         *mode = ERROR;
     }

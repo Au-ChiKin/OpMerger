@@ -24,6 +24,7 @@ enum test_cases {
     REDUCTION,
     SELECTION,
     TWO_SELECTION,
+    QUERY1,
     QUERY2,
     ERROR
 };
