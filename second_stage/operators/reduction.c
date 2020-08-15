@@ -19,7 +19,7 @@
 static int free_id = 0;
 
 reduction_p reduction(schema_p input_schema, 
-    int ref_num, int const columns[], enum reduction_types const expressions[]) {
+    int ref_num, int const columns[], enum aggregation_types const expressions[]) {
 
     reduction_p p = (reduction_p) malloc(sizeof(reduction_t));
     p->operator = (operator_p) malloc(sizeof (operator_t));

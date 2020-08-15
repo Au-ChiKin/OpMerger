@@ -1,6 +1,7 @@
 #ifndef REDUCTION_H
 #define REDUCTION_H
 
+#include "aggregation.h"
 #include "batch.h"
 #include "schema.h"
 #include "operator.h"
@@ -9,14 +10,6 @@
 #define REDUCTION_CODE_FILENAME "cl/reduce"
 #define REDUCTION_CODE_TEMPLATE "cl/templates/reduce_template.cl"
 #define REDUCTION_MAX_REFERENCE 2
-
-enum reduction_types {
-    CNT,
-    SUM,
-    AVG,
-    MIN,
-    MAX
-};
 
 typedef struct reduction * reduction_p;
 typedef struct reduction {
@@ -27,7 +20,7 @@ typedef struct reduction {
 
     int ref_num;
     int refs[REDUCTION_MAX_REFERENCE];
-    enum reduction_types expressions [REDUCTION_MAX_REFERENCE];
+    enum aggregation_types expressions [REDUCTION_MAX_REFERENCE];
 
     schema_p input_schema;
     size_t threads[REDUCTION_KERNEL_NUM];
@@ -42,7 +35,7 @@ typedef struct reduction {
 
 reduction_p reduction(
     schema_p input_schema, 
-    int ref_num, int const columns[], enum reduction_types const expressions[]);
+    int ref_num, int const columns[], enum aggregation_types const expressions[]);
 
 void reduction_setup(void * reduce_ptr, int batch_size, window_p window, char const * patch);
 
