@@ -11,7 +11,7 @@
 enum operator_types {
     OPERATOR_SELECT,
     OPERATOR_REDUCE,
-    OPERATOR_AGGREGATION
+    OPERATOR_AGGREGATE
 };
 
 /* A collection of operator callbacks */
