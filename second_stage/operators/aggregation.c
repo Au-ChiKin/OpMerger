@@ -75,10 +75,6 @@ void aggregation_setup(void * aggregate_ptr, int batch_size, window_p window, ch
         }
     }
 
-    /* Refer to selection.c */
-    aggregate->output_entries[0] = 0;
-    aggregate->output_entries[1] = 20;
-
     /* Code generation */
     // char * source = generate_source(aggregate, window, patch);
 
@@ -114,21 +110,28 @@ void aggregation_setup(void * aggregate_ptr, int batch_size, window_p window, ch
     gpu_set_output(qid, 4, window_counts_size, 0, 0, 1, 0, 1);
     
     /* Set partial window results */
-    int outputSize = batch_size * tuple_size; /* SystemConf.UNBOUNDED_BUFFER_SIZE */
-    gpu_set_output(qid, 5, outputSize, 1, 0, 0, 1, 0);
-    gpu_set_output(qid, 6, outputSize, 1, 0, 0, 1, 1);
-    gpu_set_output(qid, 7, outputSize, 1, 0, 0, 1, 1);
-    gpu_set_output(qid, 8, outputSize, 1, 0, 0, 1, 1);
+    int output_size = batch_size * tuple_size; /* SystemConf.UNBOUNDED_BUFFER_SIZE */
+    gpu_set_output(qid, 5, output_size, 1, 0, 0, 1, 1);
+    gpu_set_output(qid, 6, output_size, 1, 0, 0, 1, 1);
+    gpu_set_output(qid, 7, output_size, 1, 0, 0, 1, 1);
+    gpu_set_output(qid, 8, output_size, 1, 0, 0, 1, 1);
+
+    /* Refer to selection.c */
+    aggregate->output_entries[0] = 0;
+    aggregate->output_entries[1] = 20;
+    aggregate->output_entries[2] = 20 + output_size;
+    aggregate->output_entries[3] = 20 + output_size * 2;
+    aggregate->output_entries[4] = 20 + output_size * 3;
     
     /* GPU kernels setup */
     int args1 [6];
     args1[0] = batch_size; /* tuples */
     args1[1] = batch_size * tuple_size; /* input size */
-    args1[2] = outputSize;
+    args1[2] = output_size;
     args1[3] = HASH_TABLE_SIZE;
     args1[4] = PARTIAL_WINDOWS;
     /* TODO: 32 should be replaced by the key length decided by the group by attribute */
-    args1[3] = 32 * MAX_THREADS_PER_GROUP; /* local cache size */
+    args1[5] = 32 * MAX_THREADS_PER_GROUP; /* local cache size */
 
     long args2 [2];
     args2[0] = 0; /* Previous pane id   */

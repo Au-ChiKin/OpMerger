@@ -9,6 +9,7 @@
 #define AGGREGATION_CODE_FILENAME "cl/reduce"
 #define AGGREGATION_CODE_TEMPLATE "cl/templates/reduce_template.cl"
 #define AGGREGATION_MAX_REFERENCE 2
+#define AGGREGATION_OUTPUT_NUM 5
 
 enum aggregation_types {
     CNT,
@@ -34,7 +35,7 @@ typedef struct aggregation {
     size_t threads_per_group [AGGREGATION_KERNEL_NUM];
 
     schema_p output_schema;
-    int output_entries[2];
+    int output_entries[AGGREGATION_OUTPUT_NUM];
 
 } aggregation_t;
 
