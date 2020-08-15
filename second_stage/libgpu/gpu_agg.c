@@ -39,6 +39,7 @@ void callback_setKernelSelect (cl_kernel kernel, gpu_config_p context, int *args
 void callback_resetConstReduce (cl_kernel kernel, gpu_config_p context, int *args1, long *args2);
 
 void callback_configureReduce (cl_kernel kernel, gpu_config_p context, int *args1, long *args2);
+void callback_configureAggregate (cl_kernel kernel, gpu_config_p context, int *args1, long *args2);
 
 void callback_readOutput (gpu_config_p context, int qid, int ndx, int mark);
 
@@ -483,7 +484,7 @@ void callback_resetConstReduce (cl_kernel kernel, gpu_config_p context, int *arg
 
 	int maxNumberOfWindows = args1[2];
 
-	int cache_size = args1[3]; /* Local buffer memory size */
+	// int cache_size = args1[3]; /* Local buffer memory size */
 
 	long previousPaneId = args2[0];
 	long startOffset    = args2[1];
@@ -621,6 +622,57 @@ void callback_setKernelCompact (cl_kernel kernel, gpu_config_p context, int *arg
 	/* The configuration of this kernel is identical to the select kernel. */
 	callback_setKernelSelect (kernel, context, args1, args2);
 }
+
+void gpu_execute_aggregate(int qid, size_t * threads, size_t * threads_per_group, long * args2, 
+	void ** input_batches, void ** output_batches, size_t addr_size) {
+
+	/* Create operator */
+	query_operator_p operator = (query_operator_p) malloc (sizeof(query_operator_t));
+	if (! operator) {
+		fprintf(stderr, "fatal error: out of memory\n");
+		exit(1);
+	}
+
+	/* Currently, we assume the same execution pattern for all queries */
+
+	operator->args1 = NULL;
+	operator->args2 = args2;
+
+	operator->configure = callback_configureAggregate;
+
+	operator->execKernel = callback_execKernel;
+
+	gpu_exec (qid, threads, threads_per_group, operator, input_batches, output_batches, addr_size);
+
+	/* Free operator */
+	if (operator)
+		free (operator);
+
+	return;
+}
+
+void callback_configureAggregate (cl_kernel kernel, gpu_config_p context, int *args1, long *args2) {
+
+	(void) context;
+	(void)   args1;
+
+	long previousPaneId = args2[0];
+	long startOffset    = args2[1];
+
+	int error = 0;
+
+	/* Set constant arguments */
+	error |= clSetKernelArg (kernel, 5, sizeof(long), (void *) &previousPaneId);
+	error |= clSetKernelArg (kernel, 6, sizeof(long), (void *)    &startOffset);
+
+	if (error != CL_SUCCESS) {
+		fprintf(stderr, "opencl error (%d): %s\n", error, getErrorMessage(error));
+		exit (1);
+	}
+
+	return;
+}
+
 
 /* Data movement callbacks */
 
