@@ -127,22 +127,22 @@ void query_process(query_p query, batch_p input, batch_p output) {
             output);
     } else {
         /* Create an intermediate buffer for data from operator to operator */
-        u_int8_t * inter_buffer = malloc(4 * query->batch_size * 64 /* TODO: a more reasonable way to define the size */);
+        u_int8_t * inter_buffer = malloc(6 * query->batch_size * 64 /* TODO: a more reasonable way to define the size */);
         batch_t inter_batch;
         {
             inter_batch.start = 0;
-            inter_batch.end = 4 * query->batch_size * 64;
+            inter_batch.end = 6 * query->batch_size * 64;
             inter_batch.size = 0; /* output buffer, default to be empty */
             inter_batch.buffer = inter_buffer;
         }
         batch_p inter = &inter_batch;
 
         /* Another buffer for more than two operators */
-        u_int8_t * inter_buffer_swap = malloc(4 * query->batch_size * 64);
+        u_int8_t * inter_buffer_swap = malloc(6 * query->batch_size * 64);
         batch_t inter_batch_swap;
         {
             inter_batch_swap.start = 0;
-            inter_batch_swap.end = 4 * query->batch_size * 64;
+            inter_batch_swap.end = 6 * query->batch_size * 64;
             inter_batch_swap.size = 0; /* output buffer, default to be empty */
             inter_batch_swap.buffer = inter_buffer_swap;
         }

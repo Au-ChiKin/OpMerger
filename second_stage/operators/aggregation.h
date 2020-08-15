@@ -5,7 +5,7 @@
 #include "operator.h"
 #include "schema.h"
 
-#define AGGREGATION_KERNEL_NUM 4
+#define AGGREGATION_KERNEL_NUM 9
 #define AGGREGATION_CODE_FILENAME "cl/reduce"
 #define AGGREGATION_CODE_TEMPLATE "cl/templates/reduce_template.cl"
 #define AGGREGATION_MAX_REFERENCE 2

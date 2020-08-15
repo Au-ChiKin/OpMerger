@@ -26,9 +26,9 @@ aggregation_p aggregation(schema_p input_schema,
     p->operator = (operator_p) malloc(sizeof (operator_t));
     {
         p->operator->setup = (void *) aggregation_setup;
-        p->operator->reset = (void *) aggregation_reset;
+        // p->operator->reset = (void *) aggregation_reset;
         p->operator->process = (void *) aggregation_process;
-        p->operator->print = (void *) aggregation_print_output;
+        // p->operator->print = (void *) aggregation_print_output;
 
         p->operator->type = OPERATOR_AGGREGATE;
 
@@ -120,7 +120,7 @@ void aggregation_setup(void * aggregate_ptr, int batch_size, window_p window, ch
     int offset_size = 16; /* The size of two longs */
     gpu_set_output(qid, 3, offset_size, 0, 1, 0, 0, 1);
     
-    int window_counts_size = 20; /* 4 integers, +1 that is the mark */
+    int window_counts_size = 24; /* 4 integers, +1 that is the mark */
     gpu_set_output(qid, 4, window_counts_size, 0, 0, 1, 0, 1);
     
     /* Set partial window results */
@@ -132,10 +132,10 @@ void aggregation_setup(void * aggregate_ptr, int batch_size, window_p window, ch
 
     /* Refer to selection.c */
     aggregate->output_entries[0] = 0;
-    aggregate->output_entries[1] = 20;
-    aggregate->output_entries[2] = 20 + output_size;
-    aggregate->output_entries[3] = 20 + output_size * 2;
-    aggregate->output_entries[4] = 20 + output_size * 3;
+    aggregate->output_entries[1] = 24;
+    aggregate->output_entries[2] = 24 + output_size;
+    aggregate->output_entries[3] = 24 + output_size * 2;
+    aggregate->output_entries[4] = 24 + output_size * 3;
     
     /* GPU kernels setup */
     int args1 [6];
@@ -144,8 +144,7 @@ void aggregation_setup(void * aggregate_ptr, int batch_size, window_p window, ch
     args1[2] = output_size;
     args1[3] = HASH_TABLE_SIZE;
     args1[4] = PARTIAL_WINDOWS;
-    /* TODO: 32 should be replaced by the key length decided by the group by attribute */
-    args1[5] = 32 * MAX_THREADS_PER_GROUP; /* local cache size */
+    args1[5] = aggregate->key_length * MAX_THREADS_PER_GROUP; /* local cache size */
 
     long args2 [2];
     args2[0] = 0; /* Previous pane id   */
@@ -184,9 +183,10 @@ void aggregation_process(void * aggregate_ptr, batch_p batch, window_p window, b
     u_int8_t * inputs [1] = {
         batch->buffer + batch->start};
 
-    u_int8_t * outputs [2] = {
-        output->buffer + output->start + aggregate->output_entries[0], 
-        output->buffer + output->start + aggregate->output_entries[1]};
+    u_int8_t * outputs [5];
+    for (int i=0; i<5; i++) {
+        outputs[i] = output->buffer + output->start + aggregate->output_entries[i];
+    }
 
     /* Execute */
     gpu_execute_aggregate(
