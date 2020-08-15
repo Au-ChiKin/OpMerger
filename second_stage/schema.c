@@ -10,23 +10,31 @@ schema_p schema() {
     return schema;
 }
 
-void schema_add_attr(schema_p schema, enum attr_type attr) {
-    schema->attr[schema->attr_num] = attr;
-    schema->attr_num += 1;
+int attr_types_get_size(enum attr_types attr) {
+    int ret = 0;
+
     switch (attr)
     {
     case TYPE_INT:
-        schema->size += 4;
+        ret = 4;
         break;
     case TYPE_FLOAT:
-        schema->size += 4;
+        ret = 4;
         break;
     case TYPE_LONG:
-        schema->size += 8;
+        ret = 8;
         break;
     default:
         break;
     }
+
+    return ret;
+}
+
+void schema_add_attr(schema_p schema, enum attr_types attr) {
+    schema->attr[schema->attr_num] = attr;
+    schema->attr_num += 1;
+    schema->size += attr_types_get_size(attr);
 }
 
 int schema_get_pad(schema_p schema, int vector) {
