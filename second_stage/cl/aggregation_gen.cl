@@ -189,7 +189,7 @@ __kernel void countWindowsKernel (
 	__global int* window_ptrs_,
 	__global int* _window_ptrs,
 	__global int *failed,
-	__global int *attempts,
+	// __global int *attempts,
 	__global long *offset, /* Temp. variable holding the window pointer offset and window counts */
 	__global int *windowCounts,
 	__global uchar* closingContents,
@@ -263,7 +263,7 @@ __kernel void aggregateClosingWindowsKernel (
 	__global int* window_ptrs_,
 	__global int* _window_ptrs,
 	__global int *failed,
-	__global int *attempts,
+	// __global int *attempts,
 	__global long *offset, /* Temp. variable holding the window pointer offset and window counts */
 	__global int *windowCounts,
 	__global uchar* closingContents,
@@ -385,7 +385,7 @@ __kernel void aggregateCompleteWindowsKernel (
 	__global int* window_ptrs_,
 	__global int* _window_ptrs,
 	__global int *failed,
-	__global int *attempts,
+	// __global int *attempts,
 	__global long *offset, /* Temp. variable holding the window pointer offset and window counts */
 	__global int *windowCounts,
 	__global uchar* closingContents,
@@ -522,7 +522,7 @@ __kernel void aggregateOpeningWindowsKernel (
 	__global int* window_ptrs_,
 	__global int* _window_ptrs,
 	__global int *failed,
-	__global int *attempts,
+	// __global int *attempts,
 	__global long *offset, /* Temp. variable holding the window pointer offset and window counts */
 	__global int *windowCounts,
 	__global uchar* closingContents,
@@ -654,7 +654,7 @@ __kernel void aggregatePendingWindowsKernel (
 	__global int* window_ptrs_,
 	__global int* _window_ptrs,
 	__global int *failed,
-	__global int *attempts,
+	// __global int *attempts,
 	__global long *offset, /* Temp. variable holding the window pointer offset and window counts */
 	__global int *windowCounts,
 	__global uchar* closingContents,
@@ -762,7 +762,7 @@ __kernel void clearKernel (
 	__global int* window_ptrs_,
 	__global int* _window_ptrs,
 	__global int *failed,
-	__global int *attempts,
+	// __global int *attempts,
 	__global long *offset, /* Temp. variable holding the window pointer offset and window counts */
 	__global int *windowCounts,
 	__global uchar* closingContents,
@@ -807,7 +807,7 @@ __kernel void clearKernel (
 		}
 
 		failed  [tid] = 0;
-		attempts[tid] = 0;
+		// attempts[tid] = 0;
 
 		if (tid < 5) {
 
@@ -838,7 +838,7 @@ __kernel void computeOffsetKernel (
 		__global int* window_ptrs_,
 		__global int* _window_ptrs,
 		__global int *failed,
-		__global int *attempts,
+		// __global int *attempts,
 		__global long *offset, /* Temp. variable holding the window pointer offset and window counts */
 		__global int *windowCounts,
 		__global uchar* closingContents,
@@ -919,7 +919,7 @@ __kernel void computePointersKernel (
 	__global int* window_ptrs_,
 	__global int* _window_ptrs,
 	__global int *failed,
-	__global int *attempts,
+	// __global int *attempts,
 	__global long *offset, /* Temp. variable holding the window pointer offset and window counts */
 	                       /* offset[0] first window so default INT_MAX, offset[1] last window so default 0 */
 	__global int *windowCounts,
@@ -1014,7 +1014,7 @@ __kernel void packKernel (
 	__global int* window_ptrs_,
 	__global int* _window_ptrs,
 	__global int *failed,
-	__global int *attempts,
+	// __global int *attempts,
 	__global long *offset, /* Temp. variable holding the window pointer offset and window counts */
 	__global int *windowCounts,
 	__global uchar* closingContents,
