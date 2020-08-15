@@ -37,9 +37,9 @@ reduction_p reduction(schema_p input_schema,
     p->id = free_id++;
 
     p->ref_num = ref_num;
-    if (ref_num > REDUCITON_MAX_REFERENCE) {
+    if (ref_num > REDUCTION_MAX_REFERENCE) {
         fprintf(stderr, "error: the number of reference has exceeded the limit (%d)\n", 
-            REDUCITON_MAX_REFERENCE);
+            REDUCTION_MAX_REFERENCE);
         exit(1);
     }
     for (int i=0; i<ref_num; i++) {
