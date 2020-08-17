@@ -44,7 +44,8 @@ void run_processing_gpu(cbuf_handle_t buffer, int size, int * result, int load, 
         }
         read_time += end - start;
     
-        int count = gpu_exec(&inter_time, &inter_time);
+        bool is_profiling = true;
+        int count = gpu_exec(is_profiling, &inter_time);
 
         gpu_write_output(result, count, true, &start, &end);
         if (l == load-1) {
@@ -52,7 +53,7 @@ void run_processing_gpu(cbuf_handle_t buffer, int size, int * result, int load, 
         }
         write_time += end - start;
 
-        printf("[GPU] Batch %d output size is: %d\n", l, count);
+        dbg("[GPU] Batch %d output size is: %d\n", l, count);
     }
     printf("Total time consumption is: %ld ms\n", (end_time - start_time) / 1000000);
     printf("Read time consumption is: %ld ms\n", read_time / 1000000);
