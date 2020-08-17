@@ -36,7 +36,7 @@ static cl_mem output_mem = NULL;
 static int batch_size = 0;
 static int const tuple_size = 32; /* byte */ 
 static int const tuple_per_thread = 2;
-static int const max_threads_per_group = 64;
+static int const max_threads_per_group = 256;
 
 static void set_platform () {
     int error = 0;
@@ -526,7 +526,7 @@ void gpu_write_output(void * output, int tuple_num, bool profiling, long * start
 }
 
 int gpu_exec(bool profiling, long * inter_time) {
-    size_t local_item_size = 64; /* minimum threads per group */
+    size_t local_item_size = max_threads_per_group;
     size_t global_item_size = batch_size / tuple_per_thread;
 
     int count = 0;
