@@ -1,6 +1,6 @@
 # Compiler Configurations
 CC        = gcc
-CFLAGS    = -Wall -g -I$(shell pwd)
+CFLAGS    = -Wall -g -I$(shell pwd) -pthread
 UNAME := $(shell uname -s)
 LDLIBS    = -lm
 DEPFLAGS  = -MT $@ -MMD -MP -MF $(DEPDIR)/$*.d
