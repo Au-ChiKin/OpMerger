@@ -3,7 +3,7 @@
 
 #include "gpu_config.h"
 #include "gpu_agg.h"
-// #include "resulthandler.h"
+#include "resulthandler.h"
 
 typedef struct gpu_query *gpu_query_p;
 typedef struct gpu_query {
@@ -16,7 +16,7 @@ typedef struct gpu_query {
 	
 	/* It seems that resultHandler is a thread created to monitor the performance of GPU but
 	   it is only used when there is a join (i.e. the exce2 is used) */
-	// resultHandlerP handler;
+	resultHandlerP handler;
 
 	int cur_config; // which config this query is currently using
 	gpu_config_p configs [NCONTEXTS]; // each config (i.e. context in Saber) has two command queues. 
@@ -58,6 +58,7 @@ int gpu_query_exec (
 	gpu_query_p, 
 	size_t *, size_t *, 
 	query_operator_p, 
-	void ** input_batches, void ** output_batches, size_t addr_size);
+	void ** input_batches, void ** output_batches, size_t addr_size,
+	query_event_p event);
 
 #endif /* __GPU_QUERY_H_ */

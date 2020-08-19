@@ -6,6 +6,8 @@
 #include "gpu_input_buffer.h"
 #include "gpu_output_buffer.h"
 
+#include "../monitor/event_manager.h"
+
 #ifdef __APPLE__
 #include <OpenCL/opencl.h>
 #else
@@ -105,5 +107,11 @@ void gpu_config_waitForReadEvent (gpu_config_p);
 void gpu_config_waitForWriteEvent (gpu_config_p);
 
 void gpu_config_profileQuery (gpu_config_p);
+
+void gpu_config_readOutput (gpu_config_p q, 
+	void (*callback)(gpu_config_p, int, int, int), int qid);
+
+void gpu_config_notifyEnd (gpu_config_p q,
+	void (*callback)(query_event_p), query_event_p event);
 
 #endif /* __GPU_CONFIG_H_ */

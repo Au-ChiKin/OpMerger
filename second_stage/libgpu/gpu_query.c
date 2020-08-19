@@ -19,13 +19,16 @@ static int gpu_query_exec_1 (
 	gpu_query_p, 
 	size_t *, size_t *, 
 	query_operator_p, 
-	void ** input_batches, void ** output_batches, size_t addr_size);
+	void ** input_batches, void ** output_batches, size_t addr_size,
+	query_event_p event);
+
 /* with pipelining */
 static int gpu_query_exec_2 (
 	gpu_query_p query, 
 	size_t *threads, size_t *threadsPerGroup, 
 	query_operator_p operator, 
-	void ** input_batches, void ** output_batches, size_t addr_size);
+	void ** input_batches, void ** output_batches, size_t addr_size,
+	query_event_p event);
 
 gpu_query_p gpu_query_new (int qid, cl_device_id device, cl_context context, const char *source,
 	int _kernels, int _inputs, int _outputs) {
@@ -212,7 +215,8 @@ int gpu_query_exec (
 	gpu_query_p query, 
 	size_t *threads, size_t *threadsPerGroup, 
 	query_operator_p operator, 
-	void ** input_batches, void ** output_batches, size_t addr_size) {
+	void ** input_batches, void ** output_batches, size_t addr_size,
+	query_event_p event) {
 	
 	if (! query)
 		return -1;
@@ -222,13 +226,15 @@ int gpu_query_exec (
 			query, 
 			threads, threadsPerGroup, 
 			operator, 
-			input_batches, output_batches, addr_size);
+			input_batches, output_batches, addr_size,
+			event);
 	} else {
 		return gpu_query_exec_2 (
 			query, 
 			threads, threadsPerGroup, 
 			operator, 
-			input_batches, output_batches, addr_size);
+			input_batches, output_batches, addr_size,
+			event);
 	}
 }
 
@@ -236,7 +242,8 @@ static int gpu_query_exec_1 (
 	gpu_query_p query, 
 	size_t *threads, size_t *threadsPerGroup, 
 	query_operator_p operator, 
-	void ** input_batches, void ** output_batches, size_t addr_size) {
+	void ** input_batches, void ** output_batches, size_t addr_size,
+	query_event_p event) {
 	
 	/* There is only one config for this prototype */
 	gpu_config_p config = gpu_switch_config(query);
@@ -257,6 +264,10 @@ static int gpu_query_exec_1 (
 	gpu_config_flush (config);
 	gpu_config_finish(config);
 
+	if (event) { // With event, i.e. the last operator
+		gpu_config_notifyEnd(config, operator->notifyEnd, event);
+	}
+
 #ifdef GPU_PROFILE
 	/* Profiling */
 	gpu_config_profileQuery (config);
@@ -269,7 +280,8 @@ static int gpu_query_exec_2 (
 	gpu_query_p query, 
 	size_t *threads, size_t *threadsPerGroup, 
 	query_operator_p operator, 
-	void ** input_batches, void ** output_batches, size_t addr_size) {
+	void ** input_batches, void ** output_batches, size_t addr_size,
+	query_event_p event) {
 	
 	/* The current config might still running, get another config */
 	gpu_config_p config = gpu_switch_config (query);
@@ -288,17 +300,21 @@ static int gpu_query_exec_2 (
 		gpu_config_finish(out_config);
 		
 #ifdef GPU_PROFILE
-		gpu_config_profileQuery (theOther);
+		gpu_config_profileQuery (out_config);
 #endif
 
-		/* Handler results */
-		// if (q->handler) {
-		//	/* Configure and notify output result handler */
-		// 	result_handler_readOutput (q->handler, q->qid, theOther, operator->readOutput, obj);
+		/* Handle results */
+		// if (query->handler) {
+		// 	/* Configure and notify output result handler */
+		// 	result_handler_readOutput (query->handler, query->qid, out_config, operator->readOutput);
 		// } else {
 		// 	/* Read output */
-		// 	gpu_config_readOutput (theOther, operator->readOutput, env, obj, q->qid);
+		// 	gpu_config_readOutput (out_config, operator->readOutput, query->qid);
 		// }
+
+		if (event) { // With event, i.e. the last operator
+			gpu_config_notifyEnd(config, operator->notifyEnd, event);
+		}
 	}
 	
 	/* We don't need writeInput */

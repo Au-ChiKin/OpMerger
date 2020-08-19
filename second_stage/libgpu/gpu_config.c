@@ -316,54 +316,47 @@ void gpu_config_moveOutputBuffers (gpu_config_p config, void ** host_addr, size_
 	return;
 }
 
-/* TODO: could use these (readOutput + callback_readOut) to understand the usage of Mark
-   But not that useful for use*/
-// void gpu_context_readOutput (gpu_config_p q, int qid) {
+void gpu_config_readOutput (gpu_config_p q, 
+	void (*callback)(gpu_config_p, int, int, int), int qid) {
 
-// 	int idx;
-// 	/* Find mark */
-// 	int mark = -1;
-// 	for (idx = 0; idx < q->kernelOutput.count; idx++) {
-// 		if (q->kernelOutput.outputs[idx]->bearsMark) {
-// 			dbg("[DBG] output %d bears mark\n", idx);
-// 			int N = q->kernelOutput.outputs[idx]->size / sizeof(int);
-// 			// dbg("[DBG] %d values\n", N);
-// 			int *values = (int *) (q->kernelOutput.outputs[idx]->mapped_buffer);
-// 			int j;
-// 			for (j = N - 1; j >= 0; j--) {
-// 				// dbg("[DBG] value[%6d] = %d\n", j, values[j]);
-// 				if (values[j] != 0) {
-// 					mark = values[j];
-// 					break;
-// 				}
-// 			}
-// 			dbg("[DBG] mark is %d\n", mark);
-// 			break;
-// 		}
-// 	}
-// 	// mark = -1;
-// 	// fprintf(stdout, "[DBG] mark is %10d\n", mark);
-// 	// fflush(stdout);
+	int idx;
+	/* Find mark */
+	int mark = -1;
+	// for (idx = 0; idx < q->kernelOutput.count; idx++) {
+	// 	if (q->kernelOutput.outputs[idx]->bearsMark) {
+	// 		dbg("[DBG] output %d bears mark\n", idx);
+	// 		int N = q->kernelOutput.outputs[idx]->size / sizeof(int);
+	// 		// dbg("[DBG] %d values\n", N);
+	// 		int *values = (int *) (q->kernelOutput.outputs[idx]->mapped_buffer);
+	// 		int j;
+	// 		for (j = N - 1; j >= 0; j--) {
+	// 			// dbg("[DBG] value[%6d] = %d\n", j, values[j]);
+	// 			if (values[j] != 0) {
+	// 				mark = values[j];
+	// 				break;
+	// 			}
+	// 		}
+	// 		dbg("[DBG] mark is %d\n", mark);
+	// 		break;
+	// 	}
+	// }
+	// mark = -1;
+	// fprintf(stdout, "[DBG] mark is %10d\n", mark);
+	// fflush(stdout);
 
-// 	/* Use the mark */
-// 	int size;
-// 	if (mark >= 0 && (! q->kernelOutput.outputs[idx]->ignoreMark))
-// 		size = mark;
-// 	 else
-// 		size = q->kernelOutput.outputs[idx]->size;
-	
-// 	if (size > q->kernelOutput.outputs[idx]->size) {
-// 		fprintf(stderr, "error: invalid mark for query's %d output buffer %d (marked %d bytes; size is %d bytes)\n",
-// 			qid, idx, size, q->kernelOutput.outputs[idx]->size);
-// 		exit(1);
-// 	}
+	(*callback) (q, qid, 0, mark);
 
-// 	/* Not going to call the callback function */
-// 	// for (idx = 0; idx < q->kernelOutput.count; idx++)
-// 	// 	(*callback) (q, env, obj, qid, idx, mark);
+	return;
+}
 
-// 	return;
-// }
+void gpu_config_notifyEnd (gpu_config_p q, 
+	void (*callback)(query_event_p), query_event_p event) {
+
+	/* To notify the end of processing */
+	(*callback) (event);
+
+	return;
+}
 
 
 #ifdef GPU_PROFILE

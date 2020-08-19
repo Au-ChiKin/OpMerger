@@ -3,6 +3,9 @@
 
 #include "gpu_config.h"
 
+#include "../monitor/monitor.h"
+#include "../monitor/event_manager.h"
+
 typedef struct query_operator *query_operator_p;
 typedef struct query_operator {
 
@@ -11,7 +14,8 @@ typedef struct query_operator {
 
 	/* For moving data acros JNI, so no use */
 	// void (*writeInput) (gpu_config_p, int, int);
-	// void (*readOutput) (gpu_config_p, int, int, int);
+	void (*readOutput) (gpu_config_p, int, int, int);
+	void (*notifyEnd) (query_event_p);
 
 	void (*configure) (cl_kernel, gpu_config_p, int *, long *);
 
@@ -52,7 +56,7 @@ void gpu_reset_kernel_reduce(int qid, int * args1, long * args2);
 void gpu_set_kernel_select(int qid, int * args);
 
 /* Initialise OpenCL device */
-void gpu_init(int query_num, int pipeline_depth);
+void gpu_init(int query_num, int pipeline_depth, event_manager_p event_manager);
 
 /* Creates and returns a new query */
 int gpu_get_query (const char *source, int _kernels, int _inputs, int _outputs);
@@ -72,12 +76,22 @@ void gpu_free();
 
 /* Execute operators*/
 
-void gpu_execute (int qid, size_t * threads, size_t * threadsPerGroup, void ** input_batches, void ** output_batches, size_t addr_size);
+void gpu_execute (int qid, 
+	size_t * threads, size_t * threadsPerGroup, 
+	void ** input_batches, void ** output_batches, size_t addr_size,
+	query_event_p event);
 
 /* Reduce */
-void gpu_execute_reduce(int qid, size_t * threads, size_t * threads_per_group, long * args2, void ** input_batches, void ** output_batches, size_t addr_size);
+void gpu_execute_reduce(int qid, 
+	size_t * threads, size_t * threads_per_group, 
+	long * args2, 
+	void ** input_batches, void ** output_batches, size_t addr_size,
+	query_event_p event);
 
-void gpu_execute_aggregate(int qid, size_t * threads, size_t * threads_per_group, long * args2, 
-	void ** input_batches, void ** output_batches, size_t addr_size);
+void gpu_execute_aggregate(int qid, 
+	size_t * threads, size_t * threads_per_group, 
+	long * args2, 
+	void ** input_batches, void ** output_batches, size_t addr_size,
+	query_event_p event);
 
 #endif
