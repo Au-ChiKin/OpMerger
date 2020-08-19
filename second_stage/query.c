@@ -44,7 +44,7 @@ void query_add_operator(query_p query, void * new_operator, operator_p operator_
        for now */
 }
 
-void query_setup(query_p query) {
+void query_setup(query_p query, event_manager_p manager, monitor_p monitor) {
     bool is_profiling = true;
     
     if (query->operator_num == 0) {
@@ -54,9 +54,9 @@ void query_setup(query_p query) {
 
     if (is_profiling) {
         /* Start the monitor (worker) thread */
-        query->manager = event_manager_init();
+        query->manager = manager;
 
-        query->monitor = monitor_init(query->manager);
+        query->monitor = monitor;
     }
 
     if (query->is_merging) {
@@ -125,9 +125,6 @@ void query_process(query_p query, batch_p input, batch_p output) {
         event->tuples = query->batch_size;
         /* TODO need to somehow pass the tuple size from query to monitor */
         event->tuple_size = 64;
-    }
-    if (is_profiling) {
-        event_manager_add_event(query->manager, event);
     }
 
     if (query->is_merging) {

@@ -42,8 +42,12 @@ void run_processing_gpu(
     /* TODO: dynmaically decide the output buffer size */
     batch_p output = batch(6 * buffer_size, 0, result, 6 * buffer_size, TUPLE_SIZE);
 
+    /* Start throughput monitoring */
+    event_manager_p manager = event_manager_init();
+    monitor_p monitor = monitor_init(manager);
+
     int const query_num = 2;
-    gpu_init(query_num, pipeline_num);
+    gpu_init(query_num, pipeline_num, manager);
 
     /* Construct schemas */
     schema_p schema1 = schema();
@@ -84,7 +88,7 @@ void run_processing_gpu(
 
                 query_add_operator(query1, (void *) select1, select1->operator);
 
-                query_setup(query1);
+                query_setup(query1, manager, monitor);
 
                 int b = 0;
                 for (int l=0; l<work_load; l++) {
@@ -120,7 +124,7 @@ void run_processing_gpu(
 
                 query_add_operator(query1, (void *) reduce1, reduce1->operator);
 
-                query_setup(query1);
+                query_setup(query1, manager, monitor);
 
                 int b = 0;
                 for (int l=0; l<work_load; l++) {
@@ -168,7 +172,7 @@ void run_processing_gpu(
                 query_add_operator(query1, (void *) select1, select1->operator);
                 query_add_operator(query1, (void *) select2, select2->operator);
 
-                query_setup(query1);
+                query_setup(query1, manager, monitor);
 
                 int b = 0;
                 for (int l=0; l<work_load; l++) {
@@ -255,7 +259,7 @@ void run_processing_gpu(
                 query_add_operator(query1, (void *) select1, select1->operator);
                 query_add_operator(query1, (void *) reduce1, reduce1->operator);
 
-                query_setup(query1);
+                query_setup(query1, manager, monitor);
 
                 int b = 0;
                 for (int l=0; l<work_load; l++) {
@@ -321,7 +325,7 @@ void run_processing_gpu(
 
                 query_add_operator(query1, (void *) aggregate1, aggregate1->operator);
 
-                query_setup(query1);
+                query_setup(query1, manager, monitor);
 
                 int b = 0;
                 for (int l=0; l<work_load; l++) {
@@ -400,7 +404,7 @@ void run_processing_gpu(
                 query_add_operator(query1, (void *) aggregate1, aggregate1->operator);
                 query_add_operator(query1, (void *) select1, select1->operator);
 
-                query_setup(query1);
+                query_setup(query1, manager, monitor);
 
                 int b = 0;
                 for (int l=0; l<work_load; l++) {
