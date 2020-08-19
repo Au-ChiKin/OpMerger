@@ -43,7 +43,7 @@ void run_processing_gpu(
     batch_p output = batch(6 * buffer_size, 0, result, 6 * buffer_size, TUPLE_SIZE);
 
     int const query_num = 2;
-    gpu_init(query_num);
+    gpu_init(query_num, 1);
 
     /* Construct schemas */
     schema_p schema1 = schema();

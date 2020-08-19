@@ -18,16 +18,11 @@ static cl_device_id device = NULL;
 static cl_context context = NULL;
 
 static int query_num;
-static int free_index;
+static int free_query_id;
 static gpu_query_p queries [MAX_QUERIES];
 
-// static int D;
-// static gpu_config_p pipeline [MAX_DEPTH];
-
-// static jclass class;
-// static jmethodID writeMethod, readMethod;
-
-// static resultHandlerP resultHandler = NULL;
+static int pipeline_num;
+static gpu_config_p pipeline [MAX_DEPTH];
 
 /* Callback functions */
 
@@ -127,7 +122,7 @@ static void set_context () {
 	return ;
 }
 
-void gpu_init (int _queries) {
+void gpu_init (int _queries, int _depth) {
 
 	set_platform ();
 
@@ -137,9 +132,13 @@ void gpu_init (int _queries) {
     set_context ();
     
 	query_num = _queries;
-	free_index = 0;
+	free_query_id = 0;
 	for (int i = 0; i < MAX_QUERIES; i++)
 		queries[i] = NULL;
+
+	pipeline_num = _depth; /* Pipeline depth */
+	for (int i = 0; i < MAX_DEPTH; i++)
+		pipeline[i] = NULL;
 
 	// #ifdef GPU_HANDLER
 	// /* Create result handler */
@@ -153,7 +152,7 @@ void gpu_init (int _queries) {
 
 int gpu_get_query (const char *source, int _kernels, int _inputs, int _outputs) {
 	
-	int query_id = free_index++;
+	int query_id = free_query_id++;
 	if (query_id < 0 || query_id >= query_num) {
 		fprintf(stderr, "error: query index [%d] out of bounds\n", query_id);
 		exit (1);
@@ -764,18 +763,20 @@ void callback_configureAggregate (cl_kernel kernel, gpu_config_p context, int *a
 // }
 
 gpu_config_p callback_execKernel(gpu_config_p config) {
-	// int i;
-	gpu_config_p p = NULL; // pipeline[0];
-	// #ifdef GPU_VERBOSE
-	// if (! p)
-	// 	dbg("[DBG] (null) callback_execKernel(%p) \n", context);
-	// else
-	// 	dbg("[DBG] %p callback_execKernel(%p)\n", p, context);
-	// #endif
-	// /* Shift */
-	// for (i = 0; i < D - 1; i++) {
-	// 	pipeline[i] = pipeline [i + 1];
-	// }
-	// pipeline[D - 1] = config;
+	/* Get the top one */
+	gpu_config_p p = pipeline[0];
+	#ifdef GPU_VERBOSE
+	if (! p)
+		dbg("[DBG] (null) callback_execKernel(%p) \n", context);
+	else
+		dbg("[DBG] %p callback_execKernel(%p)\n", p, context);
+	#endif
+
+	/* Shift */
+	for (int i = 0; i < pipeline_num - 1; i++) {
+		pipeline[i] = pipeline [i + 1];
+	}
+	pipeline[pipeline_num - 1] = config;
+	
 	return p;
 }

@@ -18,7 +18,7 @@ typedef struct gpu_query {
 	   it is only used when there is a join (i.e. the exce2 is used) */
 	// resultHandlerP handler;
 
-	int ndx; // which config this query is currently using
+	int cur_config; // which config this query is currently using
 	gpu_config_p configs [NCONTEXTS]; // each config (i.e. context in Saber) has two command queues. 
 	// Therefore when there are multiple configs, the higher layer can arrange (execute) the input and 
 	// output while the other congfigs is processing the data. Because this prototype does not aim for
