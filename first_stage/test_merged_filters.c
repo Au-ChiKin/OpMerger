@@ -13,7 +13,7 @@
 
 void write_input_buffer(cbuf_handle_t buffer);
 
-void run_processing_gpu(cbuf_handle_t buffer, int size, int * result, int load, enum test_cases mode) {
+void run_processing_gpu(cbuf_handle_t buffer, int size, tuple_t * result, int load, enum test_cases mode) {
     input_t * batch = (input_t *) malloc(size * sizeof(tuple_t));
 
     switch (mode) {
@@ -120,12 +120,7 @@ int main(int argc, char * argv[]) {
         
         printf("[CPU] The output from cpu is %d\n\n", results_size);
     } else {
-        int results[BUFFER_SIZE];
-        for (int i=0; i<BUFFER_SIZE; i++) {
-            results[i] = 1;
-        }
-
-        run_processing_gpu(cbuf, BUFFER_SIZE, results, work_load, mode);
+        run_processing_gpu(cbuf, BUFFER_SIZE, results_tuple, work_load, mode);
     }
 
     free(buffer);
