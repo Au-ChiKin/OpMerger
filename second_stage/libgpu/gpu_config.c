@@ -192,7 +192,6 @@ void gpu_config_submitKernel (gpu_config_p config, size_t *threads, size_t *thre
 			&(threadsPerGroup[i]),
 			0, NULL, NULL);
 #endif
-		clFinish(config->command_queue[0]);
 		if (error != CL_SUCCESS) {
 			fprintf(stderr, "opencl error (%d): %s (%s)\n", error, getErrorMessage(error), __FUNCTION__);
 			exit (1);
