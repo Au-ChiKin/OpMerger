@@ -274,7 +274,7 @@ static int gpu_query_exec_2 (
 	/* The current config might still running, get another config */
 	gpu_config_p config = gpu_switch_config (query);
 	
-	/* Queue this config into the pipeline and save the pop out config */
+	/* Queue this config into the pipeline end and save the pop out config */
 	gpu_config_p out_config = (operator->execKernel(config));
 	if (config == out_config) {
 		fprintf(stderr, "error: invalid pipelined query context switch\n");
