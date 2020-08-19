@@ -503,7 +503,7 @@ void reduction_reset(void * reduce_ptr, int new_batch_size) {
     args1[0] = new_batch_size; /* tuples */
     args1[1] = new_batch_size * tuple_size; /* input size */
     args1[2] = PARTIAL_WINDOWS; 
-    args1[3] = 16 * MAX_THREADS_PER_GROUP; /* local cache size */
+    args1[3] = 32 * MAX_THREADS_PER_GROUP; /* local cache size */
 
     long args2 [2];
     args2[0] = 0; /* Previous pane id   */
