@@ -1,11 +1,13 @@
 # Compiler Configurations
 CC        = gcc
-CFLAGS    = -Wall -g -I$(shell pwd) -pthread
-UNAME := $(shell uname -s)
+CFLAGS    = -I$(shell pwd) -pthread
+DBFLAGS   = -Wall -g
+REFLAGS   = -O2
 LDLIBS    = -lm
 DEPFLAGS  = -MT $@ -MMD -MP -MF $(DEPDIR)/$*.d
-COMPILE.c = $(CC) $(DEPFLAGS) $(CFLAGS) $(CPPFLAGS) $(TARGET_ARCH) $(LDLIBS) -c
-LINK.o    = $(CC) $(CFLAGS)
+COMPILE.c = $(CC) $(DEPFLAGS) $(CFLAGS) $(TARGET_ARCH) -c
+LINK.o    = $(CC) $(CFLAGS) $(LDLIBS)
+UNAME := $(shell uname -s)
 ifeq ($(UNAME),Linux)
 	CFLAGS += -I/usr/local/cuda/include
 	LDLIBS += -lOpenCL
@@ -48,7 +50,11 @@ include $(wildcard $(DEPFILES))
 # Compile the main program
 OBJPROG = $(addprefix $(OBJDIR)/, $(PROGS))
 
+all: CFLAGS += $(REFLAGS)
 all: $(OBJPROG)
+
+debug: CFLAGS += $(DBFLAGS)
+debug: $(OBJPROG)
 
 $(OBJPROG): $(addprefix $(OBJDIR)/, $(OBJECTS)) 
 		$(LINK.o) $^ $(LDLIBS) -o $@

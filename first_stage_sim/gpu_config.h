@@ -1,13 +1,13 @@
 #ifndef __GPU_CONFIG_H_
 #define __GPU_CONFIG_H_
 
-#include "utils.h"
+#include "../clib/utils.h"
 
-#include "debug.h"
+#include "../clib/debug.h"
 
 /* We do not want to use them for now since they are too complicated */
-// #include "inputbuffer.h"
-// #include "outputbuffer.h"
+// #include "../clib/inputbuffer.h"
+// #include "../clib/outputbuffer.h"
 
 #ifdef __APPLE__
 #include <OpenCL/opencl.h>

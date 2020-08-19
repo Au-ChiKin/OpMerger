@@ -1,8 +1,8 @@
 #include "gpu.h"
 
-#include "../clib/debug.h"
-#include "../clib/utils.h"
-#include "../clib/openclerrorcode.h"
+#include "debug.h"
+#include "utils.h"
+#include "openclerrorcode.h"
 
 #include "gpu_query.h"
 
