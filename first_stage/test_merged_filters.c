@@ -131,32 +131,26 @@ void write_input_buffer(cbuf_handle_t buffer, int batch_size) {
 
 int main(int argc, char * argv[]) {
 
-    int work_load = 1; // default to be 1 MB
-    int batch_size = 32768 * 32; // default to be 32MB per batch
+    int work_load = 32; // default to be 32 MB
+    int batch_size = 32; // default to be 32MB per batch
     enum test_cases mode = MERGED_SELECT;
 
-    parse_arguments(argc, argv, &mode, &work_load);
+    parse_arguments(argc, argv, &mode, &work_load, &batch_size);
 
-    if (work_load < 32) {
-        if (work_load != 1 &&
-            work_load != 2 &&
-            work_load != 4 &&
-            work_load != 8 &&
-            work_load != 16) {
-
-            fprintf(stderr, "error: workload shoud be power of 2 if < 32\n");
-            exit(1);
-        }
-        batch_size = batch_size / 32 * work_load;
+    if (work_load < batch_size) {
+        printf("Reset batch size to be %d\n", work_load);
+        batch_size = work_load;
         work_load = 1;
     } else {
-        if (work_load % 32 != 0) {
-
-            fprintf(stderr, "error: workload shoud be muiltiple of 32 if >= 32\n");
+        if (work_load % batch_size != 0) {
+            fprintf(stderr, "error: workload shoud be muiltiple of %d if >= %d\n",
+                batch_size, batch_size);
             exit(1);
         }
-        work_load /= 32;
+        work_load /= batch_size;
     }
+    /* convert into in tuples */
+    batch_size *= ((1024 * 1024) / TUPLE_SIZE); 
 
     uint8_t * buffer  = (uint8_t *) malloc(batch_size * TUPLE_SIZE * sizeof(uint8_t));
     if (!buffer) {
