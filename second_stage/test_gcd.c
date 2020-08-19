@@ -132,7 +132,9 @@ void run_processing_gpu(
                     query_process(query1, input[b], output);
 
                     /* For debugging */
-                    reduction_print_output(output, buffer_size, schema1->size);
+                    if (is_debug) {
+                        reduction_print_output(output, buffer_size, schema1->size);
+                    }
 
                     b = (b + 1) % buffer_num;
                 }
