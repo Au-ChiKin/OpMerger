@@ -34,6 +34,7 @@ typedef struct selection {
     int id; /* id for mark which selection instance this is */
     int qid; /* id of gpu_query in libgpu where a query means an opeartor */
 
+    int batch_size;
     schema_p input_schema;
 
     int ref;
