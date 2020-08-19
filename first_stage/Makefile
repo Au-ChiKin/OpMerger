@@ -34,9 +34,9 @@ $(DEPDIR): ; mkdir -p $@
 $(OBJDIR): ; mkdir -p $@
 
 # Special case
-obj/openclerrorcode.o : ../clib/openclerrorcode.c obj/.deps/openclerrorcode.d | $(DEPDIR)
-		$(CC) -MT $@ -MMD -MP -MF obj/.deps/openclerrorcode.d $(CFLAGS) $(CPPFLAGS) $(TARGET_ARCH) -c \
-		$(OUTPUT_OPTION) $<
+# obj/openclerrorcode.o : ../clib/openclerrorcode.c obj/.deps/openclerrorcode.d | $(DEPDIR)
+# 		$(CC) -MT $@ -MMD -MP -MF obj/.deps/openclerrorcode.d $(CFLAGS) $(CPPFLAGS) $(TARGET_ARCH) -c \
+# 		$(OUTPUT_OPTION) $<
 
 
 # Compile objects with auto dependency

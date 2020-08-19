@@ -1,6 +1,6 @@
 #include "gpu_config.h"
 
-#include "../clib/openclerrorcode.h"
+#include "openclerrorcode.h"
 
 #include <stdio.h>
 #include <stdlib.h>
