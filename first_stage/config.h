@@ -17,6 +17,6 @@ enum test_cases {
 };
 
 void set_test_case(char const * mname, enum test_cases * mode);
-void parse_arguments(int argc, char * argv[], enum test_cases * mode, int * work_load);
+void parse_arguments(int argc, char * argv[], enum test_cases * mode, int * work_load, int * batch_size);
 
 #endif // CONFIG_H
