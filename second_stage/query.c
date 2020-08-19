@@ -11,6 +11,7 @@ query_p query(int id, int batch_size, window_p window, bool is_merging) {
     query->id = id;
     query->has_setup = false;
 
+    query->batch_count = 0;
     query->batch_size = batch_size;
 
     query->window = window;
@@ -111,9 +112,23 @@ void query_process(query_p query, batch_p input, batch_p output) {
         exit(1);        
     }
 
-    /* Start time */
-    struct timespec start, end;
+    /* Log start time and create the event */
+    struct timespec start;
     clock_gettime(CLOCK_MONOTONIC_RAW, &start);
+
+    query_event_p event = (query_event_p) malloc(sizeof(query_event_t));
+    {
+        event->query_id = query->id;
+        event->batch_id = ++query->batch_count;
+
+        event->start = start.tv_sec * 1000000 + start.tv_nsec / 1000;
+        event->tuples = query->batch_size;
+        /* TODO need to somehow pass the tuple size from query to monitor */
+        event->tuple_size = 64;
+    }
+    if (is_profiling) {
+        event_manager_add_event(query->manager, event);
+    }
 
     if (query->is_merging) {
         /* If operators have been merged, only the (new) last operator needs to be executed */
@@ -124,7 +139,8 @@ void query_process(query_p query, batch_p input, batch_p output) {
             query->operators[last_op_id], 
             input,
             query->window,
-            output);
+            output,
+            event); // Pass the event to the last operator
     } else {
         /* Create an intermediate buffer for data from operator to operator */
         u_int8_t * inter_buffer = malloc(6 * query->batch_size * 64 /* TODO: a more reasonable way to define the size */);
@@ -159,11 +175,11 @@ void query_process(query_p query, batch_p input, batch_p output) {
                     (* query->callbacks[i]->reset) (query->operators[i], input->size);
                 }
 
-                (* query->callbacks[i]->process) (
-                    query->operators[i], 
-                    input, 
+                (* query->callbacks[i]->process) (query->operators[i], 
+                    input,
                     query->window,
-                    inter);
+                    inter,
+                    NULL); // Not the last operator, for now, do not log its time
 
                 /* Move the inter to input */
                 (* query->callbacks[i]->process_output) (query->operators[i], inter);
@@ -182,29 +198,13 @@ void query_process(query_p query, batch_p input, batch_p output) {
                     (* query->callbacks[i]->reset) (query->operators[i], input->size);
                 }
 
-                (* query->callbacks[i]->process) (
-                    query->operators[i], 
-                    input, 
+                (* query->callbacks[i]->process) (query->operators[i], 
+                    input,
                     query->window,
-                    output);
+                    output,
+                    event); // Pass the event to the last operator 
             }
         }
-    }
-
-    /* TODO: Add a measurment to the performance monitor */
-    clock_gettime(CLOCK_MONOTONIC_RAW, &end);
-
-    query_event_p event = (query_event_p) malloc(sizeof(query_event_t));
-    {
-        event->start = start.tv_sec * 1000000 + start.tv_nsec / 1000;
-        event->end = end.tv_sec * 1000000 + end.tv_nsec / 1000;
-        event->tuples = query->batch_size;
-        /* TODO need to somehow pass the tuple size from query to monitor */
-        event->tuple_size = 64;
-    }
-
-    if (is_profiling) {
-        event_manager_add_event(query->manager, event);
     }
 }
 

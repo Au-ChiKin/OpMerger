@@ -16,6 +16,7 @@ typedef struct query * query_p;
 typedef struct query {
     int id;
     int batch_size;
+    int batch_count;
     bool has_setup;
 
     window_p window;

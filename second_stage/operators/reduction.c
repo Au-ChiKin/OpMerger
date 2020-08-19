@@ -401,7 +401,7 @@ void reduction_setup(void * reduce_ptr, int batch_size, window_p window, char co
     gpu_set_kernel_reduce(qid, args1, args2);
 }
 
-void reduction_process(void * reduce_ptr, batch_p batch, window_p window, batch_p output) {
+void reduction_process(void * reduce_ptr, batch_p batch, window_p window, batch_p output, query_event_p event) {
     reduction_p reduce = (reduction_p) reduce_ptr;
     
     long args2[2];
@@ -440,7 +440,8 @@ void reduction_process(void * reduce_ptr, batch_p batch, window_p window, batch_
         reduce->qid,
         reduce->threads, reduce->threads_per_group,
         args2,
-        (void **) (inputs), (void **) (outputs), sizeof(u_int8_t));
+        (void **) (inputs), (void **) (outputs), sizeof(u_int8_t),
+        event);
         // passing the batch without deserialisation
 }
 
