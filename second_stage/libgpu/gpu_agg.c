@@ -21,7 +21,7 @@ static int query_num;
 static int free_query_id;
 static gpu_query_p queries [MAX_QUERIES];
 
-static int pipeline_num;
+static int pipeline_depth;
 static gpu_config_p pipeline [MAX_DEPTH];
 
 /* Callback functions */
@@ -136,7 +136,11 @@ void gpu_init (int _queries, int _depth) {
 	for (int i = 0; i < MAX_QUERIES; i++)
 		queries[i] = NULL;
 
-	pipeline_num = _depth; /* Pipeline depth */
+	pipeline_depth = _depth; /* Pipeline depth */
+	if (_depth > MAX_DEPTH) {
+		fprintf(stderr, "[GPU] error: the set pipeline has exceed the limit (%d)\n", MAX_DEPTH);
+		exit(1);
+	}
 	for (int i = 0; i < MAX_DEPTH; i++)
 		pipeline[i] = NULL;
 
@@ -773,10 +777,10 @@ gpu_config_p callback_execKernel(gpu_config_p config) {
 	#endif
 
 	/* Shift */
-	for (int i = 0; i < pipeline_num - 1; i++) {
+	for (int i = 0; i < pipeline_depth - 1; i++) {
 		pipeline[i] = pipeline [i + 1];
 	}
-	pipeline[pipeline_num - 1] = config;
+	pipeline[pipeline_depth - 1] = config;
 	
 	return p;
 }

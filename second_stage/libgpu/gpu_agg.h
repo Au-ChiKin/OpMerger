@@ -52,7 +52,7 @@ void gpu_reset_kernel_reduce(int qid, int * args1, long * args2);
 void gpu_set_kernel_select(int qid, int * args);
 
 /* Initialise OpenCL device */
-void gpu_init(int query_num, int pipeline_num);
+void gpu_init(int query_num, int pipeline_depth);
 
 /* Creates and returns a new query */
 int gpu_get_query (const char *source, int _kernels, int _inputs, int _outputs);

@@ -45,6 +45,7 @@ void query_add_operator(query_p query, void * new_operator, operator_p operator_
 
 void query_setup(query_p query) {
     bool is_profiling = true;
+    
     if (query->operator_num == 0) {
         fprintf(stderr, "error: No operator has been added to this query (%s)\n", __FUNCTION__);
         exit(1);
@@ -55,7 +56,6 @@ void query_setup(query_p query) {
         query->manager = event_manager_init();
 
         query->monitor = monitor_init(query->manager);
-
     }
 
     if (query->is_merging) {

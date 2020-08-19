@@ -201,8 +201,9 @@ gpu_config_p gpu_switch_config(gpu_query_p query) {
 	int next = (++query->cur_config) % NCONTEXTS;
 #ifdef GPU_VERBOSE
 	if (current >= 0)
-		dbg ("[DBG] switch from %d (%lld read(s), %lld write(s)) to context %d\n",
-			current, query->contexts[current]->readCount, query->contexts[current]->writeCount, next);
+	// (%lld read(s), %lld write(s))
+		dbg ("[DBG] switch from %d to context %d\n",
+			current, next);
 #endif
 	return query->configs[next];
 }

@@ -30,6 +30,8 @@ enum test_cases {
 
 void set_test_case(char const * mname, enum test_cases * mode);
 void parse_arguments(int argc, char * argv[], 
-    enum test_cases * mode, int * work_load, int * batch_size, int * buffer_num, bool * is_merging, bool * is_debug);
+    enum test_cases * mode, 
+    int * work_load, int * batch_size, int * buffer_num, int * pipeline_num,
+    bool * is_merging, bool * is_debug);
 
 #endif // CONFIG_H
