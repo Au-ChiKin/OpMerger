@@ -364,7 +364,7 @@ void selection_reset(void * select_ptr, int new_batch_size) {
     }
 }
 
-void selection_process(void * select_ptr, batch_p input, window_p window, batch_p output) {
+void selection_process(void * select_ptr, batch_p input, window_p window, batch_p output, query_event_p event) {
     selection_p select = (selection_p) select_ptr;
 
     int batch_size = input->size;
@@ -387,8 +387,10 @@ void selection_process(void * select_ptr, batch_p input, window_p window, batch_
     }
 
     /* Execute */
-    gpu_execute(select->qid, select->threads, select->threads_per_group,
-        (void *) inputs, (void *) outputs, sizeof(u_int8_t));
+    gpu_execute(select->qid, 
+        select->threads, select->threads_per_group,
+        (void *) inputs, (void *) outputs, sizeof(u_int8_t),
+        event);
 }
 
 void selection_print_output(selection_p select, batch_p outputs) {

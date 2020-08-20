@@ -153,7 +153,7 @@ void aggregation_setup(void * aggregate_ptr, int batch_size, window_p window, ch
     gpu_set_kernel_aggregate(qid, args1, args2);
 }
 
-void aggregation_process(void * aggregate_ptr, batch_p batch, window_p window, batch_p output) {
+void aggregation_process(void * aggregate_ptr, batch_p batch, window_p window, batch_p output, query_event_p event) {
     aggregation_p aggregate = (aggregation_p) aggregate_ptr;
     
     long args2[2];
@@ -193,7 +193,8 @@ void aggregation_process(void * aggregate_ptr, batch_p batch, window_p window, b
         aggregate->qid,
         aggregate->threads, aggregate->threads_per_group,
         args2,
-        (void **) (inputs), (void **) (outputs), sizeof(u_int8_t));
+        (void **) (inputs), (void **) (outputs), sizeof(u_int8_t),
+        event);
         // passing the batch without deserialisation
 }
 

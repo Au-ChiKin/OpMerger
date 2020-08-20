@@ -19,9 +19,16 @@ static int gpu_query_exec_1 (
 	gpu_query_p, 
 	size_t *, size_t *, 
 	query_operator_p, 
-	void ** input_batches, void ** output_batches, size_t addr_size);
+	void ** input_batches, void ** output_batches, size_t addr_size,
+	query_event_p event);
+
 /* with pipelining */
-static int gpu_query_exec_2 (gpu_query_p, size_t *, size_t *, query_operator_p); 
+static int gpu_query_exec_2 (
+	gpu_query_p query, 
+	size_t *threads, size_t *threadsPerGroup, 
+	query_operator_p operator, 
+	void ** input_batches, void ** output_batches, size_t addr_size,
+	query_event_p event);
 
 gpu_query_p gpu_query_new (int qid, cl_device_id device, cl_context context, const char *source,
 	int _kernels, int _inputs, int _outputs) {
@@ -95,7 +102,7 @@ gpu_query_p gpu_query_new (int qid, cl_device_id device, cl_context context, con
 
 	// query->handler = NULL;
 
-	// query->ndx = -1;
+	query->cur_config = -1;
 	for (i = 0; i < NCONTEXTS; i++) {
 		query->configs[i] = gpu_config(query->qid, query->device, query->context, query->program, _kernels, _inputs, _outputs);
 	}
@@ -186,28 +193,30 @@ int gpu_query_resetKernel (gpu_query_p query,
 	return 0;
 }
 
-// gpu_config_p gpu_switch_config(gpu_query_p query) {
-// 	if (! query) {
-// 		fprintf (stderr, "error: null query\n");
-// 		return NULL;
-// 	}
-// #ifdef GPU_VERBOSE
-// 	int current = (query->ndx) % NCONTEXTS;
-// #endif
-// 	int next = (++query->ndx) % NCONTEXTS;
-// #ifdef GPU_VERBOSE
-// 	if (current >= 0)
-// 		dbg ("[DBG] switch from %d (%lld read(s), %lld write(s)) to context %d\n",
-// 			current, query->contexts[current]->readCount, query->contexts[current]->writeCount, next);
-// #endif
-// 	return query->configs[next];
-// }
+gpu_config_p gpu_switch_config(gpu_query_p query) {
+	if (! query) {
+		fprintf (stderr, "error: null query\n");
+		return NULL;
+	}
+#ifdef GPU_VERBOSE
+	int current = (query->cur_config) % NCONTEXTS;
+#endif
+	int next = (++query->cur_config) % NCONTEXTS;
+#ifdef GPU_VERBOSE
+	if (current >= 0)
+	// (%lld read(s), %lld write(s))
+		dbg ("[DBG] switch from %d to context %d\n",
+			current, next);
+#endif
+	return query->configs[next];
+}
 
 int gpu_query_exec (
 	gpu_query_p query, 
 	size_t *threads, size_t *threadsPerGroup, 
 	query_operator_p operator, 
-	void ** input_batches, void ** output_batches, size_t addr_size) {
+	void ** input_batches, void ** output_batches, size_t addr_size,
+	query_event_p event) {
 	
 	if (! query)
 		return -1;
@@ -217,9 +226,15 @@ int gpu_query_exec (
 			query, 
 			threads, threadsPerGroup, 
 			operator, 
-			input_batches, output_batches, addr_size);
+			input_batches, output_batches, addr_size,
+			event);
 	} else {
-		return gpu_query_exec_2 (query, threads, threadsPerGroup, operator);
+		return gpu_query_exec_2 (
+			query, 
+			threads, threadsPerGroup, 
+			operator, 
+			input_batches, output_batches, addr_size,
+			event);
 	}
 }
 
@@ -227,11 +242,11 @@ static int gpu_query_exec_1 (
 	gpu_query_p query, 
 	size_t *threads, size_t *threadsPerGroup, 
 	query_operator_p operator, 
-	void ** input_batches, void ** output_batches, size_t addr_size) {
+	void ** input_batches, void ** output_batches, size_t addr_size,
+	query_event_p event) {
 	
 	/* There is only one config for this prototype */
-	// gpu_config_p config = gpu_switch_config(query);
-	gpu_config_p config = query->configs[0];
+	gpu_config_p config = gpu_switch_config(query);
 
 	/* Write input */
 	gpu_config_moveInputBuffers (config, input_batches, addr_size);
@@ -249,6 +264,10 @@ static int gpu_query_exec_1 (
 	gpu_config_flush (config);
 	gpu_config_finish(config);
 
+	if (event) { // With event, i.e. the last operator
+		gpu_config_notifyEnd(config, operator->notifyEnd, event);
+	}
+
 #ifdef GPU_PROFILE
 	/* Profiling */
 	gpu_config_profileQuery (config);
@@ -257,53 +276,68 @@ static int gpu_query_exec_1 (
 	return 0;
 }
 
-static int gpu_query_exec_2 (gpu_query_p q, size_t *threads, size_t *threadsPerGroup, query_operator_p operator) {
+static int gpu_query_exec_2 (
+	gpu_query_p query, 
+	size_t *threads, size_t *threadsPerGroup, 
+	query_operator_p operator, 
+	void ** input_batches, void ** output_batches, size_t addr_size,
+	query_event_p event) {
 	
-// 	gpu_config_p p = gpu_config_switch (q);
+	/* The current config might still running, get another config */
+	gpu_config_p config = gpu_switch_config (query);
 	
-// 	gpu_config_p theOther = (operator->execKernel(p));
-	
-// 	if (p == theOther) {
-// 		fprintf(stderr, "error: invalid pipelined query context switch\n");
-// 		exit (1);
-// 	}
+	/* Queue this config into the pipeline end and save the pop out config */
+	gpu_config_p out_config = (operator->execKernel(config));
+	if (config == out_config) {
+		fprintf(stderr, "error: invalid pipelined query context switch\n");
+		exit (1);
+	}
 
-// 	if (theOther) {
+	/* Wait for the pop out config to finish */
+	if (out_config) {
 
-// 		/* Wait for read event from previous query */
-// 		gpu_config_finish(theOther);
+		/* Wait for read event from previous query */
+		gpu_config_finish(out_config);
 		
-// #ifdef GPU_PROFILE
-// 		gpu_config_profileQuery (theOther);
-// #endif
+#ifdef GPU_PROFILE
+		gpu_config_profileQuery (out_config);
+#endif
 
-// 		/* Configure and notify output result handler */
-// 		if (q->handler) {
-// 			result_handler_readOutput (q->handler, q->qid, theOther, operator->readOutput, obj);
-// 		} else {
-// 			/* Read output */
-// 			gpu_config_readOutput (theOther, operator->readOutput, env, obj, q->qid);
-// 		}
-// 	}
-	
-// 	gpu_config_writeInput (p, operator->writeInput, env, obj, q->qid);
+		/* Handle results */
+		// if (query->handler) {
+		// 	/* Configure and notify output result handler */
+		// 	result_handler_readOutput (query->handler, query->qid, out_config, operator->readOutput);
+		// } else {
+		// 	/* Read output */
+		// 	gpu_config_readOutput (out_config, operator->readOutput, query->qid);
+		// }
 
-// 	gpu_config_moveInputBuffers (p);
+		if (event) { // With event, i.e. the last operator
+			gpu_config_notifyEnd(config, operator->notifyEnd, event);
+		}
+	}
 	
-// 	if (operator->configure != NULL) {
-// 		gpu_config_configureKernel (p, operator->configure, operator->args1, operator->args2);
-// 	}
+	/* We don't need writeInput */
+	// gpu_config_writeInput (config, operator->writeInput, env, obj, q->qid);
+
+	/* Begin to use this config to process data */
+
+	gpu_config_moveInputBuffers (config, input_batches, addr_size);
 	
-// 	gpu_config_submitKernel (p, threads, threadsPerGroup);
+	if (operator->configure != NULL) {
+		gpu_config_configureKernel (config, operator->configure, operator->args1, operator->args2);
+	}
 	
-// 	gpu_config_moveOutputBuffers (p);
+	gpu_config_submitKernel (config, threads, threadsPerGroup);
 	
-// 	gpu_config_flush (p);
+	gpu_config_moveOutputBuffers (config, output_batches, addr_size);
 	
-// 	/* Wait until read output from other query context has finished */
-// 	if (theOther && q->handler) {
-// 		result_handler_waitForReadEvent (q->handler);
-// 	}
+	gpu_config_flush (config);
+	
+	/* Wait until read output from other query context has finished */
+	// if (out_config && q->handler) {
+	// 	result_handler_waitForReadEvent (q->handler);
+	// }
 
 	return 0;
 }

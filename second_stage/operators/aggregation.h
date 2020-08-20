@@ -55,7 +55,7 @@ void aggregation_setup(void * reduce_ptr, int batch_size, window_p window, char 
 
 void aggregation_reset(void * reduce_ptr, int new_batch_size);
 
-void aggregation_process(void * reduce_ptr, batch_p batch, window_p window, batch_p output);
+void aggregation_process(void * reduce_ptr, batch_p batch, window_p window, batch_p output, query_event_p event);
 
 void aggregation_print_output(batch_p outputs, int batch_size, int tuple_size);
 

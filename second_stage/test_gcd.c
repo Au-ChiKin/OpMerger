@@ -30,7 +30,7 @@ void print_tuples(cbuf_handle_t cbufs [], int n);
 void run_processing_gpu(
     u_int8_t * buffers [], int buffer_size, int buffer_num,
     u_int8_t * result, 
-    enum test_cases mode, int work_load, bool is_merging, bool is_debug) {
+    enum test_cases mode, int work_load, int pipeline_num, bool is_merging, bool is_debug) {
     
     /* TODO extend the batch struct into a real memoery manager that could create a batch 
     according to the start and end pointer */
@@ -42,8 +42,12 @@ void run_processing_gpu(
     /* TODO: dynmaically decide the output buffer size */
     batch_p output = batch(6 * buffer_size, 0, result, 6 * buffer_size, TUPLE_SIZE);
 
+    /* Start throughput monitoring */
+    event_manager_p manager = event_manager_init();
+    monitor_p monitor = monitor_init(manager);
+
     int const query_num = 2;
-    gpu_init(query_num);
+    gpu_init(query_num, pipeline_num, manager);
 
     /* Construct schemas */
     schema_p schema1 = schema();
@@ -84,7 +88,7 @@ void run_processing_gpu(
 
                 query_add_operator(query1, (void *) select1, select1->operator);
 
-                query_setup(query1);
+                query_setup(query1, manager, monitor);
 
                 int b = 0;
                 for (int l=0; l<work_load; l++) {
@@ -120,7 +124,7 @@ void run_processing_gpu(
 
                 query_add_operator(query1, (void *) reduce1, reduce1->operator);
 
-                query_setup(query1);
+                query_setup(query1, manager, monitor);
 
                 int b = 0;
                 for (int l=0; l<work_load; l++) {
@@ -128,7 +132,9 @@ void run_processing_gpu(
                     query_process(query1, input[b], output);
 
                     /* For debugging */
-                    reduction_print_output(output, buffer_size, schema1->size);
+                    if (is_debug) {
+                        reduction_print_output(output, buffer_size, schema1->size);
+                    }
 
                     b = (b + 1) % buffer_num;
                 }
@@ -168,7 +174,7 @@ void run_processing_gpu(
                 query_add_operator(query1, (void *) select1, select1->operator);
                 query_add_operator(query1, (void *) select2, select2->operator);
 
-                query_setup(query1);
+                query_setup(query1, manager, monitor);
 
                 int b = 0;
                 for (int l=0; l<work_load; l++) {
@@ -255,7 +261,7 @@ void run_processing_gpu(
                 query_add_operator(query1, (void *) select1, select1->operator);
                 query_add_operator(query1, (void *) reduce1, reduce1->operator);
 
-                query_setup(query1);
+                query_setup(query1, manager, monitor);
 
                 int b = 0;
                 for (int l=0; l<work_load; l++) {
@@ -321,7 +327,7 @@ void run_processing_gpu(
 
                 query_add_operator(query1, (void *) aggregate1, aggregate1->operator);
 
-                query_setup(query1);
+                query_setup(query1, manager, monitor);
 
                 int b = 0;
                 for (int l=0; l<work_load; l++) {
@@ -400,7 +406,7 @@ void run_processing_gpu(
                 query_add_operator(query1, (void *) aggregate1, aggregate1->operator);
                 query_add_operator(query1, (void *) select1, select1->operator);
 
-                query_setup(query1);
+                query_setup(query1, manager, monitor);
 
                 int b = 0;
                 for (int l=0; l<work_load; l++) {
@@ -577,9 +583,12 @@ int main(int argc, char * argv[]) {
     int work_load = 32; // default to be 32MB
     int batch_size = 32; // default to be 32MB per batch
     int buffer_num = 1;
+    int pipeline_num = 1;
     enum test_cases mode = SELECTION;
 
-    parse_arguments(argc, argv, &mode, &work_load, &batch_size, &buffer_num, &is_merging, &is_debug);
+    parse_arguments(argc, argv, 
+        &mode, &work_load, &batch_size, &buffer_num, &pipeline_num,
+        &is_merging, &is_debug);
 
     if (work_load < batch_size) {
         printf("Reset batch size to be %d\n", work_load);
@@ -605,8 +614,6 @@ int main(int argc, char * argv[]) {
         printf("[MAIN] the requested buffer number has exceeded the limit (%d) and is reset it\n", max_buffer_num);
         buffer_num = max_buffer_num;
     }
-
-    /* Temperory use only 1 buffer */
     for (int i=0; i<buffer_num; i++) {
         buffers[i] = (u_int8_t *) malloc(batch_size * TUPLE_SIZE * sizeof(u_int8_t)); // creates 8812 ByteBuffers
         cbufs[i] = circular_buf_init(buffers[i], batch_size * TUPLE_SIZE);
@@ -622,7 +629,7 @@ int main(int argc, char * argv[]) {
     run_processing_gpu(
         buffers, batch_size, buffer_num, /* input */
         result, /* output */
-        mode, work_load, is_merging, is_debug);  /* configs */
+        mode, work_load, pipeline_num, is_merging, is_debug);  /* configs */
 
     /* Clear up */
     /* Temperory using 1 buffer */

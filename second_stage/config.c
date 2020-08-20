@@ -6,7 +6,7 @@
 #include <stdlib.h>
 
 void parse_arguments(int argc, char * argv[], 
-    enum test_cases * mode, int * work_load, int * batch_size, int * buffer_num, bool * is_merging, bool * is_debug) {
+    enum test_cases * mode, int * work_load, int * batch_size, int * buffer_num, int * pipeline_num, bool * is_merging, bool * is_debug) {
 
 	extern char *optarg;
 	extern int optind;
@@ -16,7 +16,7 @@ void parse_arguments(int argc, char * argv[],
 	char *mname = "merged-aggregation";
 	static char usage[] = "usage: %s [-d] -m test-case [-i input-buffers-to-read] [-l work-load-in-bytes] [-b batch-size-in-bytes] [-f]\n";
 
-	while ((c = getopt(argc, argv, "dm:l:fi:b:")) != -1) {
+	while ((c = getopt(argc, argv, "dm:l:fi:b:p:")) != -1) {
 		switch (c) {
             case 'd':
                 // debug = 1;
@@ -41,6 +41,9 @@ void parse_arguments(int argc, char * argv[],
             case 'i':
                 iflag = 1;
                 *buffer_num = atoi(optarg);
+                break;
+            case 'p':
+                *pipeline_num = atoi(optarg);
                 break;
             case 'f':
                 fflag = 1;
