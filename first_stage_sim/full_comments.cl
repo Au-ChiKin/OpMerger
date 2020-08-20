@@ -15,72 +15,62 @@
 
 #pragma OPENCL EXTENSION cl_khr_byte_addressable_store: enable
 
-#include "byteorder.h"
+#include "../clib/templates/byteorder.h"
 #define INPUT_VECTOR_SIZE 2
 #define OUTPUT_VECTOR_SIZE 2
 
-// input schema
 typedef struct {
-	long t;
-	int _1;
-	int _2;
-	int _3;
-	int _4;
-	int _5;
-	int _6;
+    long t;
+    int _1;
+    int _2;
+    int _3;
+    int _4;
+    int _5;
+    int _6;
 } input_tuple_t __attribute__((aligned(1)));
 
-// input batch
 typedef union {
-	input_tuple_t tuple;
-	uchar16 vectors[INPUT_VECTOR_SIZE];
+    input_tuple_t tuple;
+    uchar16 vectors[INPUT_VECTOR_SIZE];
 } input_t;
 
-// output schema
 typedef struct {
-	long t;
-	int _1;
-	int _2;
-	int _3;
-	int _4;
-	int _5;
-	int _6;
+    long t;
+    int _1;
+    int _2;
+    int _3;
+    int _4;
+    int _5;
+    int _6;
 } output_tuple_t __attribute__((aligned(1)));
 
-// output batch
 typedef union {
-	output_tuple_t tuple;
-	uchar16 vectors[OUTPUT_VECTOR_SIZE];
+    output_tuple_t tuple;
+    uchar16 vectors[OUTPUT_VECTOR_SIZE];
 } output_t;
 
+
+/* Full select */
 inline int selectf1 (__global input_t *input) {
     int value = 1;
     /* if attribute < 128/2? */
     int attribute_value = input->tuple._1;
     value = value & (attribute_value < 128 / 2);
 
-    return value;
-}
-
-inline int selectf2 (__global input_t *input) {
-    int value = 1;
-
     /* if attribute != 0? */
-    int attribute_value = input->tuple._2;
+    attribute_value = input->tuple._2;
     value = value & (attribute_value != 0);
 
-    return value;
-}
-
-inline int selectf3 (__global input_t *input) {
-    int value = 1;
-
     /* if attribute >= 128/4? */
-    int attribute_value = input->tuple._3;
+    attribute_value = input->tuple._3;
     value = value & (attribute_value >= 128 / 4);
 
     return value;
 }
+
+/* studs */
+inline int selectf2 (__global input_t * input) {return 1;}
+inline int selectf3 (__global input_t * input) {return 1;}
 
 /* Scan based on the implementation of [...] */
 
@@ -90,21 +80,50 @@ inline int selectf3 (__global input_t *input) {
  */
 inline void upsweep (__local int *data, int length) {
 
-        int lid  = get_local_id (0);
-        int b = (lid * 2) + 1;
-        int depth = 1 + (int) log2 ((float) length);
+    int lid  = get_local_id (0); /* local thread id */
+    int b = (lid * 2) + 1; /* pointer to the right tuple of the current thread */
+    int depth = 1 + (int) log2 ((float) length); /* how many digits of the length in binary takes up */
 
-        for (int d = 0; d < depth; d++) {
+    for (int d = 0; d < depth; d++) {
+        /* when d = depth - 1, mask = 2 ^ (depth - 1) - 1 = length - 1 but in a work group there are only
+            length / 2 threads so actually d = depth - 1 makes no influence */
 
-                barrier(CLK_LOCAL_MEM_FENCE);
-                int mask = (0x1 << d) - 1;
-                if ((lid & mask) == mask) {
+        barrier(CLK_LOCAL_MEM_FENCE); /* wait for all the other local threads */
+        int mask = (0x1 << d) - 1; /* recalling the mask in Saber java part, a way of doing mod 
+                                        mask equals to 0, 1, 3, ... , (2^(depth - 1) - 1) i.e. & mask = % 
+                                        1, 2, 4, ..., (2^(depth - 1) - 1) */
+        if ((lid & mask) == mask) { /* if the current thread id equals to the mask, lid = 
+                                        (2^(depth - 2) - 1) to (2 ^ 0 - 1) i.e. (length / 2 - 1), 
+                                        ... , 3, 1, 0 
+                    
+                                        Note that (2^(depth - 1) - 1) is theorectically legit but there 
+                                        would not be such a thread in the group (only within 2^(depth - 2) = 
+                                        length / 2)
 
-                        int offset = (0x1 << d);
-                        int a = b - offset;
-                        data[b] += data[a];
-                }
+                                        Also one lid can meet multiple masks e.g. 3 can meet 3 (%4), 1 (%2), 0 (%1)
+                                        When mask == 0, any lid & mask == mask, so every lid is legit*/
+
+            int offset = (0x1 << d); /* i.e. length = 2 ^ (depth - 1), 2 ^ (depth - 2), ... , 2, 1 */
+            int a = b - offset;
+            data[b] += data[a];
         }
+    }
+    /* Taking a legth = 16, depth = 5, lid = 0 to 7 case as example:
+        d = 0 will have 0 1 2 3 4 5 6 7
+        d = 1 will have 1 3 5 7
+        d = 2 will have 3 7
+        d = 3 will have 7
+        d = 4 will have none
+
+        so
+        1st round: data[1] += data[0] data[3] += data[2]  data[5] += data[4] data[7] += data[6] data[9] += data[8] ... data[15] += data[14]
+        2nd round:                    data[3] += data[1]                     data[7] += data[5]                    ... data[15] += data[13]
+        3rd round:                                                           data[7] += data[3]                    ... data[15] += data[11]
+        4th round:                                                                                                     data[15] += data[ 7]
+
+        Therfore all data would "reduced" to the last data element
+    */
+    /* Actually quite apparently the folding upsweep mentioned in cuda file */
 }
 
 /*
@@ -113,37 +132,63 @@ inline void upsweep (__local int *data, int length) {
  */
 inline void downsweep (__local int *data, int length) {
 
-        int lid = get_local_id (0);
-        int b = (lid * 2) + 1;
-        int depth = (int) log2 ((float) length);
-        for (int d = depth; d >= 0; d--) {
+    int lid = get_local_id (0);
+    int b = (lid * 2) + 1;
+    int depth = (int) log2 ((float) length);
+    for (int d = depth; d >= 0; d--) {
 
-                barrier(CLK_LOCAL_MEM_FENCE);
-                int mask = (0x1 << d) - 1;
-                if ((lid & mask) == mask) {
+        barrier(CLK_LOCAL_MEM_FENCE);
+        int mask = (0x1 << d) - 1;
+        if ((lid & mask) == mask) {
 
-                        int offset = (0x1 << d);
-                        int a = b - offset;
-                        int t = data[a];
-                        data[a] = data[b];
-                        data[b] += t;
-                }
+            int offset = (0x1 << d);
+            int a = b - offset;
+            int t = data[a];
+            data[a] = data[b];
+            data[b] += t;
         }
+    }
+
+    /* Again depth = 4 and length = 16 so lid = 0 to 7 case as an example
+        d = 4 will have none
+        d = 3 will have 7
+        d = 2 will have 3 7
+        d = 1 will have 1 3 5 7
+        d = 0 will have 0 1 2 3 4 5 6 7
+
+        1st round: data[15] <-> data [7]
+                    data[15] += data[7]
+        2nd round: data[15] <-> data[11]    data[7] <-> data[3]
+                    data[15] += data[11]     data[7] += data[3]
+        3rd round: data[15] <-> data[13]    data[11] <-> data[9]    data[7] <-> data[5]    data[3] <-> data[1]
+                    data[15] += data[13]     data[11] += data[9]     data[7] += data[5]     data[3] += data[1]
+        4nd round: data[15] <-> data[14]    data[13] <-> data[12]   data[11] <-> data[10]  data[9] <-> data[8] ...
+                    data[15] += data[14]     data[13] += data[12]    data[11] += data[10]   data[9] += data[8]  ...
+
+        let say the data is directly coming from the upsweep
+        then we would got (depicted as the original data index):
+        0 + ... + 15
+        0 + 0 + ... + 15
+        0 + 1 + 0 + ... + 15
+        ...
+        0 + 1 + 2 + ... + 7 + 0 + ... + 15
+        0 + ... + 15 + 0 + ... + 15
+    */
 }
 
 /* Scan */
 // inline void scan (__local int *data, int length) {
 
-//         int lid = get_local_id (0);
-//         int lane = (lid * 2) + 1;
+//     int lid = get_local_id (0);
+//     int lane = (lid * 2) + 1;
 
-//         upsweep (data, length);
+//     upsweep (data, length);
 
-//         if (lane == (length - 1))
-//                 data[lane] = 0;
+//     if (lane == (length - 1))
+//             data[lane] = 0;
 
-//         downsweep (data, length);
-//         return ;
+//     downsweep (data, length);
+//     return ;
 // }
 
 /*
@@ -219,6 +264,7 @@ __kernel void selectKernel1 (
 }
 
 __kernel void selectKernel2 (
+    const int operator, /* Seems to be no use but keep it first */
     const int size, /* Seems to be no use but keep it first */
     const int tuples, /* Seems to be no use but keep it first */
     __global const uchar *input,
@@ -279,6 +325,7 @@ __kernel void selectKernel2 (
 }
 
 __kernel void selectKernel3 (
+    const int operator, /* Seems to be no use but keep it first */
     const int size, /* Seems to be no use but keep it first */
     const int tuples, /* Seems to be no use but keep it first */
     __global const uchar *input,
@@ -338,7 +385,6 @@ __kernel void selectKernel3 (
     goffsets[right] = (right < tuples) ? loffsets[_right] : -1;
 }
 
-
 inline void compact_tuple(
     __global const uchar *input,
     __global int *goffsets,
@@ -397,32 +443,3 @@ __kernel void compactKernel (
     compact_tuple(input, goffsets, flags, output, &pivot, left);
     compact_tuple(input, goffsets, flags, output, &pivot, right);
 }
-
-/*
- * Adapted from https://dournac.org/info/gpu_sum_reduction
- */
-  __kernel void sumGPU ( __global const int *input, 
-                         __global int *partialSums,
-                         __local int *localSums)
- {
-    uint local_id = get_local_id(0);
-    uint group_size = get_local_size(0);
-
-    // Copy from global to local memory
-    localSums[local_id] = input[get_global_id(0)];
-
-    // Loop for computing localSums : divide WorkGroup into 2 parts
-    for (uint stride = group_size/2; stride>0; stride /=2)
-        {
-        // Waiting for each 2x2 addition into given workgroup
-        barrier(CLK_LOCAL_MEM_FENCE);
-
-        // Add elements 2 by 2 between local_id and local_id + stride
-        if (local_id < stride)
-            localSums[local_id] += localSums[local_id + stride];
-        }
-
-    // Write result into partialSums[nWorkGroups]
-    if (local_id == 0)
-        partialSums[get_group_id(0)] = localSums[0];
- }     

@@ -11,9 +11,9 @@
 #include "libcirbuf/circular_buffer.h"
 #include "config.h"
 
-void write_input_buffer(cbuf_handle_t buffer);
+void write_input_buffer(cbuf_handle_t buffer, int batch_size);
 
-void run_processing_gpu(cbuf_handle_t buffer, int size, int * result, int load, enum test_cases mode) {
+void run_processing_gpu(cbuf_handle_t buffer, int size, tuple_t * result, int load, enum test_cases mode) {
     input_t * batch = (input_t *) malloc(size * sizeof(tuple_t));
 
     switch (mode) {
@@ -92,55 +92,13 @@ void run_processing_cpu(cbuf_handle_t buffer, int size, tuple_t * result, int * 
     }
 }
 
-int main(int argc, char * argv[]) {
-
-    int work_load = 1; // default to be 32768 * 32 = 1,048,576 bytes = 1024 KB = 1 MB
-    enum test_cases mode = MERGED_SELECT;
-
-    parse_arguments(argc, argv, &mode, &work_load);
-
-    uint8_t * buffer  = malloc(BUFFER_SIZE * TUPLE_SIZE * sizeof(uint8_t));
-    cbuf_handle_t cbuf = circular_buf_init(buffer, BUFFER_SIZE * TUPLE_SIZE);
-    write_input_buffer(cbuf);
-
-    /* output the result size */
-    /*
-     * 32768 tuples in total
-     * attr1 50% selectivity
-     * attr2 50% selectivity
-     * attr3 50% selectivity
-     * 
-     * output should be 32768 x (50%)^3 = 4096
-     */
-    int results_size = 0;
-    tuple_t results_tuple[BUFFER_SIZE];
-
-    if (mode == CPU) {
-        run_processing_cpu(cbuf, BUFFER_SIZE, results_tuple, &results_size);
-        
-        printf("[CPU] The output from cpu is %d\n\n", results_size);
-    } else {
-        int results[BUFFER_SIZE];
-        for (int i=0; i<BUFFER_SIZE; i++) {
-            results[i] = 1;
-        }
-
-        run_processing_gpu(cbuf, BUFFER_SIZE, results, work_load, mode);
-    }
-
-    free(buffer);
-    circular_buf_free(cbuf);
-
-    return 0;
-}
-
-void write_input_buffer(cbuf_handle_t buffer) {
+void write_input_buffer(cbuf_handle_t buffer, int batch_size) {
     input_t data;
 
     int value = 0;
     bool flipper = false;
     int cur = 0;
-    while (cur < BUFFER_SIZE) {
+    while (cur < batch_size) {
         // #0
         data.tuple.time_stamp = 1;
 
@@ -170,4 +128,64 @@ void write_input_buffer(cbuf_handle_t buffer) {
         circular_buf_put_bytes(buffer, data.vectors, TUPLE_SIZE);
     }
 }
+
+int main(int argc, char * argv[]) {
+
+    int work_load = 32; // default to be 32 MB
+    int batch_size = 32; // default to be 32MB per batch
+    enum test_cases mode = MERGED_SELECT;
+
+    parse_arguments(argc, argv, &mode, &work_load, &batch_size);
+
+    if (work_load < batch_size) {
+        printf("Reset batch size to be %d\n", work_load);
+        batch_size = work_load;
+        work_load = 1;
+    } else {
+        if (work_load % batch_size != 0) {
+            fprintf(stderr, "error: workload shoud be muiltiple of %d if >= %d\n",
+                batch_size, batch_size);
+            exit(1);
+        }
+        work_load /= batch_size;
+    }
+    /* convert into in tuples */
+    batch_size *= ((1024 * 1024) / TUPLE_SIZE); 
+
+    uint8_t * buffer  = (uint8_t *) malloc(batch_size * TUPLE_SIZE * sizeof(uint8_t));
+    if (!buffer) {
+        fprintf(stderr, "error: out of memory\n");
+        exit(1);
+    }
+    cbuf_handle_t cbuf = circular_buf_init(buffer, batch_size * TUPLE_SIZE);
+    // fprintf(stderr, "stll\n");
+    write_input_buffer(cbuf, batch_size);
+
+    /* output the result size */
+    /*
+     * 32768 tuples in total
+     * attr1 50% selectivity
+     * attr2 50% selectivity
+     * attr3 50% selectivity
+     * 
+     * output should be 32768 x (50%)^3 = 4096
+     */
+    int results_size = 0;
+    tuple_t * results_tuple = (tuple_t *) malloc(batch_size * sizeof(tuple_t));
+
+    if (mode == CPU) {
+        run_processing_cpu(cbuf, batch_size, results_tuple, &results_size);
+        
+        printf("[CPU] The output from cpu is %d\n\n", results_size);
+    } else {
+        run_processing_gpu(cbuf, batch_size, results_tuple, work_load, mode);
+    }
+
+    free(buffer);
+    free(results_tuple);
+    circular_buf_free(cbuf);
+
+    return 0;
+}
+
 

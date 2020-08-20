@@ -1,6 +1,7 @@
 #ifndef CONFIG_H
 #define CONFIG_H
 
+#define BUFFER_SIZE 32768 * 30 /* in tuple */
 #define VALUE_RANGE 128
 
 
@@ -17,6 +18,6 @@ enum test_cases {
 };
 
 void set_test_case(char const * mname, enum test_cases * mode);
-void parse_arguments(int argc, char * argv[], enum test_cases * mode, int * work_load, int * batch_size);
+void parse_arguments(int argc, char * argv[], enum test_cases * mode, int * work_load);
 
 #endif // CONFIG_H

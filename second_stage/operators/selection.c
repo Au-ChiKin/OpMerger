@@ -294,6 +294,7 @@ void selection_setup(void * select_ptr, int batch_size, window_p window, char co
     int tuple_size = select->input_schema->size;
 
     /* Operator setup */
+    select->batch_size = batch_size;
     for (int i=0; i<SELECTION_KERNEL_NUM; i++) {
         select->threads[i] = batch_size / SELECTION_TUPLES_PER_THREADS;
 
@@ -350,6 +351,8 @@ void selection_setup(void * select_ptr, int batch_size, window_p window, char co
 void selection_reset(void * select_ptr, int new_batch_size) {
     selection_p select = (selection_p) select_ptr;
 
+    select->batch_size = new_batch_size;
+
     for (int i=0; i<SELECTION_KERNEL_NUM; i++) {
         select->threads[i] = new_batch_size / SELECTION_TUPLES_PER_THREADS;
 
@@ -361,7 +364,7 @@ void selection_reset(void * select_ptr, int new_batch_size) {
     }
 }
 
-void selection_process(void * select_ptr, batch_p input, window_p window, batch_p output) {
+void selection_process(void * select_ptr, batch_p input, window_p window, batch_p output, query_event_p event) {
     selection_p select = (selection_p) select_ptr;
 
     int batch_size = input->size;
@@ -384,8 +387,10 @@ void selection_process(void * select_ptr, batch_p input, window_p window, batch_
     }
 
     /* Execute */
-    gpu_execute(select->qid, select->threads, select->threads_per_group,
-        (void *) inputs, (void *) outputs, sizeof(u_int8_t));
+    gpu_execute(select->qid, 
+        select->threads, select->threads_per_group,
+        (void *) inputs, (void *) outputs, sizeof(u_int8_t),
+        event);
 }
 
 void selection_print_output(selection_p select, batch_p outputs) {
@@ -468,11 +473,15 @@ void selection_process_output (void * select_ptr, batch_p outputs) {
     outputs->start += select->output_entries[2];
 
     // printf("Before: count = %d\n", count);
-    for (int i= count; i < (int) powf(2, (int) log2f(count) + 1); i++) {
+    int new_count = (int) powf(2, (int) log2f(count) + 1);
+    if (new_count > select->batch_size) {
+        new_count = (int) powf(2, (int) log2f(count));
+    }
+    for (int i= count; i < new_count; i++) {
         output_tuple_t * p = (output_tuple_t *) (outputs->buffer + outputs->start ) + i;
         p->t = -1;
     }
-    count = (int) powf(2, (int) log2f(count) + 1);
+    count = new_count;
     // printf("After: count = %d\n", count);
 
     if (count >= 256) {

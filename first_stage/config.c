@@ -5,16 +5,16 @@
 #include <unistd.h>
 #include <stdlib.h>
 
-void parse_arguments(int argc, char * argv[], enum test_cases * mode, int * work_load) {
+void parse_arguments(int argc, char * argv[], enum test_cases * mode, int * work_load, int * batch_size) {
 	extern char *optarg;
 	extern int optind;
 	int c, err = 0; 
     int debug = 0;
 	int lflag=0, mflag=0;
 	char *mname = "merged-select";
-	static char usage[] = "usage: %s [-d] -m test-case [-l work-load-in-bytes]\n";
+	static char usage[] = "usage: %s [-d] -m test-case [-l work-load-in-bytes] [-b batch-size-in-bytes]\n";
 
-	while ((c = getopt(argc, argv, "dm:l:")) != -1) {
+	while ((c = getopt(argc, argv, "dm:l:b:")) != -1) {
 		switch (c) {
             case 'd':
                 debug = 1;
@@ -31,6 +31,9 @@ void parse_arguments(int argc, char * argv[], enum test_cases * mode, int * work
             case 'l':
                 lflag = 1;
                 *work_load = atoi(optarg);
+                break;
+            case 'b':
+                *batch_size = atoi(optarg);
                 break;
             case '?':
                 err = 1;

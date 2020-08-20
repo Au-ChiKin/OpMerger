@@ -1,11 +1,11 @@
 # Compiler Configurations
 CC        = gcc
 CFLAGS    = -Wall -g
+UNAME := $(shell uname -s)
 LDLIBS    =
 DEPFLAGS  = -MT $@ -MMD -MP -MF $(DEPDIR)/$*.d
-COMPILE.c = $(CC) $(DEPFLAGS) $(CFLAGS) $(CPPFLAGS) $(TARGET_ARCH) -c
-LINK.o    = $(CC) $(CFLAGS) $(LDLIBS)
-UNAME := $(shell uname -s)
+COMPILE.c = $(CC) $(DEPFLAGS) $(CFLAGS) $(CPPFLAGS) $(TARGET_ARCH) $(LDLIBS) -c
+LINK.o    = $(CC) $(CFLAGS)
 ifeq ($(UNAME),Linux)
 	CFLAGS += -I/usr/local/cuda/include
 	LDLIBS += -lOpenCL
@@ -32,6 +32,12 @@ OBJECTS = $(patsubst %.c,%.o,$(SRCS))
 # Scripts
 $(DEPDIR): ; mkdir -p $@
 $(OBJDIR): ; mkdir -p $@
+
+# Special case
+obj/openclerrorcode.o : ../clib/openclerrorcode.c obj/.deps/openclerrorcode.d | $(DEPDIR)
+		$(CC) -MT $@ -MMD -MP -MF obj/.deps/openclerrorcode.d $(CFLAGS) $(CPPFLAGS) $(TARGET_ARCH) -c \
+		$(OUTPUT_OPTION) $<
+
 
 # Compile objects with auto dependency
 $(OBJDIR)/%.o : %.c $(DEPDIR)/%.d | $(DEPDIR)

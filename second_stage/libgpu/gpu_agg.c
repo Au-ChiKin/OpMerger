@@ -11,23 +11,22 @@
 #include "gpu_input_buffer.h"
 #include "gpu_output_buffer.h"
 #include "openclerrorcode.h"
-// #include "resulthandler.h"
+#include "resulthandler.h"
 
 static cl_platform_id platform = NULL;
 static cl_device_id device = NULL;
 static cl_context context = NULL;
 
 static int query_num;
-static int free_index;
+static int free_query_id;
 static gpu_query_p queries [MAX_QUERIES];
 
-// static int D;
-// static gpu_config_p pipeline [MAX_DEPTH];
+static int pipeline_depth;
+static gpu_config_p pipeline [MAX_DEPTH];
 
-// static jclass class;
-// static jmethodID writeMethod, readMethod;
+static resultHandlerP resultHandler = NULL;
 
-// static resultHandlerP resultHandler = NULL;
+static event_manager_p event_manager = NULL;
 
 /* Callback functions */
 
@@ -43,7 +42,7 @@ void callback_configureReduce (cl_kernel kernel, gpu_config_p context, int *args
 void callback_configureAggregate (cl_kernel kernel, gpu_config_p context, int *args1, long *args2);
 
 void callback_readOutput (gpu_config_p context, int qid, int ndx, int mark);
-
+void callback_notifyEnd (query_event_p event);
 gpu_config_p callback_execKernel (gpu_config_p context);
 
 
@@ -127,7 +126,7 @@ static void set_context () {
 	return ;
 }
 
-void gpu_init (int _queries) {
+void gpu_init (int _queries, int _depth, event_manager_p _event_manager) {
 
 	set_platform ();
 
@@ -137,23 +136,33 @@ void gpu_init (int _queries) {
     set_context ();
     
 	query_num = _queries;
-	free_index = 0;
+	free_query_id = 0;
 	for (int i = 0; i < MAX_QUERIES; i++)
 		queries[i] = NULL;
 
-	// #ifdef GPU_HANDLER
-	// /* Create result handler */
-	// resultHandler = result_handler_init (env);
-	// #else
-	// resultHandler = NULL;
-	// #endif
+	pipeline_depth = _depth; /* Pipeline depth */
+	if (_depth > MAX_DEPTH) {
+		fprintf(stderr, "[GPU] error: the set pipeline has exceed the limit (%d)\n", MAX_DEPTH);
+		exit(1);
+	}
+	for (int i = 0; i < MAX_DEPTH; i++)
+		pipeline[i] = NULL;
+
+	#ifdef GPU_HANDLER
+	/* Create result handler */
+	// resultHandler = result_handler_init ();
+	#else
+	resultHandler = NULL;
+	#endif
+
+	event_manager = _event_manager;
 
 	return;
 }
 
 int gpu_get_query (const char *source, int _kernels, int _inputs, int _outputs) {
 	
-	int query_id = free_index++;
+	int query_id = free_query_id++;
 	if (query_id < 0 || query_id >= query_num) {
 		fprintf(stderr, "error: query index [%d] out of bounds\n", query_id);
 		exit (1);
@@ -226,14 +235,15 @@ int gpu_reset_kernel (int qid, int ndx /* kernel index */,
 int gpu_exec (int qid,
 	size_t *threads, size_t *threadsPerGroup,
 	query_operator_p operator,
-	void ** input_batches, void ** output_batches, size_t addr_size) {
+	void ** input_batches, void ** output_batches, size_t addr_size,
+	query_event_p event) {
 
 	if (qid < 0 || qid >= query_num) {
 		fprintf(stderr, "error: query index [%d] out of bounds\n", qid);
 		exit (1);
 	}
 	gpu_query_p query = queries[qid];
-	return gpu_query_exec (query, threads, threadsPerGroup, operator, input_batches, output_batches, addr_size);
+	return gpu_query_exec (query, threads, threadsPerGroup, operator, input_batches, output_batches, addr_size, event);
 }
 
 void gpu_set_kernel_aggregate(int qid, int * args1, long * args2) {
@@ -435,7 +445,10 @@ void gpu_reset_kernel_reduce(int qid, int * args1, long * args2) {
 	return;
 }
 
-void gpu_execute (int qid, size_t * threads, size_t * threadsPerGroup, void ** input_batches, void ** output_batches, size_t addr_size) {
+void gpu_execute (int qid, 
+	size_t * threads, size_t * threadsPerGroup, 
+	void ** input_batches, void ** output_batches, size_t addr_size,
+	query_event_p event) {
 
 	/* Create operator */
 	query_operator_p operator = (query_operator_p) malloc (sizeof(query_operator_t));
@@ -451,10 +464,11 @@ void gpu_execute (int qid, size_t * threads, size_t * threadsPerGroup, void ** i
 	
 	operator->configure = NULL;
 
-	// operator->readOutput = callback_readOutput;
+	operator->readOutput = callback_readOutput;
 	operator->execKernel = callback_execKernel;
+	operator->notifyEnd = callback_notifyEnd;
 
-	gpu_exec (qid, threads, threadsPerGroup, operator, input_batches, output_batches, addr_size);
+	gpu_exec (qid, threads, threadsPerGroup, operator, input_batches, output_batches, addr_size, event);
 
 	/* Free operator */
 	if (operator)
@@ -565,8 +579,10 @@ void callback_resetConstReduce (cl_kernel kernel, gpu_config_p context, int *arg
 	return;
 }
 
-void gpu_execute_reduce(int qid, size_t * threads, size_t * threads_per_group, long * args2, 
-	void ** input_batches, void ** output_batches, size_t addr_size) {
+void gpu_execute_reduce(int qid, 
+	size_t * threads, size_t * threads_per_group, long * args2, 
+	void ** input_batches, void ** output_batches, size_t addr_size,
+	query_event_p event) {
 
 	int const kernel_num = 4;
 	for (int i=0; i<kernel_num; i++) {
@@ -582,10 +598,11 @@ void gpu_execute_reduce(int qid, size_t * threads, size_t * threads_per_group, l
 	operator->args1 = NULL;
 	operator->args2 = args2;
 	operator->configure = callback_configureReduce;
-	// operator->readOutput = callback_readOutput;
+	operator->readOutput = callback_readOutput;
+	operator->notifyEnd = callback_notifyEnd;
 	operator->execKernel = callback_execKernel;
 
-	gpu_exec(qid, threads, threads_per_group, operator, input_batches, output_batches, addr_size);
+	gpu_exec(qid, threads, threads_per_group, operator, input_batches, output_batches, addr_size, event);
 
 	/* Free operator */
 	if (operator)
@@ -680,8 +697,10 @@ void callback_setKernelCompact (cl_kernel kernel, gpu_config_p context, int *arg
 	callback_setKernelSelect (kernel, context, args1, args2);
 }
 
-void gpu_execute_aggregate(int qid, size_t * threads, size_t * threads_per_group, long * args2, 
-	void ** input_batches, void ** output_batches, size_t addr_size) {
+void gpu_execute_aggregate(int qid, 
+	size_t * threads, size_t * threads_per_group, long * args2, 
+	void ** input_batches, void ** output_batches, size_t addr_size,
+	query_event_p event) {
 
 	/* Create operator */
 	query_operator_p operator = (query_operator_p) malloc (sizeof(query_operator_t));
@@ -697,9 +716,11 @@ void gpu_execute_aggregate(int qid, size_t * threads, size_t * threads_per_group
 
 	operator->configure = callback_configureAggregate;
 
+	operator->readOutput = callback_readOutput;
+	operator->notifyEnd = callback_notifyEnd;
 	operator->execKernel = callback_execKernel;
 
-	gpu_exec (qid, threads, threads_per_group, operator, input_batches, output_batches, addr_size);
+	gpu_exec (qid, threads, threads_per_group, operator, input_batches, output_batches, addr_size, event);
 
 	/* Free operator */
 	if (operator)
@@ -733,49 +754,47 @@ void callback_configureAggregate (cl_kernel kernel, gpu_config_p context, int *a
 
 /* Data movement callbacks */
 
-// void callback_readOutput (gpu_config_p context, int qid, int ndx, int mark) {
+void callback_readOutput (gpu_config_p context, int qid, int bid, int mark) {
 	
-// 	if (context->kernelOutput.outputs[ndx]->doNotMove)
-// 		return;
-	
-// 	/* Use the mark */
-// 	int size;
-// 	if (mark >= 0 && (! context->kernelOutput.outputs[ndx]->ignoreMark))
-// 		size = mark;
-// 	 else
-// 		size = context->kernelOutput.outputs[ndx]->size;
-	
-// 	if (size > context->kernelOutput.outputs[ndx]->size) {
-// 		fprintf(stderr, "error: invalid mark for query's %d output buffer %d (marked %d bytes; size is %d bytes)\n",
-// 			qid, ndx, size, context->kernelOutput.outputs[ndx]->size);
-// 		exit(1);
-// 	}
-	
-// 	/* Copy data across the JNI boundary */
-// 	// readMethod = (*env)->GetMethodID (env, class, "outputDataMovementCallback",  "(IIJI)V");
-// 	// (*env)->CallVoidMethod (
-// 	// 		env, obj, readMethod,
-// 	// 		qid,
-// 	// 		ndx,
-// 	// 		(long) (context->kernelOutput.outputs[ndx]->mapped_buffer),
-// 	// 		size);
+	// struct timespec end;
+	// clock_gettime(CLOCK_MONOTONIC_RAW, &end);
 
-// 	return;
-// }
+	// query_event_p event = (query_event_p) malloc(sizeof(query_event_t));
+    // {
+	// 	event->end = end.tv_sec * 1000000 + end.tv_nsec / 1000;
+	// }
+
+	// event_manager_add_event(event_manager, event);
+
+	return;
+}
+
+void callback_notifyEnd (query_event_p event) {
+	
+	struct timespec end;
+	clock_gettime(CLOCK_MONOTONIC_RAW, &end);
+	event->end = end.tv_sec * 1000000 + end.tv_nsec / 1000;
+
+	event_manager_add_event(event_manager, event);
+
+	return;
+}
 
 gpu_config_p callback_execKernel(gpu_config_p config) {
-	// int i;
-	gpu_config_p p = NULL; // pipeline[0];
-	// #ifdef GPU_VERBOSE
-	// if (! p)
-	// 	dbg("[DBG] (null) callback_execKernel(%p) \n", context);
-	// else
-	// 	dbg("[DBG] %p callback_execKernel(%p)\n", p, context);
-	// #endif
-	// /* Shift */
-	// for (i = 0; i < D - 1; i++) {
-	// 	pipeline[i] = pipeline [i + 1];
-	// }
-	// pipeline[D - 1] = config;
+	/* Get the top one */
+	gpu_config_p p = pipeline[0];
+	#ifdef GPU_VERBOSE
+	if (! p)
+		dbg("[DBG] (null) callback_execKernel(%p) \n", context);
+	else
+		dbg("[DBG] %p callback_execKernel(%p)\n", p, context);
+	#endif
+
+	/* Shift */
+	for (int i = 0; i < pipeline_depth - 1; i++) {
+		pipeline[i] = pipeline [i + 1];
+	}
+	pipeline[pipeline_depth - 1] = config;
+	
 	return p;
 }

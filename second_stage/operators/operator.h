@@ -5,6 +5,7 @@
 
 #include "batch.h"
 #include "window.h"
+#include "monitor/event_manager.h"
 
 #define OPERATOR_CODE_FILENAME_LENGTH 256
 
@@ -18,7 +19,7 @@ enum operator_types {
 typedef struct opmerger_operator * operator_p;
 typedef struct opmerger_operator {
     void (* setup) (void * operator, int batch_size, window_p window, char const * patch);
-    void (* process) (void * operator, batch_p input, window_p window, batch_p output);
+    void (* process) (void * operator, batch_p input, window_p window, batch_p output, query_event_p event);
     void (* process_output) (void * operator, batch_p output);
     void (* reset) (void * operator, int new_batch_size);
     void (* generate_patch) (void * operator, char * patch);

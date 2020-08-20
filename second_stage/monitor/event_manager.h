@@ -5,8 +5,12 @@
 
 #define EVENT_MANAGER_QUEUE_LIMIT 100
 
+
 typedef struct query_event * query_event_p;
 typedef struct query_event {
+    int query_id;
+    int batch_id;
+
     long start;
     long end;
     int tuples;
