@@ -144,7 +144,6 @@ void run_processing_gpu(
                     /* Execute */
                     scheduler_add_task(scheduler, new_task);
 
-
                     b = (b + 1) % buffer_num;
                 }
 
@@ -447,6 +446,9 @@ void run_processing_gpu(
             fprintf(stderr, "error: wrong test case name, runs an no-op query\n");
             break;
     }
+
+    /* Wait for worker threads */
+    pthread_join(scheduler_get_thread(), NULL);
 
     free(output);
 
