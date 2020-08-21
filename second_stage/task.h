@@ -17,4 +17,6 @@ typedef struct task {
 
 task_p task(query_p query, batch_p batch, batch_p output);
 
+void task_run(task_p t);
+
 #endif

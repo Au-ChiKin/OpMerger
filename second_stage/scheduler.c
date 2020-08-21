@@ -77,7 +77,7 @@ void scheduler_add_task (scheduler_p p, task_p t) {
 static void process_one_task (scheduler_p p) {
     task_p t = p->queue[p->queue_head];
 
-    query_process(t->query, t->batch, t->output);
+	task_run(t);
 
     p->queue_head = (p->queue_head + 1) % SCHEDULER_QUEUE_LIMIT;
 }

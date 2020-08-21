@@ -18,3 +18,7 @@ task_p task(query_p query, batch_p batch, batch_p output) {
 
     return task;
 }
+
+void task_run(task_p t) {
+    query_process(t->query, t->batch, t->output);
+}
