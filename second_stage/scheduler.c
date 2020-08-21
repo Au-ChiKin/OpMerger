@@ -60,10 +60,10 @@ scheduler_p scheduler_init() {
 
 void scheduler_add_task (scheduler_p p, task_p t) {
 	pthread_mutex_lock (p->mutex);
-        // if (p->events[p->queue_tail] != NULL) {
-        //     free(p->events[p->queue_tail]);
-        //     p->events[p->queue_tail] = NULL;
-        // }
+        if (p->queue[p->queue_tail] != NULL) {
+            free(p->queue[p->queue_tail]);
+            p->queue[p->queue_tail] = NULL;
+        }
     	p->queue[p->queue_tail] = t;
         p->queue_tail = (p->queue_tail + 1) % SCHEDULER_QUEUE_LIMIT;
     pthread_mutex_unlock (p->mutex);
