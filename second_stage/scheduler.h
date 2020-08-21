@@ -4,6 +4,7 @@
 #include <pthread.h>
 
 #include "task.h"
+#include "monitor/event_manager.h"
 #include "result_handler.h"
 
 #define SCHEDULER_MAX_PIPELINE_DEPTH 4
@@ -26,12 +27,13 @@ typedef struct scheduler {
     volatile task_p pipeline [SCHEDULER_MAX_PIPELINE_DEPTH];
 
     /* Accumulated data */
+    event_manager_p manager;
     volatile int event_num;
     volatile long processed_data;
     volatile long latency_sum;
 } scheduler_t;
 
-scheduler_p scheduler_init(int pipeline_depth);
+scheduler_p scheduler_init(int pipeline_depth, event_manager_p event_manager);
 
 void scheduler_add_task (scheduler_p p, task_p t);
 

@@ -3,6 +3,7 @@
 
 #include "stdbool.h"
 
+#include "monitor/event_manager.h"
 #include "query.h"
 #include "batch.h"
 
@@ -16,6 +17,8 @@ typedef struct task {
     batch_p batch;
 
     batch_p output;
+
+    query_event_p event;
 } task_t;
 
 task_p task(query_p query, batch_p batch);

@@ -44,19 +44,10 @@ void query_add_operator(query_p query, void * new_operator, operator_p operator_
        for now */
 }
 
-void query_setup(query_p query, event_manager_p manager, monitor_p monitor) {
-    bool is_profiling = true;
-    
+void query_setup(query_p query) {
     if (query->operator_num == 0) {
         fprintf(stderr, "error: No operator has been added to this query (%s)\n", __FUNCTION__);
         exit(1);
-    }
-
-    if (is_profiling) {
-        /* Start the monitor (worker) thread */
-        query->manager = manager;
-
-        query->monitor = monitor;
     }
 
     if (query->is_merging) {
@@ -102,8 +93,6 @@ void query_setup(query_p query, event_manager_p manager, monitor_p monitor) {
 }
 
 void query_process(query_p query, int oid, batch_p input, batch_p output) {
-    bool is_profiling = true;
-
     if (!query->has_setup) {
 
         fprintf(stderr, "error: This query has not been setup (%s)\n", __FUNCTION__);
@@ -116,21 +105,6 @@ void query_process(query_p query, int oid, batch_p input, batch_p output) {
         exit(1);        
     }
 
-    /* Log start time and create the event */
-    struct timespec start;
-    clock_gettime(CLOCK_MONOTONIC_RAW, &start);
-
-    query_event_p event = (query_event_p) malloc(sizeof(query_event_t));
-    {
-        event->query_id = query->id;
-        event->batch_id = ++query->batch_count;
-
-        event->start = start.tv_sec * 1000000 + start.tv_nsec / 1000;
-        event->tuples = query->batch_size;
-        /* TODO need to somehow pass the tuple size from query to monitor */
-        event->tuple_size = 64;
-    }
-
     /* Execute */
     (* query->callbacks[oid]->reset) (query->operators[oid], input->size);
 
@@ -138,7 +112,7 @@ void query_process(query_p query, int oid, batch_p input, batch_p output) {
         input,
         query->window,
         output,
-        event); // Pass the event to the last operator 
+        NULL); // No passing event
 }
 
 void query_process_output(query_p query, int oid, batch_p output) {

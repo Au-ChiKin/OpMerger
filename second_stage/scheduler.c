@@ -2,6 +2,7 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <time.h>
 
 static pthread_t thr = NULL;
 
@@ -26,7 +27,7 @@ static void * scheduler(void * args) {
 	return (args) ? NULL : args;
 }
 
-scheduler_p scheduler_init(int pipeline_depth) {
+scheduler_p scheduler_init(int pipeline_depth, event_manager_p event_manager) {
 
 	scheduler_p p = (scheduler_p) malloc (sizeof(scheduler_t));
 	if (! p) {
@@ -46,6 +47,8 @@ scheduler_p scheduler_init(int pipeline_depth) {
 		p->pipeline[i] = NULL;
 	}
     p->pipeline_depth = pipeline_depth;
+
+	p->manager = event_manager;
 
 	/* Initialise mutex and conditions */
 	p->mutex = (pthread_mutex_t *) malloc (sizeof(pthread_mutex_t));
@@ -105,6 +108,15 @@ static void process_one_task (scheduler_p p) {
 
             scheduler_add_task_nolock(p, downstream);
         } else {
+			/* TODO Move them to result handler */
+			query_event_p event = processed->event;
+
+			struct timespec end;
+			clock_gettime(CLOCK_MONOTONIC_RAW, &end);
+			event->end = end.tv_sec * 1000000 + end.tv_nsec / 1000;
+
+			event_manager_add_event(p->manager, event);
+
             /* TODO: Just delete for now */
             free(processed->output);
             free(processed);
