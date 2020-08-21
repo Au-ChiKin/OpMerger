@@ -107,8 +107,8 @@ void query_process(query_p query, batch_p input, batch_p output) {
     }
 
     if (input->size != query->batch_size) {
-        fprintf(stderr, "error: input batch size (%d) does not match the set batch_size (%d) of the \
-            query (%s)\n", input->size, query->batch_size, __FUNCTION__);
+        fprintf(stderr, "error: input batch size (%d) does not match the set batch_size (%d) of the query (%s)\n",
+            input->size, query->batch_size, __FUNCTION__);
         exit(1);        
     }
 
