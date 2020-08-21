@@ -7,6 +7,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
+#include <unistd.h>
 #include <string.h>
 
 #include "cirbuf/circular_buffer.h"
@@ -288,6 +289,8 @@ void run_processing_gpu(
                     scheduler_add_task(scheduler, new_task);
 
                     b = (b + 1) % buffer_num;
+
+                    usleep(250); // Sleep for 1 ms
                 }
                 
                 /* For debugging */
