@@ -17,6 +17,8 @@
 #include "batch.h"
 #include "window.h"
 #include "query.h"
+#include "scheduler.h"
+#include "task.h"
 
 #define GCD_LINE_NUM 144370688 // maximum lines for input txts
 
@@ -41,6 +43,9 @@ void run_processing_gpu(
 
     /* TODO: dynmaically decide the output buffer size */
     batch_p output = batch(6 * buffer_size, 0, result, 6 * buffer_size, TUPLE_SIZE);
+
+    /* Start scheduler */
+    scheduler_p scheduler  = scheduler_init();
 
     /* Start throughput monitoring */
     event_manager_p manager = event_manager_init();
@@ -263,7 +268,16 @@ void run_processing_gpu(
 
                 query_setup(query1, manager, monitor);
 
-                query_run(query1, buffer_num, input, work_load, output);
+                /* Create tasks and add them to the task queue */
+                int b = 0; // buffer index
+                for (int l=0; l<work_load; l++) {
+                    task_p new_task = task(query1, input[b], output);
+
+                    /* Execute */
+                    scheduler_add_task(scheduler, new_task);
+
+                    b = (b + 1) % buffer_num;
+                }
                 
                 /* For debugging */
                 if (is_debug) {
