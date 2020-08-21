@@ -98,7 +98,7 @@ void run_processing_gpu(
 
                 int b = 0;
                 for (int l=0; l<work_load; l++) {
-                    task_p new_task = task(query1, input[b], output);
+                    task_p new_task = task(query1, input[b]);
 
                     /* Execute */
                     scheduler_add_task(scheduler, new_task);
@@ -136,7 +136,7 @@ void run_processing_gpu(
 
                 int b = 0;
                 for (int l=0; l<work_load; l++) {
-                    task_p new_task = task(query1, input[b], output);
+                    task_p new_task = task(query1, input[b]);
 
                     /* Execute */
                     scheduler_add_task(scheduler, new_task);
@@ -189,7 +189,7 @@ void run_processing_gpu(
 
                 int b = 0;
                 for (int l=0; l<work_load; l++) {
-                    task_p new_task = task(query1, input[b], output);
+                    task_p new_task = task(query1, input[b]);
 
                     /* Execute */
                     scheduler_add_task(scheduler, new_task);
@@ -280,7 +280,7 @@ void run_processing_gpu(
                 /* Create tasks and add them to the task queue */
                 int b = 0; // buffer index
                 for (int l=0; l<work_load; l++) {
-                    task_p new_task = task(query1, input[b], output);
+                    task_p new_task = task(query1, input[b]);
 
                     /* Execute */
                     scheduler_add_task(scheduler, new_task);
@@ -347,7 +347,7 @@ void run_processing_gpu(
 
                 int b = 0;
                 for (int l=0; l<work_load; l++) {
-                    task_p new_task = task(query1, input[b], output);
+                    task_p new_task = task(query1, input[b]);
 
                     /* Execute */
                     scheduler_add_task(scheduler, new_task);
@@ -427,7 +427,7 @@ void run_processing_gpu(
 
                 int b = 0;
                 for (int l=0; l<work_load; l++) {
-                    task_p new_task = task(query1, input[b], output);
+                    task_p new_task = task(query1, input[b]);
 
                     /* Execute */
                     scheduler_add_task(scheduler, new_task);
