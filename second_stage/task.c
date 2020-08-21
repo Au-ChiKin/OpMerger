@@ -34,6 +34,7 @@ task_p task_downstream(query_p query, int oid, batch_p batch) {
 void task_run(task_p t) {
 
     query_p query = t->query;
+    int tuple_size = 64;
 
     if (!task_is_most_upstream(t)) {
         query_process_output(t->query, t->oid-1, t->batch);
@@ -50,14 +51,14 @@ void task_run(task_p t) {
             event->start = start.tv_sec * 1000000 + start.tv_nsec / 1000;
             event->tuples = query->batch_size;
             /* TODO need to somehow pass the tuple size from query to monitor */
-            event->tuple_size = 64;
+            event->tuple_size = tuple_size;
         }
 
         t->event = event;
     }
 
-    u_int8_t * buffer = (u_int8_t *) malloc(2 * query->batch_size * 64);
-    t->output = batch(2 * query->batch_size, 0, buffer, 2 * query->batch_size, 64);
+    u_int8_t * buffer = (u_int8_t *) malloc(2 * query->batch_size * tuple_size);
+    t->output = batch(2 * query->batch_size, 0, buffer, 2 * query->batch_size, tuple_size);
 
     query_process(t->query, t->oid, t->batch, t->output);
 }
