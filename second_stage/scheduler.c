@@ -105,6 +105,7 @@ static void process_one_task (scheduler_p p) {
     if (processed != NULL) {
         if (task_has_downstream(processed)) {
             task_p downstream = task_downstream(processed->query, processed->oid+1, processed->output);
+			downstream->event = processed->event;
 
             scheduler_add_task_nolock(p, downstream);
         } else {
@@ -118,9 +119,13 @@ static void process_one_task (scheduler_p p) {
 			event_manager_add_event(p->manager, event);
 
             /* TODO: Just delete for now */
-            free(processed->output);
-            free(processed);
+            // free(processed->output);
+            // free(processed);
             // result_handler_add_task(processed);
         }
     }
+}
+
+pthread_t scheduler_get_thread() {
+	return thr;
 }

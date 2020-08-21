@@ -37,4 +37,6 @@ scheduler_p scheduler_init(int pipeline_depth, event_manager_p event_manager);
 
 void scheduler_add_task (scheduler_p p, task_p t);
 
+pthread_t scheduler_get_thread();
+
 #endif
