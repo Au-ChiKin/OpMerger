@@ -5,22 +5,22 @@
 
 static pthread_t thr = NULL;
 
-static void process_one_event (scheduler_p m);
+static void process_one_task (scheduler_p m);
 static void reset_data(scheduler_p p);
 
 static void * scheduler(void * args) {
 	scheduler_p p = (scheduler_p) args;
 
-	/* Unblocks the thread (which runs result_handler_init) waiting for this thread to attach to the JVM */
+	/* Unblocks the thread (which runs scheduler_init) waiting for this thread to start */
 	p->start = 1;
 
     while (1) {
         pthread_mutex_lock (p->mutex);
-            while (p->event_tail - p->event_head == 0) {
+            while (p->queue_tail - p->queue_head == 0) {
                 pthread_cond_wait(p->added, p->mutex);
             }
 
-                process_one_event(p);
+                process_one_task(p);
         pthread_mutex_unlock (p->mutex);
     }
 
@@ -37,11 +37,8 @@ scheduler_p scheduler_init() {
 
     p->start = 0;
 
-    p->event_head = 0;
-    p->event_tail = 0;
-
-    /* Accumulated data */
-    reset_data(p);
+    p->queue_head = 0;
+    p->queue_tail = 0;
 
 	/* Initialise mutex and conditions */
 	p->mutex = (pthread_mutex_t *) malloc (sizeof(pthread_mutex_t));
@@ -61,42 +58,24 @@ scheduler_p scheduler_init() {
 	return p;
 }
 
-void scheduler_add_event (scheduler_p p, query_event_p e) {
+void scheduler_add_task (scheduler_p p, task_p t) {
 	pthread_mutex_lock (p->mutex);
-        // if (p->events[p->event_tail] != NULL) {
-        //     free(p->events[p->event_tail]);
-        //     p->events[p->event_tail] = NULL;
+        // if (p->events[p->queue_tail] != NULL) {
+        //     free(p->events[p->queue_tail]);
+        //     p->events[p->queue_tail] = NULL;
         // }
-    	p->events[p->event_tail] = e;
-        p->event_tail = (p->event_tail + 1) % SCHEDULER_QUEUE_LIMIT;
+    	p->queue[p->queue_tail] = t;
+        p->queue_tail = (p->queue_tail + 1) % SCHEDULER_QUEUE_LIMIT;
     pthread_mutex_unlock (p->mutex);
 	
     pthread_cond_signal (p->added);
 }
 
-void scheduler_get_data (scheduler_p p, int * event_num, long * processed_data, long * latency_sum) {
-    pthread_mutex_lock (p->mutex);
-        *event_num = p->event_num;
-        *processed_data = p->processed_data;
-        *latency_sum = p->latency_sum;
+static void process_one_task (scheduler_p p) {
+    task_p t = p->queue[p->queue_head];
 
-        reset_data(p);
-    pthread_mutex_unlock (p->mutex);
-}
+    query_process(t->query, t->batch, t->output);
 
-static void process_one_event (scheduler_p p) {
-    query_event_p e = p->events[p->event_head];
-
-    p->event_num += 1;
-    p->processed_data += e->tuples * e->tuple_size;
-    p->latency_sum += e->end - e->start;
-
-    p->event_head = (p->event_head + 1) % SCHEDULER_QUEUE_LIMIT;
-}
-
-static void reset_data(scheduler_p p) {
-    p->event_num = 0;
-    p->latency_sum = 0;
-    p->processed_data = 0;
+    p->queue_head = (p->queue_head + 1) % SCHEDULER_QUEUE_LIMIT;
 }
 
