@@ -39,6 +39,9 @@ scheduler_p scheduler_init() {
 
     p->queue_head = 0;
     p->queue_tail = 0;
+	for (int i=0; i<SCHEDULER_QUEUE_LIMIT; i++) {
+		p->queue[i] = NULL;
+	}
 
 	/* Initialise mutex and conditions */
 	p->mutex = (pthread_mutex_t *) malloc (sizeof(pthread_mutex_t));
