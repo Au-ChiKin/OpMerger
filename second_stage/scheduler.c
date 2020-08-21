@@ -77,6 +77,7 @@ void scheduler_add_task (scheduler_p p, task_p t) {
     pthread_cond_signal (p->added);
 }
 
+/* Add to the head of the queue to favour downstream task */
 static void scheduler_add_task_nolock (scheduler_p p, task_p t) {
 	p->queue_head = (p->queue_head - 1 + SCHEDULER_QUEUE_LIMIT) % SCHEDULER_QUEUE_LIMIT;
     p->queue[p->queue_head] = t;
@@ -119,6 +120,7 @@ static void process_one_task (scheduler_p p) {
 			event_manager_add_event(p->manager, event);
 
             /* TODO: Just delete for now */
+			free(processed->output->buffer);
             free(processed->output);
             free(processed);
             // result_handler_add_task(processed);

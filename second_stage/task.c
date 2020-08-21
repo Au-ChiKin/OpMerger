@@ -56,8 +56,8 @@ void task_run(task_p t) {
         t->event = event;
     }
 
-    u_int8_t * buffer = (u_int8_t *) malloc(3 * query->batch_size * 64);
-    t->output = batch(3 * query->batch_size, 0, buffer, 3 * query->batch_size, 64);
+    u_int8_t * buffer = (u_int8_t *) malloc(2 * query->batch_size * 64);
+    t->output = batch(2 * query->batch_size, 0, buffer, 2 * query->batch_size, 64);
 
     query_process(t->query, t->oid, t->batch, t->output);
 }
