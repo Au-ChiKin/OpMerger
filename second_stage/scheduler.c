@@ -26,7 +26,7 @@ static void * scheduler(void * args) {
 	return (args) ? NULL : args;
 }
 
-scheduler_p scheduler_init() {
+scheduler_p scheduler_init(int pipeline_depth) {
 
 	scheduler_p p = (scheduler_p) malloc (sizeof(scheduler_t));
 	if (! p) {
@@ -45,7 +45,7 @@ scheduler_p scheduler_init() {
 	for (int i=0; i<SCHEDULER_MAX_PIPELINE_DEPTH; i++) {
 		p->pipeline[i] = NULL;
 	}
-    p->pipeline_num = 4;
+    p->pipeline_depth = pipeline_depth;
 
 	/* Initialise mutex and conditions */
 	p->mutex = (pthread_mutex_t *) malloc (sizeof(pthread_mutex_t));
@@ -81,10 +81,10 @@ static void scheduler_add_task_nolock (scheduler_p p, task_p t) {
 
 static task_p scheduler_collect_task(scheduler_p p, task_p task) {
 	task_p ret = p->pipeline[0];
-	for (int i = 0; i < p->pipeline_num - 1; ++i) {
+	for (int i = 0; i < p->pipeline_depth - 1; ++i) {
 		p->pipeline[i] = p->pipeline[i + 1];
 	}
-	p->pipeline[p->pipeline_num - 1] = task;
+	p->pipeline[p->pipeline_depth - 1] = task;
 
 	return ret;
 }

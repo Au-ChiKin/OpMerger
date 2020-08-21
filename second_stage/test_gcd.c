@@ -46,7 +46,7 @@ void run_processing_gpu(
     batch_p output = batch(6 * buffer_size, 0, result, 6 * buffer_size, TUPLE_SIZE);
 
     /* Start scheduler */
-    scheduler_p scheduler  = scheduler_init();
+    scheduler_p scheduler  = scheduler_init(pipeline_num);
 
     /* Start throughput monitoring */
     event_manager_p manager = event_manager_init();

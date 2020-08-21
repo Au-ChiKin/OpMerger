@@ -21,7 +21,7 @@ typedef struct scheduler {
     volatile task_p queue [SCHEDULER_QUEUE_LIMIT];
 
     /* A pipeline of intermediate result */
-    int pipeline_num;
+    int pipeline_depth;
     volatile int cur_output;
     volatile task_p pipeline [SCHEDULER_MAX_PIPELINE_DEPTH];
 
@@ -31,7 +31,7 @@ typedef struct scheduler {
     volatile long latency_sum;
 } scheduler_t;
 
-scheduler_p scheduler_init();
+scheduler_p scheduler_init(int pipeline_depth);
 
 void scheduler_add_task (scheduler_p p, task_p t);
 
