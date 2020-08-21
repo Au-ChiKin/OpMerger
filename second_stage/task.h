@@ -6,7 +6,7 @@
 
 typedef struct task * task_p;
 typedef struct task {
-    int task_id;
+    int id;
 
     query_p query;
     batch_p batch;
