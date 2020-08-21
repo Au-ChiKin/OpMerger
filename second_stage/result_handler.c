@@ -43,11 +43,6 @@ result_handler_p result_handler_init() {
 		p->queue[i] = NULL;
 	}
 
-	p->cur_output = 1;
-	for (int i=0; i<RESULT_HANDLER_QUEUE_LIMIT; i++) {
-		p->outputs[i] = NULL;
-	}
-
 	/* Initialise mutex and conditions */
 	p->mutex = (pthread_mutex_t *) malloc (sizeof(pthread_mutex_t));
 	pthread_mutex_init (p->mutex, NULL);
@@ -80,22 +75,8 @@ void result_handler_add_task (result_handler_p p, task_p t) {
 
 }
 
-batch_p result_handler_shift_output(result_handler_p p, batch_p batch) {
-	pthread_mutex_lock (p->mutex);
-		batch_p ret = p->outputs[0];
-		for (int i = 0; i < p->pipeline_num - 1; ++i) {
-			p->outputs[i] = p->outputs[i + 1];
-		}
-		p->outputs[p->pipeline_num - 1] = batch;
-    pthread_mutex_unlock (p->mutex);
-
-	return ret;
-}
-
 static void process_one_task (result_handler_p p) {
     task_p t = p->queue[p->queue_head];
-
-    query_process(t->query, t->batch);
 
     p->queue_head = (p->queue_head + 1) % RESULT_HANDLER_QUEUE_LIMIT;
 }
