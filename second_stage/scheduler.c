@@ -78,8 +78,8 @@ void scheduler_add_task (scheduler_p p, task_p t) {
 }
 
 static void scheduler_add_task_nolock (scheduler_p p, task_p t) {
-    p->queue[p->queue_tail] = t;
-    p->queue_tail = (p->queue_tail + 1) % SCHEDULER_QUEUE_LIMIT;
+	p->queue_head = (p->queue_head - 1 + SCHEDULER_QUEUE_LIMIT) % SCHEDULER_QUEUE_LIMIT;
+    p->queue[p->queue_head] = t;
 }
 
 static task_p scheduler_collect_task(scheduler_p p, task_p task) {
@@ -119,8 +119,8 @@ static void process_one_task (scheduler_p p) {
 			event_manager_add_event(p->manager, event);
 
             /* TODO: Just delete for now */
-            // free(processed->output);
-            // free(processed);
+            free(processed->output);
+            free(processed);
             // result_handler_add_task(processed);
         }
     }
