@@ -6,7 +6,6 @@
 static pthread_t thr = NULL;
 
 static void process_one_task (scheduler_p m);
-static void reset_data(scheduler_p p);
 
 static void * scheduler(void * args) {
 	scheduler_p p = (scheduler_p) args;
@@ -20,7 +19,7 @@ static void * scheduler(void * args) {
                 pthread_cond_wait(p->added, p->mutex);
             }
 
-                process_one_task(p);
+			process_one_task(p);
         pthread_mutex_unlock (p->mutex);
     }
 
@@ -43,6 +42,11 @@ scheduler_p scheduler_init() {
 		p->queue[i] = NULL;
 	}
 
+	for (int i=0; i<SCHEDULER_MAX_PIPELINE_DEPTH; i++) {
+		p->pipeline[i] = NULL;
+	}
+    p->pipeline_num = 4;
+
 	/* Initialise mutex and conditions */
 	p->mutex = (pthread_mutex_t *) malloc (sizeof(pthread_mutex_t));
 	pthread_mutex_init (p->mutex, NULL);
@@ -63,10 +67,6 @@ scheduler_p scheduler_init() {
 
 void scheduler_add_task (scheduler_p p, task_p t) {
 	pthread_mutex_lock (p->mutex);
-        if (p->queue[p->queue_tail] != NULL) {
-            free(p->queue[p->queue_tail]);
-            p->queue[p->queue_tail] = NULL;
-        }
     	p->queue[p->queue_tail] = t;
         p->queue_tail = (p->queue_tail + 1) % SCHEDULER_QUEUE_LIMIT;
     pthread_mutex_unlock (p->mutex);
@@ -74,22 +74,41 @@ void scheduler_add_task (scheduler_p p, task_p t) {
     pthread_cond_signal (p->added);
 }
 
-static void process_one_task (scheduler_p p) {
-    task_p t = p->queue[p->queue_head];
-
-	task_run(t, (void *) p, scheduler_shift_output);
-
-    p->queue_head = (p->queue_head + 1) % SCHEDULER_QUEUE_LIMIT;
+static void scheduler_add_task_nolock (scheduler_p p, task_p t) {
+    p->queue[p->queue_tail] = t;
+    p->queue_tail = (p->queue_tail + 1) % SCHEDULER_QUEUE_LIMIT;
 }
 
-batch_p scheduler_shift_output(void * scheduler, batch_p batch) {
-	scheduler_p p = (scheduler_p) scheduler;
-
-	batch_p ret = p->outputs[0];
+static task_p scheduler_collect_task(scheduler_p p, task_p task) {
+	task_p ret = p->pipeline[0];
 	for (int i = 0; i < p->pipeline_num - 1; ++i) {
-		p->outputs[i] = p->outputs[i + 1];
+		p->pipeline[i] = p->pipeline[i + 1];
 	}
-	p->outputs[p->pipeline_num - 1] = batch;
+	p->pipeline[p->pipeline_num - 1] = task;
 
 	return ret;
+}
+
+static void process_one_task (scheduler_p p) {
+    /* Run the head task */
+    task_p t = p->queue[p->queue_head];
+
+	task_run(t);
+    p->queue_head = (p->queue_head + 1) % SCHEDULER_QUEUE_LIMIT;
+
+    /* Handle task popping out from the pipeline */
+	task_p processed = scheduler_collect_task(p, t);
+	
+    if (processed != NULL) {
+        if (task_has_downstream(processed)) {
+            task_p downstream = task(processed->query, processed->output, NULL);
+
+            scheduler_add_task_nolock(p, downstream);
+        } else {
+            /* TODO: Just delete for now */
+            free(processed->output);
+            free(processed);
+            // result_handler_add_task(processed);
+        }
+    }
 }

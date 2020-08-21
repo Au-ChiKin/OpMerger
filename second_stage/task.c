@@ -19,9 +19,16 @@ task_p task(query_p query, batch_p batch, batch_p output) {
     return task;
 }
 
-void task_run(task_p t, 
-    void * scheduler, 
-    batch_p (* callback_shift_batch) (void * scheduler, batch_p batch)) {
+void task_run(task_p t) {
+
+    query_p query = t->query;
+
+    u_int8_t * buffer = (u_int8_t *) malloc(6 * query->batch_size * 64);
+    t->output = batch(6 * query->batch_size * 64, 0, buffer, 6 * query->batch_size * 64, 64);
 
     query_process(t->query, t->batch, t->output);
+}
+
+bool task_has_downstream(task_p t) {
+    return false;
 }
