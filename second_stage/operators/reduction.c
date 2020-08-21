@@ -117,7 +117,7 @@ static char * generate_reducef (reduction_p reduce, char const * patch) {
     }
 
     /* Set timestamp */
-    _sprintf("    out->tuple.t = (!flag || (flag && out->tuple.t > in->tuple.t)) ? out->tuple.t : in->tuple.t;\n", NULL);
+    _sprintf("    out->tuple.t = (!flag || (flag && (out->tuple.t > in->tuple.t))) ? out->tuple.t : in->tuple.t;\n", NULL);
 
     /* Aggregation */
     for (i = 0; i < aggregation_num; ++i) {
@@ -133,15 +133,15 @@ static char * generate_reducef (reduction_p reduce, char const * patch) {
             _sprintf("    out->tuple._%d += in->tuple._%d * flag;\n", (i + 1), column); 
             break;
         case MIN:
-            _sprintf("    out->tuple._%d = (flag && out->tuple._%d > in->tuple._%d) ? in->tuple._%d : out->tuple._%d;\n",
+            _sprintf("    out->tuple._%d = (flag && (out->tuple._%d > in->tuple._%d)) ? in->tuple._%d : out->tuple._%d;\n",
                     (i + 1), (i + 1), column, column, (i + 1));
             break;
         case MAX:
-            _sprintf("    out->tuple._%d = (flag && out->tuple._%d < in->tuple._%d) ? in->tuple._%d : out->tuple._%d;\n", 
+            _sprintf("    out->tuple._%d = (flag && (out->tuple._%d < in->tuple._%d)) ? in->tuple._%d : out->tuple._%d;\n",
                     (i + 1), (i + 1), column, column, (i + 1));
             break;
         default:
-        //     throw new IllegalArgumentException("error: invalid aggregation type");
+            fprintf(stderr, "error: invalid aggregation type\n");
             break;
         }
     }

@@ -11,12 +11,14 @@
 
 #include "cirbuf/circular_buffer.h"
 #include "config.h"
+#include "batch.h"
+#include "window.h"
 #include "operators/selection.h"
 #include "operators/reduction.h"
 #include "operators/aggregation.h"
-#include "batch.h"
-#include "window.h"
 #include "query.h"
+#include "scheduler.h"
+#include "task.h"
 
 #define GCD_LINE_NUM 144370688 // maximum lines for input txts
 
@@ -34,17 +36,21 @@ void run_processing_gpu(
     
     /* TODO extend the batch struct into a real memoery manager that could create a batch 
     according to the start and end pointer */
+    /* Pre-assembled batches */
     batch_p input [8812];
     for (int b=0; b<buffer_num; b++) {
         input[b] = batch(buffer_size, 0, buffers[b], buffer_size, TUPLE_SIZE);
     }
 
-    /* TODO: dynmaically decide the output buffer size */
+    /* Used as an output stream */
     batch_p output = batch(6 * buffer_size, 0, result, 6 * buffer_size, TUPLE_SIZE);
+
 
     /* Start throughput monitoring */
     event_manager_p manager = event_manager_init();
-    monitor_p monitor = monitor_init(manager);
+
+    /* Start scheduler */
+    scheduler_p scheduler  = scheduler_init(pipeline_num, manager);
 
     int const query_num = 2;
     gpu_init(query_num, pipeline_num, manager);
@@ -63,6 +69,9 @@ void run_processing_gpu(
     schema_add_attr(schema1, TYPE_FLOAT); /* ram */
     schema_add_attr(schema1, TYPE_FLOAT); /* disk */
     schema_add_attr(schema1, TYPE_INT);   /* constraints */
+
+    /* Start the actual monitoring */
+    monitor_p monitor = monitor_init(manager);
 
     /* simplified query creation */
     switch (mode) {
@@ -88,19 +97,21 @@ void run_processing_gpu(
 
                 query_add_operator(query1, (void *) select1, select1->operator);
 
-                query_setup(query1, manager, monitor);
+                query_setup(query1);
 
                 int b = 0;
                 for (int l=0; l<work_load; l++) {
-                    /* Execute */
-                    query_process(query1, input[b], output);
+                    task_p new_task = task(query1, input[b]);
 
-                    /* For debugging */
-                    if (is_debug) {
-                        selection_print_output(select1, output);
-                    }
+                    /* Execute */
+                    scheduler_add_task(scheduler, new_task);
 
                     b = (b + 1) % buffer_num;
+                }
+
+                /* For debugging */
+                if (is_debug) {
+                    selection_print_output(select1, output);
                 }
             }
 
@@ -124,19 +135,22 @@ void run_processing_gpu(
 
                 query_add_operator(query1, (void *) reduce1, reduce1->operator);
 
-                query_setup(query1, manager, monitor);
+                query_setup(query1);
 
                 int b = 0;
                 for (int l=0; l<work_load; l++) {
-                    /* Execute */
-                    query_process(query1, input[b], output);
+                    task_p new_task = task(query1, input[b]);
 
-                    /* For debugging */
-                    if (is_debug) {
-                        reduction_print_output(output, buffer_size, schema1->size);
-                    }
+                    /* Execute */
+                    scheduler_add_task(scheduler, new_task);
+
 
                     b = (b + 1) % buffer_num;
+                }
+
+                /* For debugging */
+                if (is_debug) {
+                    reduction_print_output(output, buffer_size, schema1->size);
                 }
             }
             break;
@@ -174,19 +188,22 @@ void run_processing_gpu(
                 query_add_operator(query1, (void *) select1, select1->operator);
                 query_add_operator(query1, (void *) select2, select2->operator);
 
-                query_setup(query1, manager, monitor);
+                query_setup(query1);
 
                 int b = 0;
                 for (int l=0; l<work_load; l++) {
-                    /* Execute */
-                    query_process(query1, input[b], output);
+                    task_p new_task = task(query1, input[b]);
 
-                    /* For debugging */
-                    if (is_debug) {
-                        selection_print_output(select2, output);
-                    }
+                    /* Execute */
+                    scheduler_add_task(scheduler, new_task);
+
 
                     b = (b + 1) % buffer_num;
+                }
+
+                /* For debugging */
+                if (is_debug) {
+                    selection_print_output(select2, output);
                 }
             }
             break;
@@ -261,20 +278,22 @@ void run_processing_gpu(
                 query_add_operator(query1, (void *) select1, select1->operator);
                 query_add_operator(query1, (void *) reduce1, reduce1->operator);
 
-                query_setup(query1, manager, monitor);
+                query_setup(query1);
 
-                int b = 0;
+                /* Create tasks and add them to the task queue */
+                int b = 0; // buffer index
                 for (int l=0; l<work_load; l++) {
-                    /* Execute */
-                    /* Temparory using the first buffer */
-                    query_process(query1, input[0], output);
+                    task_p new_task = task(query1, input[b]);
 
-                    /* For debugging */
-                    if (is_debug) {
-                        reduction_print_output(output, input[b]->size, schema1->size);
-                    }
-            
+                    /* Execute */
+                    scheduler_add_task(scheduler, new_task);
+
                     b = (b + 1) % buffer_num;
+                }
+                
+                /* For debugging */
+                if (is_debug) {
+                    reduction_print_output(output, input[0]->size, schema1->size);
                 }
             }
             break;
@@ -327,21 +346,22 @@ void run_processing_gpu(
 
                 query_add_operator(query1, (void *) aggregate1, aggregate1->operator);
 
-                query_setup(query1, manager, monitor);
+                query_setup(query1);
 
                 int b = 0;
                 for (int l=0; l<work_load; l++) {
-                    /* Execute */
-                    /* Temparory using the first buffer */
-                    query_process(query1, input[0], output);
+                    task_p new_task = task(query1, input[b]);
 
-                    /* For debugging */
-                    if (is_debug) {
-                        aggregation_print_output(output, input[b]->size, schema1->size);
-                    }
-            
+                    /* Execute */
+                    scheduler_add_task(scheduler, new_task);
+
                     b = (b + 1) % buffer_num;
                 }                            
+
+                /* For debugging */
+                if (is_debug) {
+                    aggregation_print_output(output, input[b]->size, schema1->size);
+                }
             }
             break;
         case QUERY2:
@@ -406,23 +426,25 @@ void run_processing_gpu(
                 query_add_operator(query1, (void *) aggregate1, aggregate1->operator);
                 query_add_operator(query1, (void *) select1, select1->operator);
 
-                query_setup(query1, manager, monitor);
+                query_setup(query1);
 
                 int b = 0;
                 for (int l=0; l<work_load; l++) {
-                    /* Execute */
-                    /* Temparory using the first buffer */
-                    query_process(query1, input[0], output);
+                    task_p new_task = task(query1, input[b]);
 
-                    /* For debugging */
-                    if (is_debug) {
-                        aggregation_print_output(output, input[b]->size, schema1->size);
-                    }
-            
+                    /* Execute */
+                    scheduler_add_task(scheduler, new_task);
+
                     b = (b + 1) % buffer_num;
+                }
+
+                /* For debugging */
+                if (is_debug) {
+                    aggregation_print_output(output, input[b]->size, schema1->size);
                 }
             }
         default:
+            fprintf(stderr, "error: wrong test case name, runs an no-op query\n");
             break;
     }
 
@@ -460,7 +482,7 @@ void print_tuples(cbuf_handle_t cbufs [], int n) {
     printf("       ......\n");
 }
 
-void read_input_buffers(cbuf_handle_t cbufs [], int buffer_num, int batch_size) {
+void read_input_buffers(cbuf_handle_t cbufs [], int buffer_num, int tuple_per_insert) {
     // int extraBytes = 5120 * TUPLE_SIZE; // for?
 
     char dataDir [64] = "../datasets/google-cluster-data/";
@@ -496,7 +518,7 @@ void read_input_buffers(cbuf_handle_t cbufs [], int buffer_num, int batch_size) 
     bool is_finished = false;
     cbuf_handle_t cbuf;
     while (!is_finished) {
-        if (tupleIndex >= batch_size) {
+        if (tupleIndex >= tuple_per_insert) {
             tupleIndex = 0; // tupleIndex in a buffer
             bufferIndex ++;
             if (bufferIndex >= buffer_num) {
@@ -584,7 +606,8 @@ int main(int argc, char * argv[]) {
     int batch_size = 32; // default to be 32MB per batch
     int buffer_num = 1;
     int pipeline_num = 1;
-    enum test_cases mode = SELECTION;
+    int tuple_per_insert = batch_size * ((1024 * 1024) / TUPLE_SIZE);
+    enum test_cases mode = QUERY1;
 
     parse_arguments(argc, argv, 
         &mode, &work_load, &batch_size, &buffer_num, &pipeline_num,
@@ -609,16 +632,18 @@ int main(int argc, char * argv[]) {
     static int max_buffer_num = GCD_LINE_NUM / ((1024 * 1024) / TUPLE_SIZE); // about 8812
     u_int8_t * buffers [max_buffer_num];
     cbuf_handle_t cbufs [max_buffer_num];
+    /* TODO: Add a dispatcher allow dispatch tuples of size different to bath size */
+    tuple_per_insert = batch_size;
 
     if (buffer_num > max_buffer_num) {
         printf("[MAIN] the requested buffer number has exceeded the limit (%d) and is reset it\n", max_buffer_num);
         buffer_num = max_buffer_num;
     }
     for (int i=0; i<buffer_num; i++) {
-        buffers[i] = (u_int8_t *) malloc(batch_size * TUPLE_SIZE * sizeof(u_int8_t)); // creates 8812 ByteBuffers
-        cbufs[i] = circular_buf_init(buffers[i], batch_size * TUPLE_SIZE);
+        buffers[i] = (u_int8_t *) malloc(tuple_per_insert * TUPLE_SIZE * sizeof(u_int8_t)); // creates 8812 ByteBuffers
+        cbufs[i] = circular_buf_init(buffers[i], tuple_per_insert * TUPLE_SIZE);
     }
-    read_input_buffers(cbufs, 1, batch_size);
+    read_input_buffers(cbufs, 1, tuple_per_insert);
 
     print_tuples(cbufs, 32);
 

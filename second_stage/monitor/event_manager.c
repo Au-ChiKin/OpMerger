@@ -39,6 +39,9 @@ event_manager_p event_manager_init() {
 
     p->event_head = 0;
     p->event_tail = 0;
+    for (int i=0; i<EVENT_MANAGER_QUEUE_LIMIT; i++) {
+        p->events[i] = NULL;
+    }
 
     /* Accumulated data */
     reset_data(p);
@@ -63,10 +66,10 @@ event_manager_p event_manager_init() {
 
 void event_manager_add_event (event_manager_p p, query_event_p e) {
 	pthread_mutex_lock (p->mutex);
-        // if (p->events[p->event_tail] != NULL) {
-        //     free(p->events[p->event_tail]);
-        //     p->events[p->event_tail] = NULL;
-        // }
+        if (p->events[p->event_tail] != NULL) {
+            free(p->events[p->event_tail]);
+            p->events[p->event_tail] = NULL;
+        }
     	p->events[p->event_tail] = e;
         p->event_tail = (p->event_tail + 1) % EVENT_MANAGER_QUEUE_LIMIT;
     pthread_mutex_unlock (p->mutex);

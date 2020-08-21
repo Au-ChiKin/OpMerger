@@ -296,7 +296,7 @@ static int gpu_query_exec_2 (
 	/* Wait for the pop out config to finish */
 	if (out_config) {
 
-		/* Wait for read event from previous query */
+		/* Wait for the finish of the previous query in the out_config */
 		gpu_config_finish(out_config);
 		
 #ifdef GPU_PROFILE
