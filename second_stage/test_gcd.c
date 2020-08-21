@@ -11,11 +11,11 @@
 
 #include "cirbuf/circular_buffer.h"
 #include "config.h"
+#include "batch.h"
+#include "window.h"
 #include "operators/selection.h"
 #include "operators/reduction.h"
 #include "operators/aggregation.h"
-#include "batch.h"
-#include "window.h"
 #include "query.h"
 #include "scheduler.h"
 #include "task.h"
