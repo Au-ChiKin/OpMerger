@@ -41,4 +41,6 @@ void query_process(query_p query, batch_p input, batch_p output);
 
 void query_free(query_p query);
 
+void query_run(query_p query, int buffer_num, batch_p input [], int work_load, batch_p output);
+
 #endif

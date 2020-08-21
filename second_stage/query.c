@@ -205,6 +205,16 @@ void query_process(query_p query, batch_p input, batch_p output) {
     }
 }
 
+void query_run(query_p query, int buffer_num, batch_p input [], int work_load, batch_p output) {
+    int b = 0; // buffer index
+    for (int l=0; l<work_load; l++) {
+        /* Execute */
+        query_process(query, input[b], output);
+
+        b = (b + 1) % buffer_num;
+    }
+}
+
 void query_free(query_p query) {
     free(query->window);
 }

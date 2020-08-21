@@ -263,17 +263,11 @@ void run_processing_gpu(
 
                 query_setup(query1, manager, monitor);
 
-                int b = 0; // buffer index
-                for (int l=0; l<work_load; l++) {
-                    /* Execute */
-                    query_process(query1, input[b], output);
-
-                    /* For debugging */
-                    if (is_debug) {
-                        reduction_print_output(output, input[b]->size, schema1->size);
-                    }
-            
-                    b = (b + 1) % buffer_num;
+                query_run(query1, buffer_num, input, work_load, output);
+                
+                /* For debugging */
+                if (is_debug) {
+                    reduction_print_output(output, input[0]->size, schema1->size);
                 }
             }
             break;
