@@ -460,7 +460,7 @@ void print_tuples(cbuf_handle_t cbufs [], int n) {
     printf("       ......\n");
 }
 
-void read_input_buffers(cbuf_handle_t cbufs [], int buffer_num, int batch_size) {
+void read_input_buffers(cbuf_handle_t cbufs [], int buffer_num, int tuple_per_insert) {
     // int extraBytes = 5120 * TUPLE_SIZE; // for?
 
     char dataDir [64] = "../datasets/google-cluster-data/";
@@ -496,7 +496,7 @@ void read_input_buffers(cbuf_handle_t cbufs [], int buffer_num, int batch_size) 
     bool is_finished = false;
     cbuf_handle_t cbuf;
     while (!is_finished) {
-        if (tupleIndex >= batch_size) {
+        if (tupleIndex >= tuple_per_insert) {
             tupleIndex = 0; // tupleIndex in a buffer
             bufferIndex ++;
             if (bufferIndex >= buffer_num) {
@@ -609,16 +609,18 @@ int main(int argc, char * argv[]) {
     static int max_buffer_num = GCD_LINE_NUM / ((1024 * 1024) / TUPLE_SIZE); // about 8812
     u_int8_t * buffers [max_buffer_num];
     cbuf_handle_t cbufs [max_buffer_num];
+    /* TODO: Add a dispatcher allow dispatch tuples of size different to bath size */
+    int tuple_per_insert = batch_size;
 
     if (buffer_num > max_buffer_num) {
         printf("[MAIN] the requested buffer number has exceeded the limit (%d) and is reset it\n", max_buffer_num);
         buffer_num = max_buffer_num;
     }
     for (int i=0; i<buffer_num; i++) {
-        buffers[i] = (u_int8_t *) malloc(batch_size * TUPLE_SIZE * sizeof(u_int8_t)); // creates 8812 ByteBuffers
-        cbufs[i] = circular_buf_init(buffers[i], batch_size * TUPLE_SIZE);
+        buffers[i] = (u_int8_t *) malloc(tuple_per_insert * TUPLE_SIZE * sizeof(u_int8_t)); // creates 8812 ByteBuffers
+        cbufs[i] = circular_buf_init(buffers[i], tuple_per_insert * TUPLE_SIZE);
     }
-    read_input_buffers(cbufs, 1, batch_size);
+    read_input_buffers(cbufs, 1, tuple_per_insert);
 
     print_tuples(cbufs, 32);
 
