@@ -263,11 +263,10 @@ void run_processing_gpu(
 
                 query_setup(query1, manager, monitor);
 
-                int b = 0;
+                int b = 0; // buffer index
                 for (int l=0; l<work_load; l++) {
                     /* Execute */
-                    /* Temparory using the first buffer */
-                    query_process(query1, input[0], output);
+                    query_process(query1, input[b], output);
 
                     /* For debugging */
                     if (is_debug) {
