@@ -120,9 +120,7 @@ static void process_one_task (scheduler_p p) {
 			event_manager_add_event(p->manager, event);
 
             /* TODO: Just delete for now */
-			free(processed->output->buffer);
-            free(processed->output);
-            free(processed);
+			task_free(processed);
             // result_handler_add_task(processed);
         }
     }

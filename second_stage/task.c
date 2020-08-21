@@ -69,3 +69,11 @@ bool task_is_most_upstream(task_p t) {
 bool task_has_downstream(task_p t) {
     return t->oid < t->query->operator_num - 1 ;
 }
+
+void task_free(task_p t) {
+    if (!task_is_most_upstream(t)) {
+        batch_free_all(t->batch);
+    }
+    batch_free_all(t->output);
+    free(t);
+}

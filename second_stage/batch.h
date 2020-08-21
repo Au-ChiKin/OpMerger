@@ -15,4 +15,8 @@ batch_p batch(int size, long start, u_int8_t * buffer, int buffer_size, int tupl
 
 long batch_get_timestamp(batch_p batch, int offset);
 
+void batch_free(batch_p b);
+
+void batch_free_all(batch_p b);
+
 #endif

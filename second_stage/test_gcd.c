@@ -108,6 +108,8 @@ void run_processing_gpu(
                     scheduler_add_task(scheduler, new_task);
 
                     b = (b + 1) % buffer_num;
+
+                    usleep(250); // Sleep for 1 ms
                 }
 
                 /* For debugging */
@@ -146,6 +148,8 @@ void run_processing_gpu(
                     scheduler_add_task(scheduler, new_task);
 
                     b = (b + 1) % buffer_num;
+
+                    usleep(250); // Sleep for 1 ms
                 }
 
                 /* For debugging */
@@ -199,6 +203,8 @@ void run_processing_gpu(
 
 
                     b = (b + 1) % buffer_num;
+
+                    usleep(250); // Sleep for 1 ms
                 }
 
                 /* For debugging */
@@ -290,7 +296,7 @@ void run_processing_gpu(
 
                     b = (b + 1) % buffer_num;
 
-                    usleep(250); // Sleep for 1 ms
+                    usleep(250); // Sleep for 0.25 ms, optimal speed is then 12800
                 }
                 
                 /* For debugging */

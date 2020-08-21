@@ -38,3 +38,12 @@ long batch_get_timestamp(batch_p batch, int offset) {
 
     return timestamp.value;
 }
+
+void batch_free(batch_p b) {
+    free(b);
+}
+
+void batch_free_all(batch_p b) {
+    free(b->buffer);
+    free(b);
+}
