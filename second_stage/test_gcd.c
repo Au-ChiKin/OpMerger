@@ -36,12 +36,13 @@ void run_processing_gpu(
     
     /* TODO extend the batch struct into a real memoery manager that could create a batch 
     according to the start and end pointer */
+    /* Pre-assembled batches */
     batch_p input [8812];
     for (int b=0; b<buffer_num; b++) {
         input[b] = batch(buffer_size, 0, buffers[b], buffer_size, TUPLE_SIZE);
     }
 
-    /* TODO: dynmaically decide the output buffer size */
+    /* Used as an output stream */
     batch_p output = batch(6 * buffer_size, 0, result, 6 * buffer_size, TUPLE_SIZE);
 
     /* Start scheduler */
@@ -101,7 +102,6 @@ void run_processing_gpu(
 
                     /* Execute */
                     scheduler_add_task(scheduler, new_task);
-
 
                     b = (b + 1) % buffer_num;
                 }
@@ -352,7 +352,6 @@ void run_processing_gpu(
                     /* Execute */
                     scheduler_add_task(scheduler, new_task);
 
-            
                     b = (b + 1) % buffer_num;
                 }                            
 
@@ -433,7 +432,6 @@ void run_processing_gpu(
                     /* Execute */
                     scheduler_add_task(scheduler, new_task);
 
-            
                     b = (b + 1) % buffer_num;
                 }
 
@@ -443,6 +441,7 @@ void run_processing_gpu(
                 }
             }
         default:
+            fprintf(stderr, "error: wrong test case name, runs an no-op query\n");
             break;
     }
 
@@ -604,7 +603,8 @@ int main(int argc, char * argv[]) {
     int batch_size = 32; // default to be 32MB per batch
     int buffer_num = 1;
     int pipeline_num = 1;
-    enum test_cases mode = SELECTION;
+    int tuple_per_insert = batch_size * ((1024 * 1024) / TUPLE_SIZE);
+    enum test_cases mode = QUERY1;
 
     parse_arguments(argc, argv, 
         &mode, &work_load, &batch_size, &buffer_num, &pipeline_num,
@@ -630,7 +630,7 @@ int main(int argc, char * argv[]) {
     u_int8_t * buffers [max_buffer_num];
     cbuf_handle_t cbufs [max_buffer_num];
     /* TODO: Add a dispatcher allow dispatch tuples of size different to bath size */
-    int tuple_per_insert = batch_size;
+    tuple_per_insert = batch_size;
 
     if (buffer_num > max_buffer_num) {
         printf("[MAIN] the requested buffer number has exceeded the limit (%d) and is reset it\n", max_buffer_num);
