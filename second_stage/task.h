@@ -17,6 +17,8 @@ typedef struct task {
 
 task_p task(query_p query, batch_p batch, batch_p output);
 
-void task_run(task_p t);
+void task_run(task_p t, 
+    void * scheduler, 
+    batch_p (* callback_shift_bathc) (void * scheduler, batch_p batch));
 
 #endif

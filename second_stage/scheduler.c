@@ -77,8 +77,19 @@ void scheduler_add_task (scheduler_p p, task_p t) {
 static void process_one_task (scheduler_p p) {
     task_p t = p->queue[p->queue_head];
 
-	task_run(t);
+	task_run(t, (void *) p, scheduler_shift_output);
 
     p->queue_head = (p->queue_head + 1) % SCHEDULER_QUEUE_LIMIT;
 }
 
+batch_p scheduler_shift_output(void * scheduler, batch_p batch) {
+	scheduler_p p = (scheduler_p) scheduler;
+
+	batch_p ret = p->outputs[0];
+	for (int i = 0; i < p->pipeline_num - 1; ++i) {
+		p->outputs[i] = p->outputs[i + 1];
+	}
+	p->outputs[p->pipeline_num - 1] = batch;
+
+	return ret;
+}

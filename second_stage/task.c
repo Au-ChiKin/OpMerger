@@ -19,6 +19,9 @@ task_p task(query_p query, batch_p batch, batch_p output) {
     return task;
 }
 
-void task_run(task_p t) {
+void task_run(task_p t, 
+    void * scheduler, 
+    batch_p (* callback_shift_batch) (void * scheduler, batch_p batch)) {
+
     query_process(t->query, t->batch, t->output);
 }

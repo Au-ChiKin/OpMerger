@@ -5,6 +5,7 @@
 
 #include "task.h"
 
+#define SCHEDULER_MAX_PIPELINE_DEPTH 4
 #define SCHEDULER_QUEUE_LIMIT 100
 
 typedef struct scheduler * scheduler_p;
@@ -18,6 +19,11 @@ typedef struct scheduler {
     volatile int queue_tail;
     volatile task_p queue [SCHEDULER_QUEUE_LIMIT];
 
+    /* A pipeline of intermediate result */
+    int const pipeline_num;
+    volatile int cur_output;
+    volatile batch_p outputs [SCHEDULER_MAX_PIPELINE_DEPTH];
+
     /* Accumulated data */
     volatile int event_num;
     volatile long processed_data;
@@ -27,5 +33,7 @@ typedef struct scheduler {
 scheduler_p scheduler_init();
 
 void scheduler_add_task (scheduler_p p, task_p t);
+
+batch_p scheduler_shift_output(void * scheduler, batch_p batch);
 
 #endif
