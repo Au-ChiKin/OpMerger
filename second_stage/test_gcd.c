@@ -97,15 +97,18 @@ void run_processing_gpu(
 
                 int b = 0;
                 for (int l=0; l<work_load; l++) {
-                    /* Execute */
-                    query_process(query1, input[b], output);
+                    task_p new_task = task(query1, input[b], output);
 
-                    /* For debugging */
-                    if (is_debug) {
-                        selection_print_output(select1, output);
-                    }
+                    /* Execute */
+                    scheduler_add_task(scheduler, new_task);
+
 
                     b = (b + 1) % buffer_num;
+                }
+
+                /* For debugging */
+                if (is_debug) {
+                    selection_print_output(select1, output);
                 }
             }
 
@@ -133,15 +136,18 @@ void run_processing_gpu(
 
                 int b = 0;
                 for (int l=0; l<work_load; l++) {
-                    /* Execute */
-                    query_process(query1, input[b], output);
+                    task_p new_task = task(query1, input[b], output);
 
-                    /* For debugging */
-                    if (is_debug) {
-                        reduction_print_output(output, buffer_size, schema1->size);
-                    }
+                    /* Execute */
+                    scheduler_add_task(scheduler, new_task);
+
 
                     b = (b + 1) % buffer_num;
+                }
+
+                /* For debugging */
+                if (is_debug) {
+                    reduction_print_output(output, buffer_size, schema1->size);
                 }
             }
             break;
@@ -183,15 +189,18 @@ void run_processing_gpu(
 
                 int b = 0;
                 for (int l=0; l<work_load; l++) {
-                    /* Execute */
-                    query_process(query1, input[b], output);
+                    task_p new_task = task(query1, input[b], output);
 
-                    /* For debugging */
-                    if (is_debug) {
-                        selection_print_output(select2, output);
-                    }
+                    /* Execute */
+                    scheduler_add_task(scheduler, new_task);
+
 
                     b = (b + 1) % buffer_num;
+                }
+
+                /* For debugging */
+                if (is_debug) {
+                    selection_print_output(select2, output);
                 }
             }
             break;
@@ -338,17 +347,19 @@ void run_processing_gpu(
 
                 int b = 0;
                 for (int l=0; l<work_load; l++) {
-                    /* Execute */
-                    /* Temparory using the first buffer */
-                    query_process(query1, input[0], output);
+                    task_p new_task = task(query1, input[b], output);
 
-                    /* For debugging */
-                    if (is_debug) {
-                        aggregation_print_output(output, input[b]->size, schema1->size);
-                    }
+                    /* Execute */
+                    scheduler_add_task(scheduler, new_task);
+
             
                     b = (b + 1) % buffer_num;
                 }                            
+
+                /* For debugging */
+                if (is_debug) {
+                    aggregation_print_output(output, input[b]->size, schema1->size);
+                }
             }
             break;
         case QUERY2:
@@ -417,16 +428,18 @@ void run_processing_gpu(
 
                 int b = 0;
                 for (int l=0; l<work_load; l++) {
-                    /* Execute */
-                    /* Temparory using the first buffer */
-                    query_process(query1, input[0], output);
+                    task_p new_task = task(query1, input[b], output);
 
-                    /* For debugging */
-                    if (is_debug) {
-                        aggregation_print_output(output, input[b]->size, schema1->size);
-                    }
+                    /* Execute */
+                    scheduler_add_task(scheduler, new_task);
+
             
                     b = (b + 1) % buffer_num;
+                }
+
+                /* For debugging */
+                if (is_debug) {
+                    aggregation_print_output(output, input[b]->size, schema1->size);
                 }
             }
         default:
