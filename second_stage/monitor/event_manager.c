@@ -39,6 +39,9 @@ event_manager_p event_manager_init() {
 
     p->event_head = 0;
     p->event_tail = 0;
+    for (int i=0; i<EVENT_MANAGER_QUEUE_LIMIT; i++) {
+        p->events[i] = NULL;
+    }
 
     /* Accumulated data */
     reset_data(p);
