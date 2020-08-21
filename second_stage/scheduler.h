@@ -7,7 +7,7 @@
 #include "result_handler.h"
 
 #define SCHEDULER_MAX_PIPELINE_DEPTH 4
-#define SCHEDULER_QUEUE_LIMIT 100
+#define SCHEDULER_QUEUE_LIMIT 10000
 
 typedef struct scheduler * scheduler_p;
 typedef struct scheduler {

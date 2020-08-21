@@ -85,6 +85,10 @@ void query_setup(query_p query, event_manager_p manager, monitor_p monitor) {
         /* Set up the last operator with the patch func */
         int last_idx = query->operator_num-1;
         (* query->callbacks[last_idx]->setup) (query->operators[last_idx], query->batch_size, query->window, patch_func);
+
+        query->operators[0] = query->operators[last_idx];
+        query->callbacks[0] = query->callbacks[last_idx];
+        query->operator_num = 1;
     } else {
         /* If not merging, then set up the operator one by one */
 
@@ -97,7 +101,7 @@ void query_setup(query_p query, event_manager_p manager, monitor_p monitor) {
     query->has_setup = true;
 }
 
-void query_process(query_p query, batch_p input, batch_p output) {
+void query_process(query_p query, int oid, batch_p input, batch_p output) {
     bool is_profiling = true;
 
     if (!query->has_setup) {
@@ -127,82 +131,18 @@ void query_process(query_p query, batch_p input, batch_p output) {
         event->tuple_size = 64;
     }
 
-    if (query->is_merging) {
-        /* If operators have been merged, only the (new) last operator needs to be executed */
+    /* Execute */
+    (* query->callbacks[oid]->reset) (query->operators[oid], input->size);
 
-        int last_op_id = query->operator_num - 1;
+    (* query->callbacks[oid]->process) (query->operators[oid], 
+        input,
+        query->window,
+        output,
+        event); // Pass the event to the last operator 
+}
 
-        (* query->callbacks[last_op_id]->process) (
-            query->operators[last_op_id], 
-            input,
-            query->window,
-            output,
-            event); // Pass the event to the last operator
-    } else {
-        /* Create an intermediate buffer for data from operator to operator */
-        u_int8_t * inter_buffer = malloc(6 * query->batch_size * 64 /* TODO: a more reasonable way to define the size */);
-        batch_t inter_batch;
-        {
-            inter_batch.start = 0;
-            inter_batch.end = 6 * query->batch_size * 64;
-            inter_batch.size = 0; /* output buffer, default to be empty */
-            inter_batch.buffer = inter_buffer;
-        }
-        batch_p inter = &inter_batch;
-
-        /* Another buffer for more than two operators */
-        u_int8_t * inter_buffer_swap = malloc(6 * query->batch_size * 64);
-        batch_t inter_batch_swap;
-        {
-            inter_batch_swap.start = 0;
-            inter_batch_swap.end = 6 * query->batch_size * 64;
-            inter_batch_swap.size = 0; /* output buffer, default to be empty */
-            inter_batch_swap.buffer = inter_buffer_swap;
-        }
-        /* The buffer pointed by inter_swap should not be used (since it is also pointed to by input */
-        batch_p inter_swap = &inter_batch_swap;
-
-        batch_p tmp;
-
-        /* TODO: there is no checking of whether the operators[i] matches the callbacks[i] */
-        for (int i=0; i<query->operator_num; i++) {
-            // printf("[QUERY] Excecuting operator %d\n", i);
-            if (i != query->operator_num-1) {
-                if (i != 0) {
-                    (* query->callbacks[i]->reset) (query->operators[i], input->size);
-                }
-
-                (* query->callbacks[i]->process) (query->operators[i], 
-                    input,
-                    query->window,
-                    inter,
-                    NULL); // Not the last operator, for now, do not log its time
-
-                /* Move the inter to input */
-                (* query->callbacks[i]->process_output) (query->operators[i], inter);
-                input = inter; /* Shallow copy. input batch does not belong to query class, no need to free */
-
-                /* Use the other buffer as input */
-                tmp = inter;
-                { /* Reset the used input batch */
-                    inter_swap->start = 0;
-                    inter_swap->size = 0;
-                }
-                inter = inter_swap;
-                inter_swap = tmp;
-            } else  {
-                if (i != 0) {
-                    (* query->callbacks[i]->reset) (query->operators[i], input->size);
-                }
-
-                (* query->callbacks[i]->process) (query->operators[i], 
-                    input,
-                    query->window,
-                    output,
-                    event); // Pass the event to the last operator 
-            }
-        }
-    }
+void query_process_output(query_p query, int oid, batch_p output) {
+    (* query->callbacks[oid]->process_output) (query->operators[oid], output);
 }
 
 void query_free(query_p query) {
