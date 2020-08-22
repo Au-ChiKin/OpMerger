@@ -2,6 +2,7 @@
 
 #include <limits.h>
 #include <time.h>
+#include <stdio.h>
 
 #define MAX_ID INT_MAX
 static int free_id = 0;
@@ -36,9 +37,7 @@ void task_run(task_p t) {
     query_p query = t->query;
     int tuple_size = 64;
 
-    if (!task_is_most_upstream(t)) {
-        query_process_output(t->query, t->oid-1, t->batch);
-    } else {
+    if (task_is_most_upstream(t)) {
         /* Log start time and create the event */
         struct timespec start;
         clock_gettime(CLOCK_MONOTONIC_RAW, &start);
@@ -71,7 +70,28 @@ bool task_has_downstream(task_p t) {
     return t->oid < t->query->operator_num - 1 ;
 }
 
+task_p task_transfer_output(task_p from) {
+    if (!task_has_downstream(from)) {
+        fprintf(stderr, "error: output transfer only applys to from an upstream operator to a down stream one\n");
+        exit(1);
+    }
+
+    query_p query = from->query;
+
+    /* Get output batch ready for being an input */
+    query_process_output(query, from->oid, from->output);
+
+    /* Pass output batch ownership */
+    task_p ret = task_downstream(query, from->oid+1, from->output);
+    from->output = NULL;
+
+    ret->event = from->event;
+
+    return ret;
+}
+
 void task_free(task_p t) {
+    /* For the most upstream task, input is directly from the buffer */
     if (!task_is_most_upstream(t)) {
         batch_free_all(t->batch);
     }

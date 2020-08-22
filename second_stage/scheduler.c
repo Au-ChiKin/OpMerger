@@ -105,8 +105,7 @@ static void process_one_task (scheduler_p p) {
 	
     if (processed != NULL) {
         if (task_has_downstream(processed)) {
-            task_p downstream = task_downstream(processed->query, processed->oid+1, processed->output);
-			downstream->event = processed->event;
+            task_p downstream = task_transfer_output(processed);
 
             scheduler_add_task_nolock(p, downstream);
         } else {

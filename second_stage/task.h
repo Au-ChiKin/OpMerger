@@ -28,5 +28,7 @@ void task_run(task_p t);
 
 bool task_has_downstream(task_p t);
 
+task_p task_transfer_output(task_p from);
+
 void task_free(task_p t);
 #endif
