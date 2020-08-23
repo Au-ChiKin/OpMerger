@@ -61,6 +61,20 @@ dispatcher_p dispatcher_init(scheduler_p scheduler, query_p query, int oid, even
     return p;  
 }
 
+void dispatcher_insert(dispatcher_p p, u_int8_t * data, int len) {
+    batch_p new_batch = batch(p->query->batch_size, 0, data, p->query->batch_size, 64);
+
+    assemble(p, new_batch, len);
+}
+
+void dispatcher_set_downstream(dispatcher_p p, dispatcher_p downstream) {
+	p->handler->downstream = (void *) downstream;
+}
+
+result_handler_p dispatcher_get_handler(dispatcher_p p) {
+	return p->handler;
+}
+
 static void send_one_task(dispatcher_p p) {
     task_p t = p->tasks[p->task_head];
     p->tasks[p->task_head] = NULL;
@@ -78,34 +92,7 @@ static void create_task(dispatcher_p p, batch_p batch) {
     p->task_tail = (p->task_tail + 1) % DISPATCHER_QUEUE_LIMIT;
 }
 
-void dispatcher_insert(dispatcher_p p, u_int8_t * data, int len) {
-    batch_p new_batch = batch(p->query->batch_size, 0, data, p->query->batch_size, 64);
-
-    assemble(p, new_batch, len);
-}
-
 static void assemble(dispatcher_p p, batch_p batch, int length) {
-    
-    // p->accumulated += (length);
-        
-    // while (p->accumulated >= p->nextBatchEndPointer) {
-        
-    //     long f = p->nextBatchEndPointer & p->mask;
-    //     f = (f == 0) ? p->buffer_capacity : f;
-    //     f--;
-
-        /* Launch task */
-        create_task (p, batch);
-        
-    //     p->thisBatchStartPointer += p->query->batch_size;
-    //     p->nextBatchEndPointer   += p->query->batch_size;
-    // }    
-}
-
-void dispatcher_set_downstream(dispatcher_p p, dispatcher_p downstream) {
-	p->handler->downstream = (void *) downstream;
-}
-
-result_handler_p dispatcher_get_handler(dispatcher_p p) {
-	return p->handler;
+    /* Launch task */
+    create_task (p, batch);
 }
