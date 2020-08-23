@@ -18,7 +18,11 @@ static void * result_handler(void * args) {
 
     while (1) {
 		while (p->tasks[p->task_head] == NULL) {
+#ifdef __APPLE__
 			pthread_yield_np();
+#else
+			pthread_yield();
+#endif
 		}
 
 		process_one_task(p);
