@@ -48,8 +48,8 @@ void run_processing_gpu(
     /* Start scheduler */
     scheduler_p scheduler  = scheduler_init(pipeline_num, handler, manager);
 
-    int const query_num = 2;
-    gpu_init(query_num, pipeline_num, manager);
+    int const operator_num = 2;
+    gpu_init(operator_num, pipeline_num, manager);
 
     /* Construct schemas */
     schema_p schema1 = schema();
@@ -223,8 +223,13 @@ void run_processing_gpu(
                 query_setup(query1);
 
                 /* Create tasks and add them to the task queue */
-                dispatcher_p dispatchers[1] = {dispatcher(scheduler, query1, 0)};
+                dispatcher_p dispatchers[2];
+                
+                for (int i=0; i<query1->operator_num; i++) {
+                    dispatchers[i] = dispatcher(scheduler, query1, i);
+                }
 
+                /* Effectively an application, keep sending data to dispatcher */
                 int b=0;
                 while (1) {
                     usleep(DISPATCHER_INTERVAL);
