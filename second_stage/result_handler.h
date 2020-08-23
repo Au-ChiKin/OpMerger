@@ -24,6 +24,10 @@ typedef struct result_handler {
     volatile int event_num;
     volatile long processed_data;
     volatile long latency_sum;
+
+    void * downstream;
+
+    pthread_t thr;
 } result_handler_t;
 
 result_handler_p result_handler_init(event_manager_p event_manager);

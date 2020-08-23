@@ -42,12 +42,6 @@ void run_processing_gpu(
     /* Start throughput monitoring */
     event_manager_p manager = event_manager_init();
 
-    /* Start result_handler */
-    result_handler_p handler = result_handler_init(manager);
-
-    /* Start scheduler */
-    scheduler_p scheduler  = scheduler_init(pipeline_num, handler, manager);
-
     int const operator_num = 2;
     gpu_init(operator_num, pipeline_num, manager);
 
@@ -142,10 +136,21 @@ void run_processing_gpu(
                 query_add_operator(query1, (void *) select1, select1->operator);
                 query_add_operator(query1, (void *) reduce1, reduce1->operator);
 
-                query_setup(query1);
+
+                /* Start scheduler */
+                scheduler_p scheduler  = scheduler_init(pipeline_num);
 
                 /* Create tasks and add them to the task queue */
-                dispatcher_p dispatchers[1] = {dispatcher(scheduler, query1, 0)};
+                dispatcher_p dispatchers[2];
+                
+                for (int i=0; i<query1->operator_num; i++) {
+                    dispatchers[i] = dispatcher(scheduler, query1, i, manager);
+                    if (i>1) {
+                        dispatcher_set_downstream(dispatchers[i-1], dispatchers[i]);
+                    }
+                }
+
+                query_setup(query1);
 
                 int b=0;
                 while (1) {
@@ -220,14 +225,18 @@ void run_processing_gpu(
                 query_add_operator(query1, (void *) aggregate1, aggregate1->operator);
                 query_add_operator(query1, (void *) select1, select1->operator);
 
-                query_setup(query1);
+
+                /* Start scheduler */
+                scheduler_p scheduler  = scheduler_init(pipeline_num);
 
                 /* Create tasks and add them to the task queue */
                 dispatcher_p dispatchers[2];
                 
                 for (int i=0; i<query1->operator_num; i++) {
-                    dispatchers[i] = dispatcher(scheduler, query1, i);
+                    dispatchers[i] = dispatcher(scheduler, query1, i, manager);
                 }
+
+                query_setup(query1);
 
                 /* Effectively an application, keep sending data to dispatcher */
                 int b=0;

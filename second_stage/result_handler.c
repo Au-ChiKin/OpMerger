@@ -3,8 +3,6 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-static pthread_t thr = NULL;
-
 static void process_one_task (result_handler_p m);
 static void reset_data(result_handler_p p);
 
@@ -56,7 +54,7 @@ result_handler_p result_handler_init(event_manager_p event_manager) {
 	pthread_cond_init (p->added, NULL);
 
 	/* Initialise thread */
-	if (pthread_create(&thr, NULL, result_handler, (void *) p)) {
+	if (pthread_create(&p->thr, NULL, result_handler, (void *) p)) {
 		fprintf(stderr, "error: failed to create throughput monitor thread\n");
 		exit (1);
 	}
@@ -83,7 +81,7 @@ static void process_one_task (result_handler_p p) {
     task_p t = p->tasks[p->task_head];
 
 	if (task_has_downstream(t)) {
-		
+
 
 		task_p downstream = task_transfer_output(t);
 

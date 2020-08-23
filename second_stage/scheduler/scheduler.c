@@ -4,6 +4,8 @@
 #include <stdio.h>
 #include <time.h>
 
+#include "dispatcher.h"
+
 static pthread_t thr = NULL;
 
 static void process_one_task (scheduler_p m);
@@ -27,7 +29,7 @@ static void * scheduler(void * args) {
 	return (args) ? NULL : args;
 }
 
-scheduler_p scheduler_init(int pipeline_depth, result_handler_p result_handler, event_manager_p event_manager) {
+scheduler_p scheduler_init(int pipeline_depth) {
 
 	scheduler_p p = (scheduler_p) malloc (sizeof(scheduler_t));
 	if (! p) {
@@ -47,10 +49,6 @@ scheduler_p scheduler_init(int pipeline_depth, result_handler_p result_handler, 
 		p->pipeline[i] = NULL;
 	}
     p->pipeline_depth = pipeline_depth;
-
-	p->handler = result_handler;
-
-	p->manager = event_manager;
 
 	/* Initialise mutex and conditions */
 	p->mutex = (pthread_mutex_t *) malloc (sizeof(pthread_mutex_t));
@@ -107,7 +105,8 @@ static void process_one_task (scheduler_p p) {
 	
 	/* Transfer ownership of the task */
     if (processed != NULL) {
-		result_handler_add_task(p->handler, processed);
+		result_handler_p handler = dispatcher_get_handler((dispatcher_p) t->dispatcher);
+		result_handler_add_task(handler, processed);
     }
 }
 

@@ -13,6 +13,7 @@ typedef struct task {
 
     query_p query;
     int oid;
+    void * dispatcher;
 
     batch_p batch;
 
@@ -21,8 +22,7 @@ typedef struct task {
     query_event_p event;
 } task_t;
 
-task_p task(query_p query, int oid, batch_p batch);
-task_p task_downstream(query_p query, int oid, batch_p batch);
+task_p task(query_p query, int oid, batch_p batch, void * dispatcher);
 
 void task_run(task_p t);
 

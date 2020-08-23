@@ -3,6 +3,7 @@
 
 #include "task.h"
 #include "scheduler/scheduler.h"
+#include "result_handler.h"
 
 #define DISPATCHER_INTERVAL 100 // us
 
@@ -20,10 +21,18 @@ typedef struct dispatcher {
     long accumulated;
     long thisBatchStartPointer;
     long nextBatchEndPointer;
+
+    result_handler_p handler;
+
+    event_manager_p manager;
 } dispatcher_t;
 
-dispatcher_p dispatcher(scheduler_p scheduler, query_p query, int oid);
+dispatcher_p dispatcher(scheduler_p scheduler, query_p query, int oid, event_manager_p event_manager);
 
 void dispatcher_insert(dispatcher_p p, u_int8_t * data, int len);
+
+result_handler_p dispatcher_get_handler(dispatcher_p p);
+
+void dispatcher_set_downstream(dispatcher_p p, dispatcher_p downstream);
 
 #endif
