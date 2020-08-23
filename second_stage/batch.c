@@ -20,6 +20,8 @@ batch_p batch(int size, long start, u_int8_t * buffer, int buffer_size, int tupl
     }
     batch->end = start + size * tuple_size;
 
+    batch->tuple_size = tuple_size;
+
     batch->buffer = buffer;
 
     return batch;    

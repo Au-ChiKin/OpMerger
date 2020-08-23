@@ -18,7 +18,7 @@ static void * scheduler(void * args) {
 
     while (1) {
         pthread_mutex_lock (p->mutex);
-            while (p->queue_tail - p->queue_head == 0) {
+            while (p->queue[p->queue_head] == NULL) {
                 pthread_cond_wait(p->added, p->mutex);
             }
 

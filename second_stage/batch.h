@@ -8,6 +8,7 @@ typedef struct batch {
     long start;
     long end;   /* end - start gives the allocated size of this buffer */
     int size;   /* variable, in tuples, marking the number of stored meaning tuples */
+    int tuple_size;
     u_int8_t * buffer;
 } batch_t;
 

@@ -144,7 +144,7 @@ void run_processing_gpu(
                 dispatcher_p dispatchers[2];
                 
                 for (int i=0; i<query1->operator_num; i++) {
-                    dispatchers[i] = dispatcher(scheduler, query1, i, manager);
+                    dispatchers[i] = dispatcher_init(scheduler, query1, i, manager);
                     if (i>0) {
                         dispatcher_set_downstream(dispatchers[i-1], dispatchers[i]);
                     }
@@ -154,8 +154,8 @@ void run_processing_gpu(
 
                 int b=0;
                 while (1) {
-                    usleep(DISPATCHER_INTERVAL);
-
+                    usleep(250);
+                    
                     dispatcher_insert(dispatchers[0], buffers[b], buffer_size);
 
                     b = (b+1) % buffer_num;
@@ -233,7 +233,7 @@ void run_processing_gpu(
                 dispatcher_p dispatchers[2];
                 
                 for (int i=0; i<query1->operator_num; i++) {
-                    dispatchers[i] = dispatcher(scheduler, query1, i, manager);
+                    dispatchers[i] = dispatcher_init(scheduler, query1, i, manager);
                 }
 
                 query_setup(query1);

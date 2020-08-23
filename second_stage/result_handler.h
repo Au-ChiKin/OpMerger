@@ -5,7 +5,7 @@
 
 #include "task.h"
 
-#define RESULT_HANDLER_QUEUE_LIMIT 100
+#define RESULT_HANDLER_QUEUE_LIMIT 10000
 
 typedef struct result_handler * result_handler_p;
 typedef struct result_handler {
@@ -18,6 +18,10 @@ typedef struct result_handler {
     volatile int task_tail;
     volatile task_p tasks [RESULT_HANDLER_QUEUE_LIMIT];
 
+    u_int8_t * buffer;
+    int batch_size;
+    int accumulated;
+
     event_manager_p manager;
 
     /* Accumulated data */
@@ -25,12 +29,12 @@ typedef struct result_handler {
     volatile long processed_data;
     volatile long latency_sum;
 
-    void * downstream;
+    volatile void * downstream;
 
     pthread_t thr;
 } result_handler_t;
 
-result_handler_p result_handler_init(event_manager_p event_manager);
+result_handler_p result_handler_init(event_manager_p event_manager, int batch_size);
 
 void result_handler_add_task (result_handler_p p, task_p t);
 

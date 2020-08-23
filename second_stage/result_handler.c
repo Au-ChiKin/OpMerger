@@ -3,8 +3,12 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+#include "dispatcher.h"
+
 static void process_one_task (result_handler_p m);
 static void reset_data(result_handler_p p);
+static void reset_buffer(result_handler_p p);
+static u_int8_t * fill_buffer(result_handler_p p, batch_p data);
 
 static void * result_handler(void * args) {
 	result_handler_p p = (result_handler_p) args;
@@ -13,19 +17,19 @@ static void * result_handler(void * args) {
 	p->start = 1;
 
     while (1) {
-        pthread_mutex_lock (p->mutex);
-            while (p->task_tail - p->task_head == 0) {
-                pthread_cond_wait(p->added, p->mutex);
+        // pthread_mutex_lock (p->mutex);
+            while (p->tasks[p->task_head] == NULL) {
+                pthread_yield_np();
             }
 
-                process_one_task(p);
-        pthread_mutex_unlock (p->mutex);
+			process_one_task(p);
+        // pthread_mutex_unlock (p->mutex);
     }
 
 	return (args) ? NULL : args;
 }
 
-result_handler_p result_handler_init(event_manager_p event_manager) {
+result_handler_p result_handler_init(event_manager_p event_manager, int batch_size) {
 
 	result_handler_p p = (result_handler_p) malloc (sizeof(result_handler_t));
 	if (! p) {
@@ -40,6 +44,9 @@ result_handler_p result_handler_init(event_manager_p event_manager) {
     for (int i=0; i<RESULT_HANDLER_QUEUE_LIMIT; i++) {
         p->tasks[i] = NULL;
     }
+
+	p->batch_size = batch_size;
+	reset_buffer(p);
 
 	p->manager = event_manager;
 
@@ -65,24 +72,60 @@ result_handler_p result_handler_init(event_manager_p event_manager) {
 }
 
 void result_handler_add_task (result_handler_p p, task_p t) {
-	pthread_mutex_lock (p->mutex);
-    	p->tasks[p->task_tail] = t;
-        p->task_tail = (p->task_tail + 1) % RESULT_HANDLER_QUEUE_LIMIT;
-    pthread_mutex_unlock (p->mutex);
-	
-    pthread_cond_signal (p->added);
+	p->tasks[p->task_tail] = t;
+	p->task_tail = (p->task_tail + 1) % RESULT_HANDLER_QUEUE_LIMIT;
+}
+
+static void reset_buffer(result_handler_p p) {
+	p->buffer = (u_int8_t *) malloc(p->batch_size * 64 * sizeof(u_int8_t));
+	p->accumulated = 0;
+}
+
+static u_int8_t * fill_buffer(result_handler_p p, batch_p data) {
+	u_int8_t * ret = NULL;
+
+	/* Materialisation */
+	for (int i=p->accumulated; i<p->batch_size; i++) {
+		for (int j=0; j<data->tuple_size; j++) {
+			p->buffer[i * data->tuple_size + j] = (data->buffer + data->start)[(i - p->accumulated) * data->tuple_size + j];
+		}
+	}
+
+	if (p->accumulated + data->size >= p->batch_size) {
+		ret = p->buffer;
+
+		int copied = p->batch_size - p->accumulated;
+		int remain = data->size - copied;
+		reset_buffer(p);
+		p->accumulated = remain;
+		for (int i=0; i<remain; i++) {
+			for (int j=0; j<data->tuple_size; j++) {
+				p->buffer[i * data->tuple_size + j] = (data->buffer + data->start)[(i + copied) * data->tuple_size + j];
+			}
+		}
+	} else {
+		p->accumulated += data->size;
+	}
+
+	return ret;
 }
 
 static void process_one_task (result_handler_p p) {
     task_p t = p->tasks[p->task_head];
+	p->tasks[p->task_head] = NULL;
 
+	/* Downstream */
 	if (task_has_downstream(t)) {
 
-
-		task_p downstream = task_transfer_output(t);
-
-		// scheduler_add_task(p, downstream);
+		task_process_output(t);
+		
+		u_int8_t * data = fill_buffer(p, t->output);
+		
+		if (data) {
+			dispatcher_insert((dispatcher_p) p->downstream, data, p->batch_size);
+		}
 	} else {
+		/* Count */
 		query_event_p event = t->event;
 
 		struct timespec end;
