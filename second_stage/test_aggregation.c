@@ -17,8 +17,6 @@
 #include "query.h"
 #include "task.h"
 #include "cirbuf/circular_buffer.h"
-#include "operators/selection.h"
-#include "operators/reduction.h"
 #include "operators/aggregation.h"
 #include "scheduler/scheduler.h"
 
@@ -77,90 +75,6 @@ void run_processing_gpu(
 
     /* simplified query creation */
     switch (mode) {
-        case QUERY1:
-            /**
-             * Query 1:
-             * 
-             * input: TaskEvents
-             *     long  time_stamp;
-             *     long  job_id; 
-             *     long  task_id;
-             *     long  machine_id;
-             *     int   user_id;
-             *     int   event_type;
-             *     int   category;
-             *     int   priority;
-             *     float cpu;
-             *     float ram;
-             *     float disk;
-             *     int constraints;
-             * 
-             * output: CPUusagePerCategory 
-             *     long timestamp 
-             *     int category 
-             *     float totalCpu
-             * 
-             * query:
-             *     select timestamp, category, sum(cpu) as totalCpu
-             *     from TaskEvents [range 60 slide 1]
-             *     group by category
-             * 
-             * Since we have not yet implemented aggregation, also there is only one operator
-             * if using aggregation, 
-             * 
-             * Query 1 - variant:
-             *     select timestamp, category, sum(cpu) as totalCpu
-             *     from TaskEvents [range 1024 slide 1024]
-             *     where category == 0
-             * 
-             * Output becomes
-             * output: CPUusageForCategory1
-             *     long timestamp 
-             *     float totalCpu
-             *     int counter
-             **/
-            fprintf(stdout, "========== Running query1 of google cluster dataset ===========\n");
-            {
-                /* Construct a select: where column 6 (category) == 0 */
-                int col1 = 6;
-
-                enum comparor com1 = EQUAL;
-
-                int i1 = 0;
-                ref_value_p val1 = ref_value();
-                val1->i = &i1;
-                
-                selection_p select1 = selection(schema1, col1, val1, com1);
-
-                /* Construct a reduce: sum column 8 (cpu) */
-                int ref_num = 1;
-                int cols [1] = {8};
-                enum aggregation_types exps [1] = {SUM};
-
-                reduction_p reduce1 = reduction(schema1, ref_num, cols, exps);
-
-                /* Create a query */
-                window_p window1 = window(60, 60, RANGE_BASE);
-
-                int batch_size = buffer_size;
-                query_p query1 = query(0, batch_size, window1, is_merging);
-
-                query_add_operator(query1, (void *) select1, select1->operator);
-                query_add_operator(query1, (void *) reduce1, reduce1->operator);
-
-                query_setup(query1);
-
-
-                /* Create tasks and add them to the task queue */
-                dispatcher_p dispatcher = dispatcher_init(scheduler, query1, 0, input, buffer_num);
-                pthread_join(dispatcher_get_thread(dispatcher), NULL);
-
-                /* For debugging */
-                if (is_debug) {
-                    reduction_print_output(output, input[0]->size, schema1->size);
-                }
-            }
-            break;
         case AGGREGATION:
             /**
              * Query 2:
@@ -221,78 +135,6 @@ void run_processing_gpu(
                 }
             }
             break;
-        case QUERY2:
-            /**
-             * Query 2:
-             * 
-             * input: TaskEvents
-             *     long  time_stamp;
-             *     long  job_id;
-             *     long  task_id;
-             *     long  machine_id;
-             *     int   user_id;
-             *     int   event_type;
-             *     int   category;
-             *     int   priority;
-             *     float cpu;
-             *     float ram;
-             *     float disk;
-             *     int constraints;
-             * 
-             * output: CPUusagePerCategory
-             *     long timestamp
-             *     int category
-             *     float totalCpu
-             * 
-             * query:
-             *     select timestamp, jobId, avg(cpu) as avgCpu
-             *     from TaskEvents [range 60 slide 1]
-             *     where eventType == 1
-             *     group by jobId
-             * 
-             **/
-            fprintf(stdout, "========== Running query2 of google cluster dataset ===========\n");
-            {
-                /* Construct a select: where column 5 (eventType) == 1 */
-                int col1 = 5;
-
-                enum comparor com1 = EQUAL;
-
-                int i1 = 1;
-                ref_value_p val1 = ref_value();
-                val1->i = &i1;
-                
-                selection_p select1 = selection(schema1, col1, val1, com1);
-
-                /* Construct an aggregation: sum cpu, group by column 6 (category) */
-                int ref_num = 1;
-                int cols [1] = {8};
-                enum aggregation_types exps [1] = {SUM};
-
-                int group_num = 1;
-                int groups[1] = {6};
-
-                aggregation_p aggregate1 = aggregation(schema1, ref_num, cols, exps, group_num, groups);
-
-                /* Create a query */
-                window_p window1 = window(1024, 1024, RANGE_BASE);
-
-                int batch_size = buffer_size;
-                query_p query1 = query(0, batch_size, window1, is_merging);
-
-                query_add_operator(query1, (void *) aggregate1, aggregate1->operator);
-                query_add_operator(query1, (void *) select1, select1->operator);
-
-                query_setup(query1);
-
-                dispatcher_p dispatcher = dispatcher_init(scheduler, query1, 0, input, buffer_num);
-                pthread_join(dispatcher_get_thread(dispatcher), NULL);
-
-                /* For debugging */
-                if (is_debug) {
-                    aggregation_print_output(output, input[0]->size, schema1->size);
-                }
-            }
         default:
             fprintf(stderr, "error: wrong test case name, runs an no-op query\n");
             break;
