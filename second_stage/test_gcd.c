@@ -101,17 +101,8 @@ void run_processing_gpu(
 
                 query_setup(query1);
 
-                int b = 0;
-                for (int l=0; l<work_load; l++) {
-                    task_p new_task = task(query1, input[b]);
-
-                    /* Execute */
-                    scheduler_add_task(scheduler, new_task);
-
-                    b = (b + 1) % buffer_num;
-
-                    usleep(250); // Sleep for 1 ms
-                }
+                dispatcher_p dispatcher = dispatcher_init(scheduler, query1, 0, input, buffer_num);
+                pthread_join(dispatcher_get_thread(dispatcher), NULL);
 
                 /* For debugging */
                 if (is_debug) {
@@ -141,17 +132,8 @@ void run_processing_gpu(
 
                 query_setup(query1);
 
-                int b = 0;
-                for (int l=0; l<work_load; l++) {
-                    task_p new_task = task(query1, input[b]);
-
-                    /* Execute */
-                    scheduler_add_task(scheduler, new_task);
-
-                    b = (b + 1) % buffer_num;
-
-                    usleep(250); // Sleep for 1 ms
-                }
+                dispatcher_p dispatcher = dispatcher_init(scheduler, query1, 0, input, buffer_num);
+                pthread_join(dispatcher_get_thread(dispatcher), NULL);
 
                 /* For debugging */
                 if (is_debug) {
@@ -195,18 +177,8 @@ void run_processing_gpu(
 
                 query_setup(query1);
 
-                int b = 0;
-                for (int l=0; l<work_load; l++) {
-                    task_p new_task = task(query1, input[b]);
-
-                    /* Execute */
-                    scheduler_add_task(scheduler, new_task);
-
-
-                    b = (b + 1) % buffer_num;
-
-                    usleep(250); // Sleep for 1 ms
-                }
+                dispatcher_p dispatcher = dispatcher_init(scheduler, query1, 0, input, buffer_num);
+                pthread_join(dispatcher_get_thread(dispatcher), NULL);
 
                 /* For debugging */
                 if (is_debug) {
@@ -289,18 +261,7 @@ void run_processing_gpu(
 
 
                 /* Create tasks and add them to the task queue */
-                dispatcher_p dispatcher = dispatcher_init(scheduler, query1, input, buffer_num);
-                // int b = 0; // buffer index
-                // for (int l=0; l<work_load; l++) {
-                //     task_p new_task = task(query1, input[b]);
-
-                //     /* Execute */
-                //     scheduler_add_task(scheduler, new_task);
-
-                //     b = (b + 1) % buffer_num;
-
-                //     usleep(250); // Sleep for 0.25 ms, optimal speed is then 12800
-                // }
+                dispatcher_p dispatcher = dispatcher_init(scheduler, query1, 0, input, buffer_num);
                 pthread_join(dispatcher_get_thread(dispatcher), NULL);
 
                 /* For debugging */
@@ -360,19 +321,12 @@ void run_processing_gpu(
 
                 query_setup(query1);
 
-                int b = 0;
-                for (int l=0; l<work_load; l++) {
-                    task_p new_task = task(query1, input[b]);
-
-                    /* Execute */
-                    scheduler_add_task(scheduler, new_task);
-
-                    b = (b + 1) % buffer_num;
-                }                            
+                dispatcher_p dispatcher = dispatcher_init(scheduler, query1, 0, input, buffer_num);
+                pthread_join(dispatcher_get_thread(dispatcher), NULL);                         
 
                 /* For debugging */
                 if (is_debug) {
-                    aggregation_print_output(output, input[b]->size, schema1->size);
+                    aggregation_print_output(output, input[0]->size, schema1->size);
                 }
             }
             break;
@@ -440,19 +394,12 @@ void run_processing_gpu(
 
                 query_setup(query1);
 
-                int b = 0;
-                for (int l=0; l<work_load; l++) {
-                    task_p new_task = task(query1, input[b]);
-
-                    /* Execute */
-                    scheduler_add_task(scheduler, new_task);
-
-                    b = (b + 1) % buffer_num;
-                }
+                dispatcher_p dispatcher = dispatcher_init(scheduler, query1, 0, input, buffer_num);
+                pthread_join(dispatcher_get_thread(dispatcher), NULL);
 
                 /* For debugging */
                 if (is_debug) {
-                    aggregation_print_output(output, input[b]->size, schema1->size);
+                    aggregation_print_output(output, input[0]->size, schema1->size);
                 }
             }
         default:

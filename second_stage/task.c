@@ -9,13 +9,13 @@ static int free_id = 0;
 
 bool task_is_most_upstream(task_p t);
 
-task_p task(query_p query, batch_p batch) {
+task_p task(query_p query, int oid, batch_p batch) {
     task_p task = (task_p) malloc(sizeof(task_t));
 
     task->id = free_id++ % MAX_ID;
 
     task->query = query;
-    task->oid = 0;
+    task->oid = oid;
 
     task->batch = batch;
 
@@ -25,9 +25,7 @@ task_p task(query_p query, batch_p batch) {
 }
 
 task_p task_downstream(query_p query, int oid, batch_p batch) {
-    task_p ret = task(query, batch);
-
-    ret->oid = oid;
+    task_p ret = task(query, oid, batch);
 
     return ret;
 }

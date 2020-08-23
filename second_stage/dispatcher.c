@@ -22,7 +22,7 @@ static void * dispatcher(void * args) {
 	return (args) ? NULL : args;
 }
 
-dispatcher_p dispatcher_init(scheduler_p scheduler, query_p query, batch_p * ready_buffers, int buffer_num) {
+dispatcher_p dispatcher_init(scheduler_p scheduler, query_p query, int oid, batch_p * ready_buffers, int buffer_num) {
 
 	dispatcher_p p = (dispatcher_p) malloc (sizeof(dispatcher_t));
 	if (! p) {
@@ -33,6 +33,7 @@ dispatcher_p dispatcher_init(scheduler_p scheduler, query_p query, batch_p * rea
     p->scheduler = scheduler;
 
     p->query = query;
+    p->opeartor_id = oid;
 
     p->inputs = ready_buffers;
     p->input_num = buffer_num;
@@ -49,7 +50,7 @@ dispatcher_p dispatcher_init(scheduler_p scheduler, query_p query, batch_p * rea
 }
 
 static void create_task(dispatcher_p p, int bid) {
-    task_p new_task = task(p->query, p->inputs[bid]);
+    task_p new_task = task(p->query, p->opeartor_id, p->inputs[bid]);
 
     /* Execute */
     scheduler_add_task(p->scheduler, new_task);

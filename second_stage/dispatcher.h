@@ -14,6 +14,7 @@ typedef struct dispatcher {
 
     scheduler_p scheduler;
     query_p query;
+    int opeartor_id;
 
     batch_p * inputs;
     int input_num;
@@ -21,7 +22,7 @@ typedef struct dispatcher {
     pthread_t thr;
 } dispatcher_t;
 
-dispatcher_p dispatcher_init(scheduler_p scheduler, query_p query, batch_p * ready_buffers, int buffer_num);
+dispatcher_p dispatcher_init(scheduler_p scheduler, query_p query, int oid, batch_p * ready_buffers, int buffer_num);
 
 pthread_t dispatcher_get_thread(dispatcher_p p);
 
