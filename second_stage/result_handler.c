@@ -66,10 +66,6 @@ result_handler_p result_handler_init(event_manager_p event_manager) {
 
 void result_handler_add_task (result_handler_p p, task_p t) {
 	pthread_mutex_lock (p->mutex);
-        if (p->tasks[p->task_tail] != NULL) {
-            free(p->tasks[p->task_tail]);
-            p->tasks[p->task_tail] = NULL;
-        }
     	p->tasks[p->task_tail] = t;
         p->task_tail = (p->task_tail + 1) % RESULT_HANDLER_QUEUE_LIMIT;
     pthread_mutex_unlock (p->mutex);
@@ -96,7 +92,7 @@ static void process_one_task (result_handler_p p) {
 		event_manager_add_event(p->manager, event);
 
 		/* TODO: Just delete for now */
-		// task_free(t);
+		task_free(t);
 	}
 
     p->task_head = (p->task_head + 1) % RESULT_HANDLER_QUEUE_LIMIT;
