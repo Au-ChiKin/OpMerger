@@ -11,7 +11,7 @@ static void reset_data(event_manager_p p);
 static void * event_manager(void * args) {
 	event_manager_p p = (event_manager_p) args;
 
-	/* Unblocks the thread (which runs result_handler_init) waiting for this thread to attach to the JVM */
+	/* Unblocks the thread (which runs event_manager_init) waiting for this thread to start */
 	p->start = 1;
 
     while (1) {
