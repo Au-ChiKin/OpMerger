@@ -9,9 +9,6 @@
 
 typedef struct result_handler * result_handler_p;
 typedef struct result_handler {
-    pthread_mutex_t * mutex;
-    pthread_cond_t * added;
-
     volatile unsigned start;
 
     volatile int task_head;

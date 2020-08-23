@@ -38,11 +38,6 @@ dispatcher_p dispatcher_init(scheduler_p scheduler, query_p query, int oid, even
     p->query = query;
     p->operator_id = oid;
 
-    // p->buffer_capacity = query->batch_size - 1;
-    // p->accumulated = 0;
-    // p->thisBatchStartPointer = 0;
-    // p->nextBatchEndPointer = query->batch_size * 64;
-
     p->handler = result_handler_init(event_manager, query->batch_size);
 
     p->start = 0;
@@ -52,13 +47,6 @@ dispatcher_p dispatcher_init(scheduler_p scheduler, query_p query, int oid, even
     for (int i=0; i<DISPATCHER_QUEUE_LIMIT; i++) {
         p->tasks[i] = NULL;
     }
-
-	/* Initialise mutex and conditions */
-	p->mutex_t = (pthread_mutex_t *) malloc (sizeof(pthread_mutex_t));
-	pthread_mutex_init (p->mutex_t, NULL);
-
-	p->added = (pthread_cond_t *) malloc (sizeof(pthread_cond_t));
-	pthread_cond_init (p->added, NULL);
 
 	/* Initialise thread */
 	if (pthread_create(&p->thr, NULL, dispatcher, (void *) p)) {

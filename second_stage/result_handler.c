@@ -17,13 +17,11 @@ static void * result_handler(void * args) {
 	p->start = 1;
 
     while (1) {
-        // pthread_mutex_lock (p->mutex);
-            while (p->tasks[p->task_head] == NULL) {
-                pthread_yield_np();
-            }
+		while (p->tasks[p->task_head] == NULL) {
+			pthread_yield_np();
+		}
 
-			process_one_task(p);
-        // pthread_mutex_unlock (p->mutex);
+		process_one_task(p);
     }
 
 	return (args) ? NULL : args;
@@ -52,13 +50,6 @@ result_handler_p result_handler_init(event_manager_p event_manager, int batch_si
 
     /* Accumulated data */
     reset_data(p);
-
-	/* Initialise mutex and conditions */
-	p->mutex = (pthread_mutex_t *) malloc (sizeof(pthread_mutex_t));
-	pthread_mutex_init (p->mutex, NULL);
-
-	p->added = (pthread_cond_t *) malloc (sizeof(pthread_cond_t));
-	pthread_cond_init (p->added, NULL);
 
 	/* Initialise thread */
 	if (pthread_create(&p->thr, NULL, result_handler, (void *) p)) {

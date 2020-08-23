@@ -13,8 +13,6 @@
 
 typedef struct dispatcher * dispatcher_p;
 typedef struct dispatcher {
-    pthread_mutex_t * mutex_t;
-    pthread_cond_t * added;
     pthread_t thr;
 
     volatile int start;
