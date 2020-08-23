@@ -10,16 +10,17 @@
 #include <unistd.h>
 #include <string.h>
 
-#include "cirbuf/circular_buffer.h"
 #include "config.h"
 #include "batch.h"
+#include "dispatcher.h"
 #include "window.h"
+#include "query.h"
+#include "task.h"
+#include "cirbuf/circular_buffer.h"
 #include "operators/selection.h"
 #include "operators/reduction.h"
 #include "operators/aggregation.h"
-#include "query.h"
 #include "scheduler/scheduler.h"
-#include "task.h"
 
 #define GCD_LINE_NUM 144370688 // maximum lines for input txts
 
@@ -286,19 +287,22 @@ void run_processing_gpu(
 
                 query_setup(query1);
 
+
                 /* Create tasks and add them to the task queue */
-                int b = 0; // buffer index
-                for (int l=0; l<work_load; l++) {
-                    task_p new_task = task(query1, input[b]);
+                dispatcher_p dispatcher = dispatcher_init(scheduler, query1, input, buffer_num);
+                // int b = 0; // buffer index
+                // for (int l=0; l<work_load; l++) {
+                //     task_p new_task = task(query1, input[b]);
 
-                    /* Execute */
-                    scheduler_add_task(scheduler, new_task);
+                //     /* Execute */
+                //     scheduler_add_task(scheduler, new_task);
 
-                    b = (b + 1) % buffer_num;
+                //     b = (b + 1) % buffer_num;
 
-                    usleep(250); // Sleep for 0.25 ms, optimal speed is then 12800
-                }
-                
+                //     usleep(250); // Sleep for 0.25 ms, optimal speed is then 12800
+                // }
+                pthread_join(dispatcher_get_thread(dispatcher), NULL);
+
                 /* For debugging */
                 if (is_debug) {
                     reduction_print_output(output, input[0]->size, schema1->size);

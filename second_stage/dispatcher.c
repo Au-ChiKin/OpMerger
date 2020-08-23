@@ -4,9 +4,7 @@
 #include <stdio.h>
 #include <unistd.h>
 
-static pthread_t thr = NULL;
-
-static void print_data(dispatcher_p p);
+static void create_task(dispatcher_p p, int bid);
 
 static void * dispatcher(void * args) {
 	dispatcher_p p = (dispatcher_p) args;
@@ -14,15 +12,17 @@ static void * dispatcher(void * args) {
 	/* Unblocks the thread waiting for this thread to start */
 	p->start = 1;
 
+    int b=0;
     while (1) {
-        usleep(DISPATCHER_INTERVAL * 1000 * 1000);
-        print_data(p);
+        usleep(DISPATCHER_INTERVAL);
+        create_task(p, b);
+        b = (b+1) % p->input_num;
     }
 
 	return (args) ? NULL : args;
 }
 
-dispatcher_p dispatcher_init(event_manager_p manager) {
+dispatcher_p dispatcher_init(scheduler_p scheduler, query_p query, batch_p * ready_buffers, int buffer_num) {
 
 	dispatcher_p p = (dispatcher_p) malloc (sizeof(dispatcher_t));
 	if (! p) {
@@ -30,11 +30,16 @@ dispatcher_p dispatcher_init(event_manager_p manager) {
 		exit(1);
 	}
 
-    p->manager = manager;
+    p->scheduler = scheduler;
+
+    p->query = query;
+
+    p->inputs = ready_buffers;
+    p->input_num = buffer_num;
 
 	/* Initialise thread */
-	if (pthread_create(&thr, NULL, dispatcher, (void *) p)) {
-		fprintf(stderr, "error: failed to create throughput dispatcher thread\n");
+	if (pthread_create(&p->thr, NULL, dispatcher, (void *) p)) {
+		fprintf(stderr, "error: failed to create dispatcher thread for query %d\n", p->query->id);
 		exit (1);
 	}
 	/* Wait until thread attaches itself to the JVM */
@@ -43,22 +48,13 @@ dispatcher_p dispatcher_init(event_manager_p manager) {
 	return p;    
 }
 
-static void print_data(dispatcher_p p) {
-    int event_num;
-    long processed_data, latency_sum;
-    
-    event_manager_get_data(p->manager, &event_num, &processed_data, &latency_sum);
+static void create_task(dispatcher_p p, int bid) {
+    task_p new_task = task(p->query, p->inputs[bid]);
 
-    if (event_num == 0) {
-        printf("[DISPATCHER] No event has been passed\n");
-        return;
-    }
+    /* Execute */
+    scheduler_add_task(p->scheduler, new_task);
+}
 
-    float throughput = ((float) processed_data / 1024.0 / 1024.0) / DISPATCHER_INTERVAL; /* MB/s */
-    float latency_avg = latency_sum / (float) event_num; /* us */
-
-	// printf("processed_data %ld\n", processed_data);
-	// printf("latency_sum %ld    event_num %d\n", latency_sum, event_num);
-
-    printf("[DISPATCHER] t: %9.3f MB/s    l: %9.3f us\n", throughput, latency_avg);
+pthread_t dispatcher_get_thread(dispatcher_p p) {
+    return p->thr;
 }
