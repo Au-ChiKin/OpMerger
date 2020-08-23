@@ -1,8 +1,8 @@
 #include "result_handler.h"
 
+#include <sched.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include <sched.h>
 
 #include "dispatcher.h"
 
@@ -106,6 +106,15 @@ static void process_one_task (result_handler_p p) {
     task_p t = p->tasks[p->task_head];
 	p->tasks[p->task_head] = NULL;
 
+	/* Count */
+	query_event_p event = t->event;
+
+	struct timespec end;
+	clock_gettime(CLOCK_MONOTONIC_RAW, &end);
+	event->end = end.tv_sec * 1000000 + end.tv_nsec / 1000;
+
+	event_manager_add_event(p->manager, event);
+
 	/* Downstream */
 	if (task_has_downstream(t)) {
 
@@ -117,14 +126,6 @@ static void process_one_task (result_handler_p p) {
 			dispatcher_insert((dispatcher_p) p->downstream, data, p->batch_size);
 		}
 	} else {
-		/* Count */
-		query_event_p event = t->event;
-
-		struct timespec end;
-		clock_gettime(CLOCK_MONOTONIC_RAW, &end);
-		event->end = end.tv_sec * 1000000 + end.tv_nsec / 1000;
-
-		event_manager_add_event(p->manager, event);
 
 		/* TODO: Just delete for now */
 		task_free(t);

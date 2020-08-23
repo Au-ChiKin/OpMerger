@@ -99,12 +99,27 @@ void run_processing_gpu(
 
                 query_setup(query1);
 
-                dispatcher_p dispatcher = dispatcher_init(scheduler, query1, 0, input, buffer_num);
-                pthread_join(dispatcher_get_thread(dispatcher), NULL);
+                /* Start scheduler */
+                scheduler_p scheduler  = scheduler_init(pipeline_num);
 
-                /* For debugging */
-                if (is_debug) {
-                    selection_print_output(select1, output);
+                /* Create tasks and add them to the task queue */
+                dispatcher_p dispatchers[2];
+
+                for (int i=0; i<query1->operator_num; i++) {
+                    dispatchers[i] = dispatcher_init(scheduler, query1, i, manager);
+                    if (i>0) {
+                        dispatcher_set_downstream(dispatchers[i-1], dispatchers[i]);
+                    }
+                }
+
+
+                int b=0;
+                while (1) {
+                    usleep(300);
+
+                    dispatcher_insert(dispatchers[0], buffers[b], buffer_size);
+
+                    b = (b+1) % buffer_num;
                 }
             }
 

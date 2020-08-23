@@ -37,11 +37,10 @@ void task_run(task_p t) {
     query_event_p event = (query_event_p) malloc(sizeof(query_event_t));
     {
         event->query_id = query->id;
-        event->batch_id = ++query->batch_count;
+        event->operator_id = t->oid;
 
         event->start = start.tv_sec * 1000000 + start.tv_nsec / 1000;
         event->tuples = query->batch_size;
-        /* TODO need to somehow pass the tuple size from query to monitor */
         event->tuple_size = tuple_size;
     }
 

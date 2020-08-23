@@ -39,11 +39,8 @@ void run_processing_gpu(
     /* Used as an output stream */
     batch_p output = batch(6 * buffer_size, 0, result, 6 * buffer_size, TUPLE_SIZE);
 
-    /* Start throughput monitoring */
-    event_manager_p manager = event_manager_init();
-
     int const operator_num = 2;
-    gpu_init(operator_num, pipeline_num, manager);
+    gpu_init(operator_num, pipeline_num, NULL);
 
     /* Construct schemas */
     schema_p schema1 = schema();
@@ -59,9 +56,6 @@ void run_processing_gpu(
     schema_add_attr(schema1, TYPE_FLOAT); /* ram */
     schema_add_attr(schema1, TYPE_FLOAT); /* disk */
     schema_add_attr(schema1, TYPE_INT);   /* constraints */
-
-    /* Start the actual monitoring */
-    monitor_p monitor = monitor_init(manager);
 
     /* simplified query creation */
     switch (mode) {
@@ -141,6 +135,12 @@ void run_processing_gpu(
                 /* Start scheduler */
                 scheduler_p scheduler  = scheduler_init(pipeline_num);
 
+                /* Start throughput monitoring */
+                event_manager_p manager = event_manager_init(query1->operator_num);
+
+                /* Start the actual monitoring */
+                monitor_p monitor = monitor_init(manager);
+
                 /* Create tasks and add them to the task queue */
                 dispatcher_p dispatchers[2];
                 
@@ -153,7 +153,7 @@ void run_processing_gpu(
 
                 int b=0;
                 while (1) {
-                    usleep(300);
+                    // usleep(300);
 
                     dispatcher_insert(dispatchers[0], buffers[b], buffer_size);
 
@@ -227,6 +227,12 @@ void run_processing_gpu(
 
                 /* Start scheduler */
                 scheduler_p scheduler  = scheduler_init(pipeline_num);
+
+                /* Start throughput monitoring */
+                event_manager_p manager = event_manager_init(query1->operator_num);
+
+                /* Start the actual monitoring */
+                monitor_p monitor = monitor_init(manager);
 
                 /* Create tasks and add them to the task queue */
                 dispatcher_p dispatchers[2];
