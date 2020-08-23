@@ -145,7 +145,7 @@ void run_processing_gpu(
                 
                 for (int i=0; i<query1->operator_num; i++) {
                     dispatchers[i] = dispatcher(scheduler, query1, i, manager);
-                    if (i>1) {
+                    if (i>0) {
                         dispatcher_set_downstream(dispatchers[i-1], dispatchers[i]);
                     }
                 }
