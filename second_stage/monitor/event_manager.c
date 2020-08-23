@@ -79,7 +79,8 @@ void event_manager_add_event (event_manager_p p, query_event_p e) {
     pthread_cond_signal (p->added);
 }
 
-void event_manager_get_data (event_manager_p p, int * num, int * event_num, long * processed_data, long * latency_sum) {
+void event_manager_get_data (event_manager_p p, 
+    int * num, int * event_num, long * processed_data, long * latency_sum) {
     pthread_mutex_lock (p->mutex);
         *num = p->operator_num;
 

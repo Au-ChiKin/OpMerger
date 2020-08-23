@@ -40,6 +40,7 @@ event_manager_p event_manager_init(int operator_num);
 
 void event_manager_add_event (event_manager_p p, query_event_p e);
 
-void event_manager_get_data (event_manager_p p, int * num, int * event_num, long * processed_data, long * latency_sum);
+void event_manager_get_data (event_manager_p p, 
+    int * num, int * event_num, long * processed_data, long * latency_sum);
 
 #endif
