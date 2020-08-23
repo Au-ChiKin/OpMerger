@@ -9,7 +9,7 @@
 
 #define DISPATCHER_INTERVAL 100 // us
 
-#define DISPATCHER_QUEUE_LIMIT 10000
+#define DISPATCHER_QUEUE_LIMIT 100
 
 typedef struct dispatcher * dispatcher_p;
 typedef struct dispatcher {
@@ -26,13 +26,7 @@ typedef struct dispatcher {
 
     volatile int task_head;
     volatile int task_tail;
-    volatile task_p tasks [RESULT_HANDLER_QUEUE_LIMIT];
-
-    // long buffer_capacity;
-    // long mask;
-    // long accumulated;
-    // long thisBatchStartPointer;
-    // long nextBatchEndPointer;
+    volatile task_p tasks [DISPATCHER_QUEUE_LIMIT];
 
     result_handler_p handler;
 
