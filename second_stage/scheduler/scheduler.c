@@ -105,7 +105,7 @@ static void process_one_task (scheduler_p p) {
 	
 	/* Transfer ownership of the task */
     if (processed != NULL) {
-		result_handler_p handler = dispatcher_get_handler((dispatcher_p) t->dispatcher);
+		result_handler_p handler = dispatcher_get_handler((dispatcher_p) processed->dispatcher);
 		result_handler_add_task(handler, processed);
     }
 }
