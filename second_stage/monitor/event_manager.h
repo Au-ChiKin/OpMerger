@@ -3,7 +3,7 @@
 
 #include <pthread.h>
 
-#define EVENT_MANAGER_QUEUE_LIMIT 100
+#define EVENT_MANAGER_QUEUE_LIMIT 1000
 #define EVENT_MANAGER_OPERATOR_LIMIT 2
 
 typedef struct query_event * query_event_p;

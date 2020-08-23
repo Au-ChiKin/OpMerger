@@ -9,7 +9,7 @@
 
 #define DISPATCHER_INTERVAL 100 // us
 
-#define DISPATCHER_QUEUE_LIMIT 1000
+#define DISPATCHER_QUEUE_LIMIT 10000
 
 typedef struct dispatcher * dispatcher_p;
 typedef struct dispatcher {

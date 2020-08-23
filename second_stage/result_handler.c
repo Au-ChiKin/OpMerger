@@ -3,6 +3,7 @@
 #include <sched.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 
 #include "dispatcher.h"
 
@@ -14,7 +15,7 @@ static u_int8_t * fill_buffer(result_handler_p p, batch_p data);
 static void * result_handler(void * args) {
 	result_handler_p p = (result_handler_p) args;
 
-	/* Unblocks the thread (which runs result_handler_init) waiting for this thread to attach to the JVM */
+	/* Unblocks the thread (which runs result_handler_init) waiting for this thread to start */
 	p->start = 1;
 
     while (1) {
@@ -73,28 +74,35 @@ static void reset_buffer(result_handler_p p) {
 	p->accumulated = 0;
 }
 
+int min(int x, int y) {
+	return (x > y) ? y : x;
+}
+
 static u_int8_t * fill_buffer(result_handler_p p, batch_p data) {
 	u_int8_t * ret = NULL;
 
-	/* Materialisation */
-	for (int i=p->accumulated; i<p->batch_size; i++) {
-		for (int j=0; j<data->tuple_size; j++) {
-			p->buffer[i * data->tuple_size + j] = (data->buffer + data->start)[(i - p->accumulated) * data->tuple_size + j];
-		}
-	}
+	int tuple_size = data->tuple_size;
 
-	if (p->accumulated + data->size >= p->batch_size) {
+	int data_size_b = data->size * tuple_size;
+	int accumulated_b = p->accumulated * tuple_size;
+	int buffer_size_b = p->batch_size * tuple_size;
+	
+	int spare_b = buffer_size_b - accumulated_b;
+	
+	int to_copy = min(data_size_b, spare_b);
+
+	int remain = data_size_b - to_copy;
+
+	/* Materialisation */
+	memcpy(p->buffer + accumulated_b, data->buffer + data->start, to_copy);
+
+	if (remain >= 0) {
 		ret = p->buffer;
 
-		int copied = p->batch_size - p->accumulated;
-		int remain = data->size - copied;
 		reset_buffer(p);
-		p->accumulated = remain;
-		for (int i=0; i<remain; i++) {
-			for (int j=0; j<data->tuple_size; j++) {
-				p->buffer[i * data->tuple_size + j] = (data->buffer + data->start)[(i + copied) * data->tuple_size + j];
-			}
-		}
+		p->accumulated = remain / tuple_size;
+
+		memcpy(p->buffer, data->buffer + data->start, remain);
 	} else {
 		p->accumulated += data->size;
 	}
@@ -121,10 +129,12 @@ static void process_one_task (result_handler_p p) {
 		task_process_output(t);
 		
 		u_int8_t * data = fill_buffer(p, t->output);
-		
 		if (data) {
 			dispatcher_insert((dispatcher_p) p->downstream, data, p->batch_size);
 		}
+
+		task_free(t);
+		
 	} else {
 
 		/* TODO: Just delete for now */
