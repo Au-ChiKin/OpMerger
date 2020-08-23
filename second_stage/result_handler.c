@@ -5,7 +5,7 @@
 
 static pthread_t thr = NULL;
 
-static void process_one_event (result_handler_p m);
+static void process_one_task (result_handler_p m);
 static void reset_data(result_handler_p p);
 
 static void * result_handler(void * args) {
@@ -16,18 +16,18 @@ static void * result_handler(void * args) {
 
     while (1) {
         pthread_mutex_lock (p->mutex);
-            while (p->event_tail - p->event_head == 0) {
+            while (p->task_tail - p->task_head == 0) {
                 pthread_cond_wait(p->added, p->mutex);
             }
 
-                process_one_event(p);
+                process_one_task(p);
         pthread_mutex_unlock (p->mutex);
     }
 
 	return (args) ? NULL : args;
 }
 
-result_handler_p result_handler_init() {
+result_handler_p result_handler_init(event_manager_p event_manager) {
 
 	result_handler_p p = (result_handler_p) malloc (sizeof(result_handler_t));
 	if (! p) {
@@ -37,11 +37,13 @@ result_handler_p result_handler_init() {
 
     p->start = 0;
 
-    p->event_head = 0;
-    p->event_tail = 0;
+    p->task_head = 0;
+    p->task_tail = 0;
     for (int i=0; i<RESULT_HANDLER_QUEUE_LIMIT; i++) {
-        p->events[i] = NULL;
+        p->tasks[i] = NULL;
     }
+
+	p->manager = event_manager;
 
     /* Accumulated data */
     reset_data(p);
@@ -64,37 +66,40 @@ result_handler_p result_handler_init() {
 	return p;
 }
 
-void result_handler_add_event (result_handler_p p, query_event_p e) {
+void result_handler_add_task (result_handler_p p, task_p t) {
 	pthread_mutex_lock (p->mutex);
-        if (p->events[p->event_tail] != NULL) {
-            free(p->events[p->event_tail]);
-            p->events[p->event_tail] = NULL;
+        if (p->tasks[p->task_tail] != NULL) {
+            free(p->tasks[p->task_tail]);
+            p->tasks[p->task_tail] = NULL;
         }
-    	p->events[p->event_tail] = e;
-        p->event_tail = (p->event_tail + 1) % RESULT_HANDLER_QUEUE_LIMIT;
+    	p->tasks[p->task_tail] = t;
+        p->task_tail = (p->task_tail + 1) % RESULT_HANDLER_QUEUE_LIMIT;
     pthread_mutex_unlock (p->mutex);
 	
     pthread_cond_signal (p->added);
 }
 
-void result_handler_get_data (result_handler_p p, int * event_num, long * processed_data, long * latency_sum) {
-    pthread_mutex_lock (p->mutex);
-        *event_num = p->event_num;
-        *processed_data = p->processed_data;
-        *latency_sum = p->latency_sum;
+static void process_one_task (result_handler_p p) {
+    task_p t = p->tasks[p->task_head];
 
-        reset_data(p);
-    pthread_mutex_unlock (p->mutex);
-}
+	if (task_has_downstream(t)) {
+		task_p downstream = task_transfer_output(t);
 
-static void process_one_event (result_handler_p p) {
-    query_event_p e = p->events[p->event_head];
+		// scheduler_add_task(p, downstream);
+	} else {
+		query_event_p event = t->event;
 
-    p->event_num += 1;
-    p->processed_data += e->tuples * e->tuple_size;
-    p->latency_sum += e->end - e->start;
+		struct timespec end;
+		clock_gettime(CLOCK_MONOTONIC_RAW, &end);
+		event->end = end.tv_sec * 1000000 + end.tv_nsec / 1000;
 
-    p->event_head = (p->event_head + 1) % RESULT_HANDLER_QUEUE_LIMIT;
+		event_manager_add_event(p->manager, event);
+
+		/* TODO: Just delete for now */
+		// task_free(t);
+	}
+
+    p->task_head = (p->task_head + 1) % RESULT_HANDLER_QUEUE_LIMIT;
 }
 
 static void reset_data(result_handler_p p) {

@@ -51,8 +51,11 @@ void run_processing_gpu(
     /* Start throughput monitoring */
     event_manager_p manager = event_manager_init();
 
+    /* Start result_handler */
+    result_handler_p handler = result_handler_init(manager);
+
     /* Start scheduler */
-    scheduler_p scheduler  = scheduler_init(pipeline_num, manager);
+    scheduler_p scheduler  = scheduler_init(pipeline_num, handler, manager);
 
     int const query_num = 2;
     gpu_init(query_num, pipeline_num, manager);

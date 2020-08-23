@@ -27,7 +27,7 @@ static void * scheduler(void * args) {
 	return (args) ? NULL : args;
 }
 
-scheduler_p scheduler_init(int pipeline_depth, event_manager_p event_manager) {
+scheduler_p scheduler_init(int pipeline_depth, result_handler_p result_handler, event_manager_p event_manager) {
 
 	scheduler_p p = (scheduler_p) malloc (sizeof(scheduler_t));
 	if (! p) {
@@ -47,6 +47,8 @@ scheduler_p scheduler_init(int pipeline_depth, event_manager_p event_manager) {
 		p->pipeline[i] = NULL;
 	}
     p->pipeline_depth = pipeline_depth;
+
+	p->handler = result_handler;
 
 	p->manager = event_manager;
 
@@ -103,25 +105,9 @@ static void process_one_task (scheduler_p p) {
     /* Handle task popping out from the pipeline */
 	task_p processed = scheduler_collect_task(p, t);
 	
+	/* Transfer ownership of the task */
     if (processed != NULL) {
-        if (task_has_downstream(processed)) {
-            task_p downstream = task_transfer_output(processed);
-
-            scheduler_add_task_nolock(p, downstream);
-        } else {
-			/* TODO Move them to result handler */
-			query_event_p event = processed->event;
-
-			struct timespec end;
-			clock_gettime(CLOCK_MONOTONIC_RAW, &end);
-			event->end = end.tv_sec * 1000000 + end.tv_nsec / 1000;
-
-			event_manager_add_event(p->manager, event);
-
-            /* TODO: Just delete for now */
-			task_free(processed);
-            // result_handler_add_task(processed);
-        }
+		result_handler_add_task(p->handler, processed);
     }
 }
 
