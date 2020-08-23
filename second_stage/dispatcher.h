@@ -1,8 +1,6 @@
 #ifndef __DISPATCHER_H_
 #define __DISPATCHER_H_
 
-#include <pthread.h>
-
 #include "task.h"
 #include "scheduler/scheduler.h"
 
@@ -10,13 +8,11 @@
 
 typedef struct dispatcher * dispatcher_p;
 typedef struct dispatcher {
-    volatile unsigned start;
-
     scheduler_p scheduler;
     query_p query;
     int operator_id;
 
-    batch_p ** buffers;
+    u_int8_t ** buffers;
     int buffer_num;
 
     long buffer_capacity;
@@ -24,12 +20,10 @@ typedef struct dispatcher {
     long accumulated;
     long thisBatchStartPointer;
     long nextBatchEndPointer;
-
-    pthread_t thr;
 } dispatcher_t;
 
-dispatcher_p dispatcher_init(scheduler_p scheduler, query_p query, int oid, u_int8_t * ready_buffers [], int buffer_num);
+dispatcher_p dispatcher(scheduler_p scheduler, query_p query, int oid);
 
-pthread_t dispatcher_get_thread(dispatcher_p p);
+void dispatcher_insert(dispatcher_p p, u_int8_t * data, int len);
 
 #endif

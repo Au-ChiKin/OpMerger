@@ -83,6 +83,8 @@ static void process_one_task (result_handler_p p) {
     task_p t = p->tasks[p->task_head];
 
 	if (task_has_downstream(t)) {
+		
+
 		task_p downstream = task_transfer_output(t);
 
 		// scheduler_add_task(p, downstream);

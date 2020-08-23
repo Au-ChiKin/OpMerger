@@ -144,10 +144,18 @@ void run_processing_gpu(
 
                 query_setup(query1);
 
-
                 /* Create tasks and add them to the task queue */
-                dispatcher_p dispatcher = dispatcher_init(scheduler, query1, 0, buffers, buffer_num);
-                pthread_join(dispatcher_get_thread(dispatcher), NULL);
+                dispatcher_p dispatchers[1] = {dispatcher(scheduler, query1, 0)};
+
+                int b=0;
+                while (1) {
+                    usleep(DISPATCHER_INTERVAL);
+
+                    dispatcher_insert(dispatchers[0], buffers[b], buffer_size);
+
+                    b = (b+1) % buffer_num;
+                }
+
             }
             break;
         case QUERY2:
@@ -214,8 +222,17 @@ void run_processing_gpu(
 
                 query_setup(query1);
 
-                dispatcher_p dispatcher = dispatcher_init(scheduler, query1, 0, buffers, buffer_num);
-                pthread_join(dispatcher_get_thread(dispatcher), NULL);
+                /* Create tasks and add them to the task queue */
+                dispatcher_p dispatchers[1] = {dispatcher(scheduler, query1, 0)};
+
+                int b=0;
+                while (1) {
+                    usleep(DISPATCHER_INTERVAL);
+
+                    dispatcher_insert(dispatchers[0], buffers[b], buffer_size);
+
+                    b = (b+1) % buffer_num;
+                }
 
             }
         default:
