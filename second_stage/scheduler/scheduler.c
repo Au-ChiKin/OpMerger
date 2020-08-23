@@ -8,6 +8,7 @@
 
 static pthread_t thr = NULL;
 
+static task_p scheduler_collect_task(scheduler_p p, task_p task);
 static void process_one_task (scheduler_p m);
 
 static void * scheduler(void * args) {
@@ -18,7 +19,7 @@ static void * scheduler(void * args) {
 
     while (1) {
         pthread_mutex_lock (p->mutex);
-            while (p->queue[p->queue_head] == NULL) {
+            while (p->queue_head == p->queue_tail) {
                 pthread_cond_wait(p->added, p->mutex);
             }
 
@@ -77,10 +78,8 @@ void scheduler_add_task (scheduler_p p, task_p t) {
     pthread_cond_signal (p->added);
 }
 
-/* Add to the head of the queue to favour downstream task */
-static void scheduler_add_task_nolock (scheduler_p p, task_p t) {
-	p->queue_head = (p->queue_head - 1 + SCHEDULER_QUEUE_LIMIT) % SCHEDULER_QUEUE_LIMIT;
-    p->queue[p->queue_head] = t;
+pthread_t scheduler_get_thread() {
+	return thr;
 }
 
 static task_p scheduler_collect_task(scheduler_p p, task_p task) {
@@ -96,6 +95,7 @@ static task_p scheduler_collect_task(scheduler_p p, task_p task) {
 static void process_one_task (scheduler_p p) {
     /* Run the head task */
     task_p t = p->queue[p->queue_head];
+	p->queue[p->queue_head] = NULL;
 
 	task_run(t);
     p->queue_head = (p->queue_head + 1) % SCHEDULER_QUEUE_LIMIT;
@@ -108,8 +108,4 @@ static void process_one_task (scheduler_p p) {
 		result_handler_p handler = dispatcher_get_handler((dispatcher_p) processed->dispatcher);
 		result_handler_add_task(handler, processed);
     }
-}
-
-pthread_t scheduler_get_thread() {
-	return thr;
 }
