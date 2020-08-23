@@ -36,17 +36,8 @@ void run_processing_gpu(
     u_int8_t * result, 
     enum test_cases mode, int work_load, int pipeline_num, bool is_merging, bool is_debug) {
     
-    /* TODO extend the batch struct into a real memoery manager that could create a batch 
-    according to the start and end pointer */
-    /* Pre-assembled batches */
-    batch_p input [8812];
-    for (int b=0; b<buffer_num; b++) {
-        input[b] = batch(buffer_size, 0, buffers[b], buffer_size, TUPLE_SIZE);
-    }
-
     /* Used as an output stream */
     batch_p output = batch(6 * buffer_size, 0, result, 6 * buffer_size, TUPLE_SIZE);
-
 
     /* Start throughput monitoring */
     event_manager_p manager = event_manager_init();
@@ -155,13 +146,8 @@ void run_processing_gpu(
 
 
                 /* Create tasks and add them to the task queue */
-                dispatcher_p dispatcher = dispatcher_init(scheduler, query1, 0, input, buffer_num);
+                dispatcher_p dispatcher = dispatcher_init(scheduler, query1, 0, buffers, buffer_num);
                 pthread_join(dispatcher_get_thread(dispatcher), NULL);
-
-                /* For debugging */
-                if (is_debug) {
-                    reduction_print_output(output, input[0]->size, schema1->size);
-                }
             }
             break;
         case QUERY2:
@@ -228,13 +214,9 @@ void run_processing_gpu(
 
                 query_setup(query1);
 
-                dispatcher_p dispatcher = dispatcher_init(scheduler, query1, 0, input, buffer_num);
+                dispatcher_p dispatcher = dispatcher_init(scheduler, query1, 0, buffers, buffer_num);
                 pthread_join(dispatcher_get_thread(dispatcher), NULL);
 
-                /* For debugging */
-                if (is_debug) {
-                    aggregation_print_output(output, input[0]->size, schema1->size);
-                }
             }
         default:
             fprintf(stderr, "error: wrong test case name, runs an no-op query\n");
@@ -245,10 +227,6 @@ void run_processing_gpu(
     pthread_join(scheduler_get_thread(), NULL);
 
     free(output);
-
-    for (int b=0; b<buffer_num; b++) {
-        free(input[b]);
-    }
 
     gpu_free();
 
