@@ -3,6 +3,8 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+#include <sched.h>
+
 #include "dispatcher.h"
 
 static void process_one_task (result_handler_p m);
@@ -18,11 +20,7 @@ static void * result_handler(void * args) {
 
     while (1) {
 		while (p->tasks[p->task_head] == NULL) {
-#ifdef __APPLE__
-			pthread_yield_np();
-#else
-			pthread_yield();
-#endif
+			sched_yield();
 		}
 
 		process_one_task(p);
