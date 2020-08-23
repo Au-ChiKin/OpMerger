@@ -17,7 +17,7 @@ static void * dispatcher(void * args) {
 
     while (1) {
         while (p->tasks[p->task_head] == NULL) {
-            sched_yield();
+            // sched_yield();
         }
 
         usleep(DISPATCHER_INTERVAL);

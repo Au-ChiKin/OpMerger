@@ -224,6 +224,7 @@ void run_processing_gpu(
                 query_add_operator(query1, (void *) aggregate1, aggregate1->operator);
                 query_add_operator(query1, (void *) select1, select1->operator);
 
+                query_setup(query1);
 
                 /* Start scheduler */
                 scheduler_p scheduler  = scheduler_init(pipeline_num);
@@ -239,14 +240,14 @@ void run_processing_gpu(
                 
                 for (int i=0; i<query1->operator_num; i++) {
                     dispatchers[i] = dispatcher_init(scheduler, query1, i, manager);
+                    if (i>0) {
+                        dispatcher_set_downstream(dispatchers[i-1], dispatchers[i]);
+                    }
                 }
 
-                query_setup(query1);
-
-                /* Effectively an application, keep sending data to dispatcher */
                 int b=0;
                 while (1) {
-                    // usleep(DISPATCHER_INTERVAL);
+                    // usleep(300);
 
                     dispatcher_insert(dispatchers[0], buffers[b], buffer_size);
 
