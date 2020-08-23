@@ -18,7 +18,7 @@
 #include "operators/reduction.h"
 #include "operators/aggregation.h"
 #include "query.h"
-#include "scheduler.h"
+#include "scheduler/scheduler.h"
 #include "task.h"
 
 #define GCD_LINE_NUM 144370688 // maximum lines for input txts
