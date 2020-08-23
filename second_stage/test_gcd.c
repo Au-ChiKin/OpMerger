@@ -136,6 +136,7 @@ void run_processing_gpu(
                 query_add_operator(query1, (void *) select1, select1->operator);
                 query_add_operator(query1, (void *) reduce1, reduce1->operator);
 
+                query_setup(query1);
 
                 /* Start scheduler */
                 scheduler_p scheduler  = scheduler_init(pipeline_num);
@@ -150,12 +151,10 @@ void run_processing_gpu(
                     }
                 }
 
-                query_setup(query1);
-
                 int b=0;
                 while (1) {
-                    usleep(250);
-                    
+                    usleep(300);
+
                     dispatcher_insert(dispatchers[0], buffers[b], buffer_size);
 
                     b = (b+1) % buffer_num;
