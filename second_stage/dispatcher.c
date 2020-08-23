@@ -1,5 +1,6 @@
 #include "dispatcher.h"
 
+#include <sched.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <unistd.h>
@@ -16,7 +17,7 @@ static void * dispatcher(void * args) {
 
     while (1) {
         while (p->tasks[p->task_head] == NULL) {
-            pthread_yield_np();
+            sched_yield();
         }
 
         send_one_task(p);
