@@ -246,7 +246,7 @@ void run_processing_gpu(
                 /* Effectively an application, keep sending data to dispatcher */
                 int b=0;
                 while (1) {
-                    usleep(DISPATCHER_INTERVAL);
+                    // usleep(DISPATCHER_INTERVAL);
 
                     dispatcher_insert(dispatchers[0], buffers[b], buffer_size);
 
