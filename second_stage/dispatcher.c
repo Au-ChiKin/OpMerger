@@ -20,6 +20,8 @@ static void * dispatcher(void * args) {
             sched_yield();
         }
 
+        usleep(DISPATCHER_INTERVAL);
+
         send_one_task(p);
     }
 
