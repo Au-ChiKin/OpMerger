@@ -223,8 +223,3 @@ static void process_one_task (result_handler_p p, task_p t) {
 		}
 	}
 }
-
-static void handle_windows(result_handler_p p) {
-
-
-}
