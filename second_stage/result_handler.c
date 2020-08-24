@@ -123,11 +123,9 @@ static void process_one_task (result_handler_p p) {
 
 	event_manager_add_event(p->manager, event);
 
-	/* Downstream */
+	/* Handle Outputs */
+	task_process_output(t);
 	if (task_has_downstream(t)) {
-
-		task_process_output(t);
-		
 		u_int8_t * data = fill_buffer(p, t->output);
 		if (data) {
 			dispatcher_insert((dispatcher_p) p->downstream, data, p->batch_size);
@@ -136,7 +134,6 @@ static void process_one_task (result_handler_p p) {
 		task_free(t);
 		
 	} else {
-
 		/* TODO: Just delete for now */
 		task_free(t);
 	}
