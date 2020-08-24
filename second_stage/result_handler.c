@@ -19,19 +19,19 @@ static void * result_handler(void * args) {
 	p->start = 1;
 
     while (1) {
-		// pthread_mutex_lock(p->mutex);
+		pthread_mutex_lock(p->mutex);
 
-			// while (p->size == 0) {
-			while (p->tasks[p->task_head] == NULL) {
-				// pthread_cond_wait(p->added, p->mutex);
-				sched_yield();
+			while (p->size == 0) {
+			// while (p->tasks[p->task_head] == NULL) {
+				pthread_cond_wait(p->added, p->mutex);
+				// sched_yield();
 			}
 			
 			task_p t = take_one_task(p);
 
-			// p->size--;
-		// pthread_mutex_unlock(p->mutex);
-		// pthread_cond_signal(p->took);
+			p->size--;
+		pthread_mutex_unlock(p->mutex);
+		pthread_cond_signal(p->took);
 
 		process_one_task(p, t);
     }
@@ -84,17 +84,17 @@ result_handler_p result_handler_init(event_manager_p event_manager, int batch_si
 }
 
 void result_handler_add_task (result_handler_p p, task_p t) {
-	// pthread_mutex_lock(p->mutex);
-		// while (p->size == RESULT_HANDLER_QUEUE_LIMIT) {
-			// pthread_cond_wait(p->took, p->mutex);
-		// }
-		// p->size++;
+	pthread_mutex_lock(p->mutex);
+		while (p->size == RESULT_HANDLER_QUEUE_LIMIT) {
+			pthread_cond_wait(p->took, p->mutex);
+		}
+		p->size++;
 
 		p->tasks[p->task_tail] = t;
 		p->task_tail = (p->task_tail + 1) % RESULT_HANDLER_QUEUE_LIMIT;
-	// pthread_mutex_unlock(p->mutex);
+	pthread_mutex_unlock(p->mutex);
 
-	// pthread_cond_signal(p->added);
+	pthread_cond_signal(p->added);
 }
 
 static void reset_buffer(result_handler_p p) {
