@@ -5,8 +5,18 @@
 
 static pthread_t thr = NULL;
 
-static void process_one_event (event_manager_p m);
+static query_event_p take_one_event(event_manager_p p);
+static void process_one_event (event_manager_p p, query_event_p e);
 static void reset_data(event_manager_p p);
+
+static query_event_p take_one_event(event_manager_p p) {
+    query_event_p e = p->events[p->event_head];
+    p->events[p->event_head] = NULL;
+
+    p->event_head = (p->event_head + 1) % EVENT_MANAGER_QUEUE_LIMIT;
+
+    return e;
+}
 
 static void * event_manager(void * args) {
 	event_manager_p p = (event_manager_p) args;
@@ -19,9 +29,12 @@ static void * event_manager(void * args) {
             while (p->event_tail - p->event_head == 0) {
                 pthread_cond_wait(p->added, p->mutex);
             }
+            
+        query_event_p e = take_one_event(p);
 
-                process_one_event(p);
         pthread_mutex_unlock (p->mutex);
+
+        process_one_event(p, e);
     }
 
 	return (args) ? NULL : args;
@@ -94,14 +107,12 @@ void event_manager_get_data (event_manager_p p,
     pthread_mutex_unlock (p->mutex);
 }
 
-static void process_one_event (event_manager_p p) {
-    query_event_p e = p->events[p->event_head];
-
+static void process_one_event (event_manager_p p, query_event_p e) {
     p->event_num[e->operator_id] += 1;
     p->processed_data[e->operator_id] += e->tuples * e->tuple_size;
     p->latency_sum[e->operator_id] += e->end - e->start;
 
-    p->event_head = (p->event_head + 1) % EVENT_MANAGER_QUEUE_LIMIT;
+    free(e);
 }
 
 static void reset_data(event_manager_p p) {

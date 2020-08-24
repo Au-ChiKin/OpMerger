@@ -142,24 +142,38 @@ static task_p take_one_task(result_handler_p p) {
 }
 
 static void process_one_task (result_handler_p p, task_p t) {
-	/* Count */
-	query_event_p event = t->event;
-
-	struct timespec end;
-	clock_gettime(CLOCK_MONOTONIC_RAW, &end);
-	event->end = end.tv_sec * 1000000 + end.tv_nsec / 1000;
-
-	event_manager_add_event(p->manager, event);
 
 	/* Handle Outputs */
 	task_process_output(t);
 	if (task_has_downstream(t)) {
 		u_int8_t * data = fill_buffer(p, t->output);
 
+		/* Count */
+		{
+			query_event_p event = t->event;
+			t->event = NULL;
+
+			struct timespec end;
+			clock_gettime(CLOCK_MONOTONIC_RAW, &end);
+			event->end = end.tv_sec * 1000000 + end.tv_nsec / 1000;
+
+			event_manager_add_event(p->manager, event);
+		}
+
 		if (data) {
 			dispatcher_insert((dispatcher_p) p->downstream, data, p->batch_size);
 		}
 	} else {
+		/* Count */{			
+			query_event_p event = t->event;
+			t->event = NULL;
+
+			struct timespec end;
+			clock_gettime(CLOCK_MONOTONIC_RAW, &end);
+			event->end = end.tv_sec * 1000000 + end.tv_nsec / 1000;
+
+			event_manager_add_event(p->manager, event);
+		}
 
 
 	}
