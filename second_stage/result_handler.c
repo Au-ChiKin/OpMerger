@@ -7,8 +7,8 @@
 
 #include "dispatcher.h"
 
-static void process_one_task (result_handler_p m);
-static void reset_data(result_handler_p p);
+static task_p take_one_task(result_handler_p p);
+static void process_one_task (result_handler_p p, task_p t);
 static void reset_buffer(result_handler_p p);
 static u_int8_t * fill_buffer(result_handler_p p, batch_p data);
 
@@ -19,11 +19,19 @@ static void * result_handler(void * args) {
 	p->start = 1;
 
     while (1) {
-		while (p->tasks[p->task_head] == NULL) {
-			sched_yield();
-		}
+		pthread_mutex_lock(p->mutex);
 
-		process_one_task(p);
+			while (p->size == 0) {
+				pthread_cond_wait(p->added, p->mutex);
+			}
+			
+			task_p t = take_one_task(p);
+
+			p->size--;
+		pthread_mutex_unlock(p->mutex);
+		pthread_cond_signal(p->took);
+
+		process_one_task(p, t);
     }
 
 	return (args) ? NULL : args;
@@ -39,8 +47,18 @@ result_handler_p result_handler_init(event_manager_p event_manager, int batch_si
 
     p->start = 0;
 
+	p->mutex = (pthread_mutex_t *) malloc (sizeof(pthread_mutex_t));
+	pthread_mutex_init (p->mutex, NULL);
+
+	p->took = (pthread_cond_t *) malloc (sizeof(pthread_cond_t));
+	pthread_cond_init (p->took, NULL);
+
+	p->added = (pthread_cond_t *) malloc (sizeof(pthread_cond_t));
+	pthread_cond_init (p->added, NULL);
+
     p->task_head = 0;
     p->task_tail = 0;
+	p->size = 0;
     for (int i=0; i<RESULT_HANDLER_QUEUE_LIMIT; i++) {
         p->tasks[i] = NULL;
     }
@@ -49,9 +67,6 @@ result_handler_p result_handler_init(event_manager_p event_manager, int batch_si
 	reset_buffer(p);
 
 	p->manager = event_manager;
-
-    /* Accumulated data */
-    reset_data(p);
 
 	/* Initialise thread */
 	if (pthread_create(&p->thr, NULL, result_handler, (void *) p)) {
@@ -65,12 +80,21 @@ result_handler_p result_handler_init(event_manager_p event_manager, int batch_si
 }
 
 void result_handler_add_task (result_handler_p p, task_p t) {
-	p->tasks[p->task_tail] = t;
-	p->task_tail = (p->task_tail + 1) % RESULT_HANDLER_QUEUE_LIMIT;
+	pthread_mutex_lock(p->mutex);
+		while (p->size == RESULT_HANDLER_QUEUE_LIMIT) {
+			pthread_cond_wait(p->took, p->mutex);
+		}
+		p->size++;
+
+		p->tasks[p->task_tail] = t;
+		p->task_tail = (p->task_tail + 1) % RESULT_HANDLER_QUEUE_LIMIT;
+	pthread_mutex_unlock(p->mutex);
+
+	pthread_cond_signal(p->added);
 }
 
 static void reset_buffer(result_handler_p p) {
-	p->buffer = (u_int8_t *) malloc(p->batch_size * 64 * sizeof(u_int8_t));
+	p->downstream_buffer = (u_int8_t *) malloc(p->batch_size * 64 * sizeof(u_int8_t));
 	p->accumulated = 0;
 }
 
@@ -94,15 +118,15 @@ static u_int8_t * fill_buffer(result_handler_p p, batch_p data) {
 	int remain = data_size_b - to_copy;
 
 	/* Materialisation */
-	memcpy(p->buffer + accumulated_b, data->buffer + data->start, to_copy);
+	memcpy(p->downstream_buffer + accumulated_b, data->buffer + data->start, to_copy);
 
 	if (remain >= 0) {
-		ret = p->buffer;
+		ret = p->downstream_buffer;
 
 		reset_buffer(p);
 		p->accumulated = remain / tuple_size;
 
-		memcpy(p->buffer, data->buffer + data->start, remain);
+		memcpy(p->downstream_buffer, data->buffer + data->start, remain);
 	} else {
 		p->accumulated += data->size;
 	}
@@ -110,10 +134,14 @@ static u_int8_t * fill_buffer(result_handler_p p, batch_p data) {
 	return ret;
 }
 
-static void process_one_task (result_handler_p p) {
+static task_p take_one_task(result_handler_p p) {
     task_p t = p->tasks[p->task_head];
 	p->tasks[p->task_head] = NULL;
 
+	return t;
+}
+
+static void process_one_task (result_handler_p p, task_p t) {
 	/* Count */
 	query_event_p event = t->event;
 
@@ -127,23 +155,20 @@ static void process_one_task (result_handler_p p) {
 	task_process_output(t);
 	if (task_has_downstream(t)) {
 		u_int8_t * data = fill_buffer(p, t->output);
+
 		if (data) {
 			dispatcher_insert((dispatcher_p) p->downstream, data, p->batch_size);
 		}
-
-		task_free(t);
-		
 	} else {
-		/* TODO: Just delete for now */
-		task_free(t);
+
+
 	}
 
+	task_free(t);
     p->task_head = (p->task_head + 1) % RESULT_HANDLER_QUEUE_LIMIT;
 }
 
-static void reset_data(result_handler_p p) {
-    p->event_num = 0;
-    p->latency_sum = 0;
-    p->processed_data = 0;
-}
+static void handle_windows(result_handler_p p) {
 
+
+}

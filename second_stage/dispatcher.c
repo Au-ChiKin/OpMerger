@@ -7,7 +7,14 @@
 
 static void create_task(dispatcher_p p, batch_p batch);
 static void assemble(dispatcher_p p, batch_p batch, int length);
-static void send_one_task(dispatcher_p p);
+static void send_one_task(dispatcher_p p, task_p t);
+
+static task_p take_one_task(dispatcher_p p) {
+    task_p t = p->tasks[p->task_head];
+    p->tasks[p->task_head] = NULL;
+
+    return t;
+}
 
 static void * dispatcher(void * args) {
 	dispatcher_p p = (dispatcher_p) args;
@@ -16,13 +23,19 @@ static void * dispatcher(void * args) {
 	p->start = 1;
 
     while (1) {
-        while (p->tasks[p->task_head] == NULL) {
-            // sched_yield();
-        }
+		pthread_mutex_lock(p->mutex);
 
-        usleep(DISPATCHER_INTERVAL);
+			while (p->size == 0) {
+				pthread_cond_wait(p->added, p->mutex);
+			}
 
-        send_one_task(p);
+            task_p t = take_one_task(p);
+    
+			p->size--;
+		pthread_mutex_unlock(p->mutex);
+		pthread_cond_signal(p->took);
+
+        send_one_task(p, t);
     }
 
 	return (args) ? NULL : args;
@@ -45,8 +58,18 @@ dispatcher_p dispatcher_init(scheduler_p scheduler, query_p query, int oid, even
 
     p->start = 0;
 
+	p->mutex = (pthread_mutex_t *) malloc (sizeof(pthread_mutex_t));
+	pthread_mutex_init (p->mutex, NULL);
+
+	p->took = (pthread_cond_t *) malloc (sizeof(pthread_cond_t));
+	pthread_cond_init (p->took, NULL);
+
+	p->added = (pthread_cond_t *) malloc (sizeof(pthread_cond_t));
+	pthread_cond_init (p->added, NULL);
+
     p->task_head = 0;
     p->task_tail = 0;
+    p->size = 0;
     for (int i=0; i<DISPATCHER_QUEUE_LIMIT; i++) {
         p->tasks[i] = NULL;
     }
@@ -67,7 +90,17 @@ dispatcher_p dispatcher_init(scheduler_p scheduler, query_p query, int oid, even
 void dispatcher_insert(dispatcher_p p, u_int8_t * data, int len) {
     batch_p new_batch = batch(p->query->batch_size, 0, data, p->query->batch_size, 64);
 
-    assemble(p, new_batch, len);
+	pthread_mutex_lock(p->mutex);
+		while (p->size == DISPATCHER_QUEUE_LIMIT) {
+			pthread_cond_wait(p->took, p->mutex);
+		}
+		p->size++;
+    
+        assemble(p, new_batch, len);
+
+	pthread_mutex_unlock(p->mutex);
+
+	pthread_cond_signal(p->added);
 }
 
 void dispatcher_set_downstream(dispatcher_p p, dispatcher_p downstream) {
@@ -91,10 +124,7 @@ result_handler_p dispatcher_get_handler(dispatcher_p p) {
 	return p->handler;
 }
 
-static void send_one_task(dispatcher_p p) {
-    task_p t = p->tasks[p->task_head];
-    p->tasks[p->task_head] = NULL;
-
+static void send_one_task(dispatcher_p p, task_p t) {
     /* Execute */
     scheduler_add_task(p->scheduler, t);
 

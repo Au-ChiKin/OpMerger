@@ -14,8 +14,10 @@
 typedef struct dispatcher * dispatcher_p;
 typedef struct dispatcher {
     pthread_t thr;
-
-    volatile int start;
+    pthread_mutex_t * mutex; // For p->size
+    pthread_cond_t * took;
+    pthread_cond_t * added;
+    volatile unsigned start;
 
     scheduler_p scheduler;
     query_p query;
@@ -24,6 +26,7 @@ typedef struct dispatcher {
     u_int8_t ** buffers;
     int buffer_num;
 
+    volatile int size;
     volatile int task_head;
     volatile int task_tail;
     volatile task_p tasks [DISPATCHER_QUEUE_LIMIT];
