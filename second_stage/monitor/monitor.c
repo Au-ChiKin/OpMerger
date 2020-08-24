@@ -46,6 +46,7 @@ monitor_p monitor_init(event_manager_p manager) {
 static void print_data(monitor_p p) {
     int event_num[2], operators;
     long processed_data[2], latency_sum[2];
+	float avg_throughput = 0;
     
     event_manager_get_data(p->manager, &operators, event_num, processed_data, latency_sum);
 
@@ -53,8 +54,10 @@ static void print_data(monitor_p p) {
 	for (int i=0; i<operators; i++) {
 		float throughput = ((float) processed_data[i] / 1024.0 / 1024.0) / THROUGHPUT_MONITOR_INTERVAL; /* MB/s */
 		float latency_avg = latency_sum[i] / (float) event_num[i]; /* us */
+		avg_throughput += throughput;
 
 		printf("(%d) t: %9.3f MB/s  l: %9.3f us   ", i, throughput, latency_avg);
 	}
+	printf("(avg) t: %9.3f MB/s", avg_throughput / operators);
 	printf("\n");
 }
