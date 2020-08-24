@@ -85,8 +85,13 @@ result_handler_p result_handler_init(event_manager_p event_manager, int batch_si
 
 void result_handler_add_task (result_handler_p p, task_p t) {
 	pthread_mutex_lock(p->mutex);
-		while (p->size == RESULT_HANDLER_QUEUE_LIMIT) {
-			pthread_cond_wait(p->took, p->mutex);
+		// while (p->size == RESULT_HANDLER_QUEUE_LIMIT) {
+		if (p->size == RESULT_HANDLER_QUEUE_LIMIT) {
+			struct timespec timeToWait;
+    		timeToWait.tv_sec = 0;
+			timeToWait.tv_nsec = 100 * 1000;
+
+			pthread_cond_timedwait(p->took, p->mutex, &timeToWait);
 		}
 		p->size++;
 
