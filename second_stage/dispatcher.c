@@ -71,7 +71,20 @@ void dispatcher_insert(dispatcher_p p, u_int8_t * data, int len) {
 }
 
 void dispatcher_set_downstream(dispatcher_p p, dispatcher_p downstream) {
+    if (query_get_operator_num(p->query) - 1 == p->operator_id) {
+        printf("error: the last operator of a query does not have downstream\n");
+        exit(1);
+    }
 	p->handler->downstream = (void *) downstream;
+}
+
+void dispatcher_set_output_stream(dispatcher_p p, batch_p output_stream) {
+    if (query_get_operator_num(p->query) - 1 != p->operator_id) {
+        printf("error: only the last operator of a query should be set an output batch\n");
+        exit(1);
+    }
+
+	p->handler->output_stream = output_stream;
 }
 
 result_handler_p dispatcher_get_handler(dispatcher_p p) {

@@ -119,6 +119,10 @@ void query_process_output(query_p query, int oid, batch_p output) {
     (* query->callbacks[oid]->process_output) (query->operators[oid], output);
 }
 
+int query_get_operator_num(query_p query) {
+    return query->operator_num;
+}
+
 void query_free(query_p query) {
     free(query->window);
 }

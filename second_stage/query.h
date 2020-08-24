@@ -37,4 +37,6 @@ void query_free(query_p query);
 
 void query_process_output(query_p query, int oid, batch_p output);
 
+int query_get_operator_num(query_p query);
+
 #endif

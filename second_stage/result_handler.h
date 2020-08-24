@@ -27,6 +27,7 @@ typedef struct result_handler {
     volatile long latency_sum;
 
     volatile void * downstream;
+    volatile batch_p output_stream;
 
     pthread_t thr;
 } result_handler_t;

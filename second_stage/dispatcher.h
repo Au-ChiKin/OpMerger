@@ -42,4 +42,6 @@ result_handler_p dispatcher_get_handler(dispatcher_p p);
 
 void dispatcher_set_downstream(dispatcher_p p, dispatcher_p downstream);
 
+void dispatcher_set_output_stream(dispatcher_p p, batch_p output_stream);
+
 #endif

@@ -139,7 +139,7 @@ void run_processing_gpu(
                 event_manager_p manager = event_manager_init(query1->operator_num);
 
                 /* Start the actual monitoring */
-                monitor_p monitor = monitor_init(manager);
+                monitor_init(manager);
 
                 /* Create tasks and add them to the task queue */
                 dispatcher_p dispatchers[2];
@@ -150,6 +150,7 @@ void run_processing_gpu(
                         dispatcher_set_downstream(dispatchers[i-1], dispatchers[i]);
                     }
                 }
+                dispatcher_set_output_stream(dispatchers[query1->operator_num-1], output);
 
                 int b=0;
                 while (1) {
@@ -233,7 +234,7 @@ void run_processing_gpu(
                 event_manager_p manager = event_manager_init(query1->operator_num);
 
                 /* Start the actual monitoring */
-                monitor_p monitor = monitor_init(manager);
+                monitor_init(manager);
 
                 /* Create tasks and add them to the task queue */
                 dispatcher_p dispatchers[2];
@@ -244,6 +245,7 @@ void run_processing_gpu(
                         dispatcher_set_downstream(dispatchers[i-1], dispatchers[i]);
                     }
                 }
+                dispatcher_set_output_stream(dispatchers[query1->operator_num-1], output);
 
                 int b=0;
                 while (1) {
