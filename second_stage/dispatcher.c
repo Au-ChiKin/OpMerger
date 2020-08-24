@@ -5,16 +5,10 @@
 #include <stdio.h>
 #include <unistd.h>
 
+static task_p take_one_task(dispatcher_p p);
 static void create_task(dispatcher_p p, batch_p batch);
 static void assemble(dispatcher_p p, batch_p batch, int length);
 static void send_one_task(dispatcher_p p, task_p t);
-
-static task_p take_one_task(dispatcher_p p) {
-    task_p t = p->tasks[p->task_head];
-    p->tasks[p->task_head] = NULL;
-
-    return t;
-}
 
 static void * dispatcher(void * args) {
 	dispatcher_p p = (dispatcher_p) args;
@@ -141,4 +135,11 @@ static void create_task(dispatcher_p p, batch_p batch) {
 static void assemble(dispatcher_p p, batch_p batch, int length) {
     /* Launch task */
     create_task (p, batch);
+}
+
+static task_p take_one_task(dispatcher_p p) {
+    task_p t = p->tasks[p->task_head];
+    p->tasks[p->task_head] = NULL;
+
+    return t;
 }

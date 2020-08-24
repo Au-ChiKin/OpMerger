@@ -154,8 +154,6 @@ void run_processing_gpu(
 
                 int b=0;
                 while (1) {
-                    // usleep(300);
-
                     dispatcher_insert(dispatchers[0], buffers[b], buffer_size);
 
                     b = (b+1) % buffer_num;
@@ -249,8 +247,6 @@ void run_processing_gpu(
 
                 int b=0;
                 while (1) {
-                    // usleep(300);
-
                     dispatcher_insert(dispatchers[0], buffers[b], buffer_size);
 
                     b = (b+1) % buffer_num;

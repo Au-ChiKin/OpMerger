@@ -7,9 +7,7 @@
 #include "scheduler/scheduler.h"
 #include "result_handler.h"
 
-#define DISPATCHER_INTERVAL 100 // us
-
-#define DISPATCHER_QUEUE_LIMIT 100
+#define DISPATCHER_QUEUE_LIMIT 1000
 
 typedef struct dispatcher * dispatcher_p;
 typedef struct dispatcher {
