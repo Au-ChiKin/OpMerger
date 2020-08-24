@@ -10,6 +10,11 @@ typedef struct batch {
     int size;   /* variable, in tuples, marking the number of stored meaning tuples */
     int tuple_size;
     u_int8_t * buffer;
+
+    int closing_windows;
+    int pending_windows;
+    int complete_windows;
+    int opening_windows;
 } batch_t;
 
 batch_p batch(int size, long start, u_int8_t * buffer, int buffer_size, int tuple_size);

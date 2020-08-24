@@ -43,6 +43,8 @@ void reduction_reset(void * reduce_ptr, int new_batch_size);
 
 void reduction_process(void * reduce_ptr, batch_p batch, window_p window, batch_p output, query_event_p event);
 
+void reduction_process_output(void * reduce_ptr, batch_p outputs);
+
 void reduction_print_output(batch_p outputs, int batch_size, int tuple_size);
 
 #endif
