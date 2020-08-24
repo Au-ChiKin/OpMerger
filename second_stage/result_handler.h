@@ -26,6 +26,7 @@ typedef struct result_handler {
     int accumulated;
     u_int8_t * downstream_buffer;
 
+    task_p previous;
 
     volatile void * downstream;
     volatile batch_p output_stream;

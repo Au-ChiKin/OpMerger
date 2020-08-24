@@ -66,6 +66,8 @@ result_handler_p result_handler_init(event_manager_p event_manager, int batch_si
 	p->batch_size = batch_size;
 	reset_buffer(p);
 
+	p->previous = NULL;
+
 	p->manager = event_manager;
 
 	/* Initialise thread */
@@ -138,6 +140,7 @@ static task_p take_one_task(result_handler_p p) {
     task_p t = p->tasks[p->task_head];
 	p->tasks[p->task_head] = NULL;
 
+	p->task_head = (p->task_head + 1) % RESULT_HANDLER_QUEUE_LIMIT;
 	return t;
 }
 
@@ -163,23 +166,62 @@ static void process_one_task (result_handler_p p, task_p t) {
 		if (data) {
 			dispatcher_insert((dispatcher_p) p->downstream, data, p->batch_size);
 		}
+		
+		task_free(t);
 	} else {
-		/* Count */{			
-			query_event_p event = t->event;
-			t->event = NULL;
 
-			struct timespec end;
-			clock_gettime(CLOCK_MONOTONIC_RAW, &end);
-			event->end = end.tv_sec * 1000000 + end.tv_nsec / 1000;
+		/* Assuming only tumbling windows*/
+		if (p->previous) {
+			long current_offset = 0;
 
-			event_manager_add_event(p->manager, event);
+			if (t->output->closing_windows) {
+				/* Output opening windows of the previous with the closing windows */
+			}
+
+			if (t->output->pending_windows) {
+				/* Take the remained opending windows of the previous and merge it with
+				   the pending windows to produce new opending windows */
+			}
+
+			if (t->output->complete_windows) {
+				/* Output */
+				u_int8_t * buffer_start = t->output->buffer + t->output->start;
+				int tuple_size = t->output->tuple_size;
+				int complete_windows = t->output->complete_windows;
+
+				memcpy(p->output_stream->buffer, buffer_start + current_offset, complete_windows * tuple_size);
+			}
+
+			if (!t->output->closing_windows && !t->output->pending_windows 
+				&& p->previous->output->opening_windows) {
+				
+				u_int8_t * buffer_start = p->previous->output->buffer + p->previous->output->start;
+				int opening_windows = p->previous->output->opening_windows;
+				int tuple_size = p->previous->output->tuple_size;
+				long offset = (p->previous->output->closing_windows + p->previous->output->pending_windows)
+					* tuple_size;
+
+				memcpy(p->output_stream->buffer, buffer_start + offset, opening_windows * tuple_size);
+			}
+
+			/* Count */
+			{			
+				query_event_p event = p->previous->event;
+				p->previous->event = NULL;
+
+				struct timespec end;
+				clock_gettime(CLOCK_MONOTONIC_RAW, &end);
+				event->end = end.tv_sec * 1000000 + end.tv_nsec / 1000;
+
+				event_manager_add_event(p->manager, event);
+			}
+
+			task_free(p->previous);
+			p->previous = t;
+		} else {
+			p->previous = t;
 		}
-
-
 	}
-
-	task_free(t);
-    p->task_head = (p->task_head + 1) % RESULT_HANDLER_QUEUE_LIMIT;
 }
 
 static void handle_windows(result_handler_p p) {
