@@ -136,7 +136,7 @@ void run_processing_gpu(
                 reduction_p reduce1 = reduction(schema1, ref_num, cols, exps);
 
                 /* Create a query */
-                window_p window1 = window(60, 60, RANGE_BASE);
+                window_p window1 = window(60, 60, COUNTER_BASE);
 
                 int batch_size = buffer_size;
                 query_p query1 = query(0, batch_size, window1, is_merging);
@@ -174,9 +174,9 @@ void run_processing_gpu(
 
                     b = (b+1) % buffer_num;
 
-                    // if (b == 0) {
-                    //     renew_timestamp(buffer_num, buffers, batch_size);
-                    // }
+                    if (b == 0) {
+                        renew_timestamp(buffer_num, buffers, batch_size);
+                    }
                 }
 
             }
