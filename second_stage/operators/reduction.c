@@ -415,7 +415,7 @@ void reduction_process(void * reduce_ptr, batch_p batch, window_p window, batch_
         if (batch->start > 0) {
             if (window->type == RANGE_BASE) {
                 int offset = s - t;
-                args2[0] = batch_get_timestamp(batch, offset) / p;
+                args2[0] = batch_get_first_tuple_timestamp64(batch, offset) / p;
             } else {
                 args2[0] = ((s / (long) t) / p) - 1;
             }

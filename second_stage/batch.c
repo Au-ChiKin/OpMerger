@@ -24,10 +24,10 @@ batch_p batch(int size, long start, u_int8_t * buffer, int buffer_size, int tupl
 
     batch->buffer = buffer;
 
-    return batch;    
+    return batch;
 }
 
-long batch_get_timestamp(batch_p batch, int offset) {
+long batch_get_first_tuple_timestamp64(batch_p batch, int offset) {
     union long_u {
         long value;
         u_int8_t vectors [8];
