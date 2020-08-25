@@ -7,7 +7,7 @@
 #include "scheduler/scheduler.h"
 #include "result_handler.h"
 
-#define DISPATCHER_CONCURRENT_TASK 32
+#define DISPATCHER_CONCURRENT_TASK 1024
 #define DISPATCHER_QUEUE_LIMIT 32
 #define DISPATCHER_INSERT_TIMEOUT 250 // us
 
