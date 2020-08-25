@@ -9,7 +9,7 @@
 #define MAX_INPUT_TUPLE_LENGTH 1024
 #define MAX_OUTPUT_TUPLE_LENGTH 1024
 
-#define _sprintf(format, __VA_ARGS__...) \
+#define _sprintf(format, ...) \
 {\
     sprintf(s, format, __VA_ARGS__);\
     strcat(ret, s);\
