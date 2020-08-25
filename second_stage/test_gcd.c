@@ -174,9 +174,9 @@ void run_processing_gpu(
 
                     b = (b+1) % buffer_num;
 
-                    if (b == 0) {
-                        renew_timestamp(buffer_num, buffers, batch_size);
-                    }
+                    // if (b == 0) {
+                    //     renew_timestamp(buffer_num, buffers, batch_size);
+                    // }
                 }
 
             }
