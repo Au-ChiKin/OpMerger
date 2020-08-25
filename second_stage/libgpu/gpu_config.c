@@ -62,15 +62,15 @@ gpu_config_p gpu_config (
 		error_print("opencl error (%d): %s (%s)\n", error, getErrorMessage(error), __FUNCTION__);
 		exit (1);
 	}
-	config->command_queue[1] = clCreateCommandQueue (
-		config->context, 
-		config->device, 
-		CL_QUEUE_PROFILING_ENABLE, 
-		&error);
-	if (! config->command_queue[1]) {
-		error_print("opencl error (%d): %s (%s)\n", error, getErrorMessage(error), __FUNCTION__);
-		exit (1);
-	}
+	// config->command_queue[1] = clCreateCommandQueue (
+	// 	config->context, 
+	// 	config->device, 
+	// 	CL_QUEUE_PROFILING_ENABLE, 
+	// 	&error);
+	// if (! config->command_queue[1]) {
+	// 	error_print("opencl error (%d): %s (%s)\n", error, getErrorMessage(error), __FUNCTION__);
+	// 	exit (1);
+	// }
 
 	config->scheduled  = 0; /* No read or write events scheduled */
 	config->readCount  = 0;
@@ -110,8 +110,8 @@ void gpu_config_free (gpu_config_p config) {
 		/* Release command queues */
 		if (config->command_queue[0])
 			clReleaseCommandQueue(config->command_queue[0]);
-		if (config->command_queue[1])
-			clReleaseCommandQueue(config->command_queue[1]);
+		// if (config->command_queue[1])
+		// 	clReleaseCommandQueue(config->command_queue[1]);
 		/* Free object */
 		free(config);
 	}
@@ -203,7 +203,7 @@ void gpu_config_submitKernel (gpu_config_p config, size_t *threads, size_t *thre
 void gpu_config_flush (gpu_config_p config) {
 	int error = 0;
 	error |= clFlush (config->command_queue[0]);
-	error |= clFlush (config->command_queue[1]);
+	// error |= clFlush (config->command_queue[1]);
 	if (error != CL_SUCCESS) {
 		fprintf(stderr, "opencl error (%d): %s (%s)\n", error, getErrorMessage(error), __FUNCTION__);
 		exit (1);
@@ -216,7 +216,7 @@ void gpu_config_finish (gpu_config_p config) {
 	/* There are tasks scheduled */
 	int error = 0;
 	error |= clFinish (config->command_queue[0]);
-	error |= clFinish (config->command_queue[1]);
+	// error |= clFinish (config->command_queue[1]);
 	if (error != CL_SUCCESS) {
 		fprintf(stderr, "opencl error (%d): %s (%s), config=%d @%p\n", error, getErrorMessage(error), __FUNCTION__, config->query_id, config);
 		exit (1);
