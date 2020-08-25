@@ -33,6 +33,7 @@ static void * scheduler(void * args) {
 			warned = 0;
 
 			task_p t = take_one_task(p);
+			
         pthread_mutex_unlock (p->mutex);
 		pthread_cond_signal(p->took);
 

@@ -84,7 +84,7 @@ result_handler_p result_handler_init(event_manager_p event_manager, query_p quer
 		fprintf(stderr, "error: failed to create throughput monitor thread\n");
 		exit (1);
 	}
-	/* Wait until thread attaches itself to the JVM */
+	/* Wait until thread starts */
 	while (! p->start)
 		;
 	return p;
