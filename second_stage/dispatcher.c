@@ -86,6 +86,12 @@ void dispatcher_insert(dispatcher_p p, u_int8_t * data, int len) {
 
 	pthread_mutex_lock(p->mutex);
 		while (p->size == DISPATCHER_QUEUE_LIMIT) {
+		// if (p->size == DISPATCHER_QUEUE_LIMIT) {
+		// 	struct timespec time_to_wait;
+    	// 	time_to_wait.tv_sec = 0;
+		// 	time_to_wait.tv_nsec = DISPATCHER_INSERT_TIMEOUT * 1000;
+
+			// pthread_cond_timedwait(p->took, p->mutex, &time_to_wait);
 			pthread_cond_wait(p->took, p->mutex);
 		}
 		p->size++;
