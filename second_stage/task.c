@@ -92,6 +92,8 @@ void task_free(task_p t) {
     } else {
         batch_free(t->batch);
     }
-    batch_free_all(t->output);
+    if (t->output) {
+        batch_free_all(t->output);
+    }
     free(t);
 }
