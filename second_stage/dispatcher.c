@@ -81,8 +81,9 @@ dispatcher_p dispatcher_init(scheduler_p scheduler, query_p query, int oid, even
     return p;  
 }
 
-void dispatcher_insert(dispatcher_p p, u_int8_t * data, int len) {
+void dispatcher_insert(dispatcher_p p, u_int8_t * data, int len, long upstream_time) {
     batch_p new_batch = batch(p->query->batch_size, 0, data, p->query->batch_size, 64);
+	batch_reset_timestamp(new_batch, upstream_time);
 
 	pthread_mutex_lock(p->mutex);
 		// while (p->size == DISPATCHER_QUEUE_LIMIT) {

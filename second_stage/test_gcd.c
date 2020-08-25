@@ -156,7 +156,7 @@ void run_processing_gpu(
                 while (1) {
                     // usleep(250);
 
-                    dispatcher_insert(dispatchers[0], buffers[b], buffer_size);
+                    dispatcher_insert(dispatchers[0], buffers[b], buffer_size, event_get_mtime());
 
                     b = (b+1) % buffer_num;
                 }
@@ -249,7 +249,7 @@ void run_processing_gpu(
 
                 int b=0;
                 while (1) {
-                    dispatcher_insert(dispatchers[0], buffers[b], buffer_size);
+                    dispatcher_insert(dispatchers[0], buffers[b], buffer_size, event_get_mtime());
 
                     b = (b+1) % buffer_num;
                 }

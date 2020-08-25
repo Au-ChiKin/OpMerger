@@ -38,7 +38,7 @@ typedef struct dispatcher {
 
 dispatcher_p dispatcher_init(scheduler_p scheduler, query_p query, int oid, event_manager_p event_manager);
 
-void dispatcher_insert(dispatcher_p p, u_int8_t * data, int len);
+void dispatcher_insert(dispatcher_p p, u_int8_t * data, int len, long upstream_time);
 
 result_handler_p dispatcher_get_handler(dispatcher_p p);
 

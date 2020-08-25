@@ -21,6 +21,10 @@ void event_set_start(query_event_p event, long time) {
     event->start = time;
 }
 
+void event_set_end(query_event_p event, long time) {
+    event->end = time;
+}
+
 long event_get_mtime() {
     static struct timespec now;
     static long mtime;
@@ -132,7 +136,7 @@ void event_manager_get_data (event_manager_p p,
 static void process_one_event (event_manager_p p, query_event_p e) {
     p->event_num[e->operator_id] += 1;
     p->processed_data[e->operator_id] += e->tuples * e->tuple_size;
-    p->latency_sum[e->operator_id] += e->end - e->start;
+    p->latency_sum[e->operator_id] += e->end - e->insert;
 
     free(e);
 }

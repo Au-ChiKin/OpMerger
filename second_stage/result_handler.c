@@ -10,7 +10,7 @@
 static task_p take_one_task(result_handler_p p);
 static void process_one_task (result_handler_p p, task_p t);
 static void reset_buffer(result_handler_p p);
-static u_int8_t * fill_buffer(result_handler_p p, batch_p data);
+static u_int8_t * fill_buffer(result_handler_p p, batch_p data, long * time);
 
 static void * result_handler(void * args) {
 	result_handler_p p = (result_handler_p) args;
@@ -119,7 +119,7 @@ int min(int x, int y) {
 	return (x > y) ? y : x;
 }
 
-static u_int8_t * fill_buffer(result_handler_p p, batch_p data) {
+static u_int8_t * fill_buffer(result_handler_p p, batch_p data, long * time) {
 	u_int8_t * ret = NULL;
 
 	int tuple_size = data->tuple_size;
@@ -139,9 +139,11 @@ static u_int8_t * fill_buffer(result_handler_p p, batch_p data) {
 
 	if (remain >= 0) {
 		ret = p->downstream_buffer;
+		*time = p->buffer_timestamp;
 
 		reset_buffer(p);
 		p->accumulated = remain / tuple_size;
+		p->buffer_timestamp = data->timestamp;
 
 		memcpy(p->downstream_buffer, data->buffer + data->start, remain);
 	} else {
@@ -164,22 +166,17 @@ static void process_one_task (result_handler_p p, task_p t) {
 	/* Handle Outputs */
 	task_process_output(t);
 	if (task_has_downstream(t)) {
-		u_int8_t * data = fill_buffer(p, t->output);
+		long time;
+
+		u_int8_t * data = fill_buffer(p, t->output, &time);
 
 		/* Count */
-		{
-			query_event_p event = t->event;
-			t->event = NULL;
-
-			struct timespec end;
-			clock_gettime(CLOCK_MONOTONIC_RAW, &end);
-			event->end = end.tv_sec * 1000000 + end.tv_nsec / 1000;
-
-			event_manager_add_event(p->manager, event);
-		}
+		event_set_end(t->event, event_get_mtime());
+		event_manager_add_event(p->manager, t->event);
+		t->event = NULL;
 
 		if (data) {
-			dispatcher_insert((dispatcher_p) p->downstream, data, p->batch_size);
+			dispatcher_insert((dispatcher_p) p->downstream, data, p->batch_size, time);
 		}
 		
 		task_free(t);

@@ -27,6 +27,8 @@ void event_set_create(query_event_p event, long time);
 
 void event_set_start(query_event_p event, long time);
 
+void event_set_end(query_event_p event, long time);
+
 typedef struct event_manager * event_manager_p;
 typedef struct event_manager {
     pthread_mutex_t * mutex;

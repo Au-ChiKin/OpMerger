@@ -27,6 +27,7 @@ typedef struct result_handler {
 
     int accumulated;
     u_int8_t * downstream_buffer;
+    long buffer_timestamp;
 
     task_p previous;
 
