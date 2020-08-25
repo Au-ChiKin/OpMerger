@@ -15,6 +15,12 @@
     strcat(ret, s);\
 }
 
+#define _sprint(format) \
+{\
+    sprintf(s, format);\
+    strcat(ret, s);\
+}
+
 /* TODO untested */
 void str_to_upper(char * des, char const * str) {
     if (des == NULL) {
@@ -42,7 +48,7 @@ char * generate_window_definition(window_p window) {
     char s[MAX_LINE_LENGTH] = "";
     
     if (window->type == RANGE_BASE) {
-        _sprintf("#define RANGE_BASED\n\n", NULL);
+        _sprint("#define RANGE_BASED\n\n");
     } else {
         _sprintf("#define COUNT_BASED\n\n", NULL);
     }
