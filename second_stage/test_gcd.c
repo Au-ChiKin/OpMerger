@@ -154,6 +154,8 @@ void run_processing_gpu(
 
                 int b=0;
                 while (1) {
+                    usleep(DISPATCHER_INSERT_TIMEOUT);
+
                     dispatcher_insert(dispatchers[0], buffers[b], buffer_size, event_get_mtime());
 
                     b = (b+1) % buffer_num;

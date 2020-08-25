@@ -113,12 +113,14 @@ void dispatcher_insert(dispatcher_p p, u_int8_t * data, int len, long upstream_t
 		while (p->size == DISPATCHER_QUEUE_LIMIT) {
 			pthread_cond_wait(p->took, p->mutex);
 		}
-		if (p->size == DISPATCHER_QUEUE_LIMIT) {
-			printf("Dispatcher queue of operator %d has exceeded\n", p->operator_id);
-			fflush(stdout);
+
+		if (p->size == DISPATCHER_QUEUE_LIMIT-1) {
+			// printf("Warning Dispatcher queue of operator %d has been full\n", p->operator_id);
+			// fflush(stdout);
 		}
+		
 		p->size++;
-    
+
         assemble(p, new_batch, len);
 
 	pthread_mutex_unlock(p->mutex);

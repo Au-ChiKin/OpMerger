@@ -20,11 +20,8 @@ static void * result_handler(void * args) {
 
     while (1) {
 		pthread_mutex_lock(p->mutex);
-
 			while (p->size == 0) {
-			// while (p->tasks[p->task_head] == NULL) {
 				pthread_cond_wait(p->added, p->mutex);
-				// sched_yield();
 			}
 			
 			task_p t = take_one_task(p);
@@ -91,10 +88,12 @@ void result_handler_add_task (result_handler_p p, task_p t) {
 		while (p->size == RESULT_HANDLER_QUEUE_LIMIT) {
 			pthread_cond_wait(p->took, p->mutex);
 		}
-		if (p->size == RESULT_HANDLER_QUEUE_LIMIT) {
-			printf("Result hanlder of operator %d queue has exceeded\n", p->operator_id);
+
+		if (p->size == RESULT_HANDLER_QUEUE_LIMIT-1) {
+			printf("Warning Result hanlder of operator %d queue has been full\n", p->operator_id);
 			fflush(stdout);
 		}
+
 		p->size++;
 
 		if (p->tasks[p->task_tail]) {
