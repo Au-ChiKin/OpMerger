@@ -6,7 +6,7 @@
 
 #include "task.h"
 
-#define RESULT_HANDLER_QUEUE_LIMIT 50
+#define RESULT_HANDLER_QUEUE_LIMIT 1000
 
 typedef struct result_handler * result_handler_p;
 typedef struct result_handler {
