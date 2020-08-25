@@ -50,7 +50,7 @@ char * generate_window_definition(window_p window) {
     if (window->type == RANGE_BASE) {
         _sprint("#define RANGE_BASED\n\n");
     } else {
-        _sprintf("#define COUNT_BASED\n\n", NULL);
+        _sprint("#define COUNT_BASED\n\n");
     }
     
     _sprintf("#define PANES_PER_WINDOW %dL\n", window->size / window->pane_size);
@@ -69,9 +69,9 @@ char * generate_input_tuple (schema_p schema, char const * prefix, int vector) {
         exit(1);
     }
     
-    _sprintf("typedef struct {\n", NULL);
+    _sprint("typedef struct {\n");
     /* The first attribute is always a timestamp */
-    _sprintf("    long t;\n", NULL);
+    _sprint("    long t;\n");
     for (int i = 1; i < schema->attr_num; i++) {
         switch(schema->attr[i]) {
         case TYPE_INT:   
@@ -95,17 +95,17 @@ char * generate_input_tuple (schema_p schema, char const * prefix, int vector) {
     }
     
     if (prefix == NULL) {
-        _sprintf("} input_tuple_t __attribute__((aligned(1)));\n", NULL);
+        _sprint("} input_tuple_t __attribute__((aligned(1)));\n");
     } else {
         _sprintf("} %s_input_tuple_t __attribute__((aligned(1)));\n", prefix);
     }
-    _sprintf("\n", NULL);
+    _sprint("\n");
     
-    _sprintf("typedef union {\n", NULL);
+    _sprint("typedef union {\n");
     if (prefix == NULL) {
-        _sprintf("    input_tuple_t tuple;\n", NULL);
+        _sprint("    input_tuple_t tuple;\n");
         _sprintf("    uchar%d vectors[INPUT_VECTOR_SIZE];\n", vector);
-        _sprintf("} input_t;\n", NULL);
+        _sprint("} input_t;\n");
     } else {
         char upper_prefix [MAX_PREFIX_LENGTH];
         str_to_upper(upper_prefix, prefix);
@@ -114,7 +114,7 @@ char * generate_input_tuple (schema_p schema, char const * prefix, int vector) {
         _sprintf("    uchar%d vectors[%s_INPUT_VECTOR_SIZE];\n", vector, upper_prefix);
         _sprintf("} %s_input_t;\n", prefix);
     }
-    _sprintf("\n", NULL);
+    _sprint("\n");
     
     return ret;
 }
@@ -128,11 +128,11 @@ char * generate_output_tuple (schema_p schema, char const * prefix, int vector) 
         exit(1);
     }
 		
-    _sprintf("typedef struct {\n", NULL);
+    _sprint("typedef struct {\n");
     
     if (schema->attr[0] == TYPE_LONG) {
         /* The first long attribute is assumed to be always a timestamp */
-        _sprintf("    long t;\n", NULL);
+        _sprint("    long t;\n");
         for (int i = 1; i < schema->attr_num; i++) {
             
             switch(schema->attr[i]) {
@@ -164,12 +164,12 @@ char * generate_output_tuple (schema_p schema, char const * prefix, int vector) 
         _sprintf("    uchar pad[%d];\n", schema_get_pad(schema, vector));
     }
     
-    _sprintf("} output_tuple_t __attribute__((aligned(1)));\n\n", NULL);
+    _sprint("} output_tuple_t __attribute__((aligned(1)));\n\n");
     
-    _sprintf("typedef union {\n", NULL);
-    _sprintf("    output_tuple_t tuple;\n", NULL);
-    _sprintf("    uchar%d vectors[OUTPUT_VECTOR_SIZE];\n", vector, NULL);
-    _sprintf("} output_t;\n\n", NULL);
+    _sprint("typedef union {\n");
+    _sprint("    output_tuple_t tuple;\n");
+    _sprintf("    uchar%d vectors[OUTPUT_VECTOR_SIZE];\n", vector);
+    _sprint("} output_t;\n\n");
     
     return ret;
 }
