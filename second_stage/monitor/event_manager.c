@@ -9,6 +9,28 @@ static query_event_p take_one_event(event_manager_p p);
 static void process_one_event (event_manager_p p, query_event_p e);
 static void reset_data(event_manager_p p);
 
+void event_set_insert(query_event_p event, long time) {
+    event->insert = time;
+}
+
+void event_set_create(query_event_p event, long time) {
+    event->create = time;
+}
+
+void event_set_start(query_event_p event, long time) {
+    event->start = time;
+}
+
+long event_get_mtime() {
+    static struct timespec now;
+    static long mtime;
+
+    clock_gettime(CLOCK_MONOTONIC_RAW, &now);
+    mtime = now.tv_sec * 1000000 + now.tv_nsec / 1000;
+
+    return mtime;
+}
+
 static query_event_p take_one_event(event_manager_p p) {
     query_event_p e = p->events[p->event_head];
     p->events[p->event_head] = NULL;

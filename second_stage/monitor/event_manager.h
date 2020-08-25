@@ -11,11 +11,21 @@ typedef struct query_event {
     int query_id;
     int operator_id;
 
+    long insert;
+    long create;
     long start;
     long end;
     int tuples;
     int tuple_size;
 } query_event_t;
+
+long event_get_mtime();
+
+void event_set_insert(query_event_p event, long time);
+
+void event_set_create(query_event_p event, long time);
+
+void event_set_start(query_event_p event, long time);
 
 typedef struct event_manager * event_manager_p;
 typedef struct event_manager {
