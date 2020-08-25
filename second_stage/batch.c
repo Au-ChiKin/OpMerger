@@ -2,12 +2,13 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <time.h>
 
 batch_p batch(int size, long start, u_int8_t * buffer, int buffer_size, int tuple_size) {
     batch_p batch = (batch_p) malloc(sizeof(batch_t));
 
     if (buffer_size % size != 0) {
-        fprintf(stderr, "error: Currently OpMerger does not support batch size that is not diviser of the buffer size\n");
+        fprintf(stderr, "error: does not support batch size that is not diviser of the buffer size\n");
         exit(1);
     }
     batch->size = size;
@@ -15,16 +16,25 @@ batch_p batch(int size, long start, u_int8_t * buffer, int buffer_size, int tupl
     batch->start = start;
 
     if (start + size * tuple_size > buffer_size * tuple_size) {
-        fprintf(stderr, "error: Currently OpMerger does not support batch crossing the tail of the buffer\n");
-        exit(1);
+        fprintf(stderr, "error: does not support batch crossing the tail of the buffer\n");
+
     }
     batch->end = start + size * tuple_size;
 
     batch->tuple_size = tuple_size;
 
     batch->buffer = buffer;
+    batch->buffer_size = buffer_size;
+
+    struct timespec time;
+    clock_gettime(CLOCK_MONOTONIC_RAW, &time);
+    batch->timestamp = time.tv_sec * 1000000 + time.tv_nsec / 1000;
 
     return batch;
+}
+
+void batch_reset_timestamp(batch_p batch, long time) {
+    batch->timestamp = time;
 }
 
 long batch_get_first_tuple_timestamp64(batch_p batch, int offset) {
