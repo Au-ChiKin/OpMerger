@@ -149,7 +149,7 @@ static u_int8_t * fill_buffer(result_handler_p p, batch_p data, long * time) {
 		p->accumulated = remain / tuple_size;
 		p->buffer_timestamp = data->timestamp;
 
-		memcpy(p->downstream_buffer, data->buffer + data->start, remain);
+		memcpy(p->downstream_buffer, data->buffer + data->start + to_copy, remain);
 	} else {
 		p->accumulated += data->size;
 	}
