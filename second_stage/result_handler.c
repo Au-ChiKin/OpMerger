@@ -170,7 +170,7 @@ static void process_one_task (result_handler_p p, task_p t) {
 
 		u_int8_t * data = fill_buffer(p, t->output, &time);
 
-		/* Count */
+		/* Log the end */
 		event_set_end(t->event, event_get_mtime());
 		event_manager_add_event(p->manager, t->event);
 		t->event = NULL;
@@ -216,17 +216,10 @@ static void process_one_task (result_handler_p p, task_p t) {
 				memcpy(p->output_stream->buffer, buffer_start + offset, opening_windows * tuple_size);
 			}
 
-			/* Count */
-			{			
-				query_event_p event = p->previous->event;
-				p->previous->event = NULL;
-
-				struct timespec end;
-				clock_gettime(CLOCK_MONOTONIC_RAW, &end);
-				event->end = end.tv_sec * 1000000 + end.tv_nsec / 1000;
-
-				event_manager_add_event(p->manager, event);
-			}
+			/* Log the end */
+			event_set_end(p->previous->event, event_get_mtime());
+			event_manager_add_event(p->manager, p->previous->event);
+			p->previous->event = NULL;
 
 			task_free(p->previous);
 			p->previous = t;
