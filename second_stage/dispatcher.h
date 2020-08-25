@@ -9,7 +9,7 @@
 
 #define DISPATCHER_CONCURRENT_TASK 128
 #define DISPATCHER_QUEUE_LIMIT 64
-#define DISPATCHER_INSERT_TIMEOUT 2000 // us
+#define DISPATCHER_INSERT_TIMEOUT 1000 // us
 
 typedef struct dispatcher * dispatcher_p;
 typedef struct dispatcher {
