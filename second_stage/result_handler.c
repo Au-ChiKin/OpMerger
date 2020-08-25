@@ -187,22 +187,26 @@ static void process_one_task (result_handler_p p, task_p t) {
 		if (p->previous) {
 			long current_offset = 0;
 
-			if (t->output->closing_windows) {
+			if (t->output->closing_windows > 0) {
 				/* Output opening windows of the previous with the closing windows */
 			}
 
-			if (t->output->pending_windows) {
+			if (t->output->pending_windows > 0) {
 				/* Take the remained opending windows of the previous and merge it with
 				   the pending windows to produce new opending windows */
 			}
 
-			if (t->output->complete_windows) {
+			if (t->output->complete_windows > 0) {
 				/* Output */
 				u_int8_t * buffer_start = t->output->buffer + t->output->start;
 				int tuple_size = t->output->tuple_size;
 				int complete_windows = t->output->complete_windows;
 
-				memcpy(p->output_stream->buffer, buffer_start + current_offset, complete_windows * tuple_size);
+				if (complete_windows > t->batch->size) {
+					// fprintf(stderr, "error: complete windows is %d\n", complete_windows);
+					// exit(1);
+				} else
+					memcpy(p->output_stream->buffer, buffer_start + current_offset, complete_windows * tuple_size);
 			}
 
 			if (!t->output->closing_windows && !t->output->pending_windows 

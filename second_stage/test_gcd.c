@@ -4,6 +4,7 @@
 #include "libgpu/gpu_agg.h"
 #include "tuple.h"
 
+#include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
@@ -30,6 +31,19 @@ void read_input_buffers(cbuf_handle_t cbufs [], int buffer_num, int batch_size);
 
 /* Print out n tuples for debug */
 void print_tuples(cbuf_handle_t cbufs [], int n);
+
+void renew_timestamp(int buffer_num, u_int8_t * buffers[], int batch_size) {
+    long time_step = buffer_num * batch_size;
+
+    for (int i=0; i<buffer_num; i++) {
+        input_t * t = (input_t *) buffers[i];
+        for (int j=0; j<batch_size; j++) {
+            (*t).tuple.time_stamp += time_step;
+            (*t).tuple.time_stamp %= LONG_MAX;
+            t++;
+        }
+    }
+}
 
 void run_processing_gpu(
     u_int8_t * buffers [], int buffer_size, int buffer_num,
@@ -159,6 +173,10 @@ void run_processing_gpu(
                     dispatcher_insert(dispatchers[0], buffers[b], buffer_size, event_get_mtime());
 
                     b = (b+1) % buffer_num;
+
+                    // if (b == 0) {
+                    //     renew_timestamp(buffer_num, buffers, batch_size);
+                    // }
                 }
 
             }
@@ -252,6 +270,10 @@ void run_processing_gpu(
                     dispatcher_insert(dispatchers[0], buffers[b], buffer_size, event_get_mtime());
 
                     b = (b+1) % buffer_num;
+
+                    if (b == 0) {
+                        renew_timestamp(buffer_num, buffers, batch_size);
+                    }
                 }
 
             }
@@ -443,6 +465,7 @@ int main(int argc, char * argv[]) {
     static int max_buffer_num = GCD_LINE_NUM / ((1024 * 1024) / TUPLE_SIZE); // about 8812
     u_int8_t * buffers [max_buffer_num];
     cbuf_handle_t cbufs [max_buffer_num];
+    max_buffer_num /= batch_size / ((1024 * 1024) / TUPLE_SIZE);
     /* TODO: Add a dispatcher allow dispatch tuples of size different to bath size */
     tuple_per_insert = batch_size;
 
@@ -454,7 +477,7 @@ int main(int argc, char * argv[]) {
         buffers[i] = (u_int8_t *) malloc(tuple_per_insert * TUPLE_SIZE * sizeof(u_int8_t)); // creates 8812 ByteBuffers
         cbufs[i] = circular_buf_init(buffers[i], tuple_per_insert * TUPLE_SIZE);
     }
-    read_input_buffers(cbufs, 1, tuple_per_insert);
+    read_input_buffers(cbufs, buffer_num, tuple_per_insert);
 
     print_tuples(cbufs, 32);
 
