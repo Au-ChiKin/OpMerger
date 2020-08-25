@@ -10,9 +10,15 @@
 #include "generators.h"
 
 #define MAX_LINE_LENGTH 256
-#define _sprintf(format, __VA_ARGS__...) \
+#define _sprintf(format, ...) \
 {\
     sprintf(s, format, __VA_ARGS__);\
+    strcat(ret, s);\
+}
+
+#define _sprint(format) \
+{\
+    sprintf(s, format);\
     strcat(ret, s);\
 }
 
@@ -70,10 +76,10 @@ static char * generate_initf(reduction_p reduce) {
     int aggregation_num = reduce->ref_num;
 
     /* initf */
-    _sprintf("inline void initf (output_t *p) {\n", NULL);
+    _sprint("inline void initf (output_t *p) {\n");
     
     /* Set timestamp */
-    _sprintf("    p->tuple.t = 0;\n", NULL);
+    _sprint("    p->tuple.t = 0;\n");
 
     int i;
     for (i = 0; i < aggregation_num; ++i) {
@@ -91,9 +97,9 @@ static char * generate_initf(reduction_p reduce) {
     }
     /* Set count to zero */
     _sprintf("    p->tuple._%d = 0;\n", (i + 1));
-    _sprintf("}\n", NULL);
+    _sprint("}\n");
     
-    _sprintf("\n", NULL);
+    _sprint("\n");
 
     return ret;
 }
@@ -107,18 +113,18 @@ static char * generate_reducef (reduction_p reduce, char const * patch) {
     int aggregation_num = reduce->ref_num;
 
     /* reducef */
-    _sprintf("inline void reducef (output_t *out, __global input_t *in) {\n", NULL);
+    _sprint("inline void reducef (output_t *out, __global input_t *in) {\n");
     
     /* Reserve for select */
-    _sprintf("    int flag = 1;\n\n", NULL);
+    _sprint("    int flag = 1;\n\n");
 
     /* Insert patch */
     if (patch) {
-        _sprintf(patch, NULL);
+        _sprintf("%s", patch);
     }
 
     /* Set timestamp */
-    _sprintf("    out->tuple.t = (!flag || (flag && (out->tuple.t > in->tuple.t))) ? out->tuple.t : in->tuple.t;\n", NULL);
+    _sprint("    out->tuple.t = (!flag || (flag && (out->tuple.t > in->tuple.t))) ? out->tuple.t : in->tuple.t;\n");
 
     /* Aggregation */
     for (i = 0; i < aggregation_num; ++i) {
@@ -149,9 +155,9 @@ static char * generate_reducef (reduction_p reduce, char const * patch) {
 
     /* Increase counter */
     _sprintf("    out->tuple._%d += 1 * flag;\n", (i + 1));
-    _sprintf("}\n", NULL);
+    _sprint("}\n");
     
-    _sprintf("\n", NULL);
+    _sprint("\n");
 
     return ret;
 }
@@ -164,15 +170,15 @@ static char * generate_cachef(reduction_p reduce) {
     int numberOfVectors = 1;
 
     /* cachef */
-    _sprintf("inline void cachef (output_t * tuple, __local output_t * cache) {\n", NULL);
+    _sprint("inline void cachef (output_t * tuple, __local output_t * cache) {\n");
     
     for (int i = 0; i < numberOfVectors; i++) {
         _sprintf("    cache->vectors[%d] = tuple->vectors[%d];\n", i, i);
     }
     
-    _sprintf("}\n", NULL);
+    _sprint("}\n");
     
-    _sprintf("\n", NULL);
+    _sprint("\n");
 
     return ret;
 }
@@ -185,12 +191,12 @@ static char * generate_mergef(reduction_p reduce) {
     int aggregation_num = reduce->ref_num;
 
     /* mergef */
-    _sprintf("inline void mergef (__local output_t * mine, __local output_t * other) {\n", NULL);
+    _sprint("inline void mergef (__local output_t * mine, __local output_t * other) {\n");
 
     /* Always pick the largest timestamp as the new timestamp */
-    _sprintf("   if (mine->tuple.t < other->tuple.t) {\n", NULL);
-    _sprintf("        mine->tuple.t = other->tuple.t;\n", NULL);
-    _sprintf("    }\n", NULL);
+    _sprint("   if (mine->tuple.t < other->tuple.t) {\n");
+    _sprint("        mine->tuple.t = other->tuple.t;\n");
+    _sprint("    }\n");
     
     int i;
     for (i = 0; i < aggregation_num; ++i) {
@@ -215,9 +221,9 @@ static char * generate_mergef(reduction_p reduce) {
         }
     }
     _sprintf("    mine->tuple._%d += other->tuple._%d;\n", (i + 1), (i + 1));
-    _sprintf("}\n", NULL);
+    _sprint("}\n");
     
-    _sprintf("\n", NULL);
+    _sprint("\n");
 
     return ret;
 }
@@ -231,7 +237,7 @@ static char * generate_copyf(reduction_p reduce, int vector) {
     int numberOfVectors = (reduce->output_schema->size + schema_get_pad(reduce->output_schema, vector)) / vector;
 
     /* copyf */
-    _sprintf("inline void copyf (__local output_t *p, __global output_t *q) {\n", NULL);
+    _sprint("inline void copyf (__local output_t *p, __global output_t *q) {\n");
     
     /* Compute average */
     bool containsAverage = false;
@@ -256,9 +262,9 @@ static char * generate_copyf(reduction_p reduce, int vector) {
         _sprintf("    q->vectors[%d] = p->vectors[%d];\n", i, i);
     }
     
-    _sprintf("}\n", NULL);
+    _sprint("}\n");
     
-    _sprintf("\n", NULL);
+    _sprint("\n");
 
     return ret;
 }
