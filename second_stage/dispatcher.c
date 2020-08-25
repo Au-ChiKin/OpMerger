@@ -48,7 +48,7 @@ dispatcher_p dispatcher_init(scheduler_p scheduler, query_p query, int oid, even
     p->query = query;
     p->operator_id = oid;
 
-    p->handler = result_handler_init(event_manager, query->batch_size);
+    p->handler = result_handler_init(event_manager, query, oid);
 
     p->start = 0;
 
@@ -85,15 +85,19 @@ void dispatcher_insert(dispatcher_p p, u_int8_t * data, int len) {
     batch_p new_batch = batch(p->query->batch_size, 0, data, p->query->batch_size, 64);
 
 	pthread_mutex_lock(p->mutex);
-		while (p->size == DISPATCHER_QUEUE_LIMIT) {
-		// if (p->size == DISPATCHER_QUEUE_LIMIT) {
-		// 	struct timespec time_to_wait;
-    	// 	time_to_wait.tv_sec = 0;
-		// 	time_to_wait.tv_nsec = DISPATCHER_INSERT_TIMEOUT * 1000;
+		// while (p->size == DISPATCHER_QUEUE_LIMIT) {
+		if (p->size == DISPATCHER_QUEUE_LIMIT) {
+			struct timespec time_to_wait;
+    		time_to_wait.tv_sec = 0;
+			time_to_wait.tv_nsec = DISPATCHER_INSERT_TIMEOUT * 1000;
 
-			// pthread_cond_timedwait(p->took, p->mutex, &time_to_wait);
-			pthread_cond_wait(p->took, p->mutex);
+			pthread_cond_timedwait(p->took, p->mutex, &time_to_wait);
+			// pthread_cond_wait(p->took, p->mutex);
 		}
+		if (p->size == DISPATCHER_QUEUE_LIMIT) {
+			printf("Dispatcher queue of operator %d has exceeded\n", p->operator_id);
+			fflush(stdout);
+		}		
 		p->size++;
     
         assemble(p, new_batch, len);

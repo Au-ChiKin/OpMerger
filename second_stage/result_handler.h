@@ -17,6 +17,8 @@ typedef struct result_handler {
     volatile unsigned start;
 
     int batch_size;
+    query_p query;
+    int operator_id;
 
     volatile int size;
     volatile int task_head;
@@ -34,7 +36,7 @@ typedef struct result_handler {
     event_manager_p manager;
 } result_handler_t;
 
-result_handler_p result_handler_init(event_manager_p event_manager, int batch_size);
+result_handler_p result_handler_init(event_manager_p event_manager, query_p query, int operator_id);
 
 void result_handler_add_task (result_handler_p p, task_p t);
 

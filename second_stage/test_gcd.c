@@ -154,6 +154,8 @@ void run_processing_gpu(
 
                 int b=0;
                 while (1) {
+                    // usleep(250);
+
                     dispatcher_insert(dispatchers[0], buffers[b], buffer_size);
 
                     b = (b+1) % buffer_num;
@@ -411,7 +413,7 @@ int main(int argc, char * argv[]) {
     /* Arguments */
     bool is_merging = false;
     bool is_debug = false;
-    int work_load = 32; // default to be 32MB
+    int work_load = 64; // default to be 64MB
     int batch_size = 32; // default to be 32MB per batch
     int buffer_num = 1;
     int pipeline_num = 1;

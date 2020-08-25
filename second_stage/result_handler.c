@@ -39,7 +39,7 @@ static void * result_handler(void * args) {
 	return (args) ? NULL : args;
 }
 
-result_handler_p result_handler_init(event_manager_p event_manager, int batch_size) {
+result_handler_p result_handler_init(event_manager_p event_manager, query_p query, int operator_id) {
 
 	result_handler_p p = (result_handler_p) malloc (sizeof(result_handler_t));
 	if (! p) {
@@ -58,6 +58,10 @@ result_handler_p result_handler_init(event_manager_p event_manager, int batch_si
 	p->added = (pthread_cond_t *) malloc (sizeof(pthread_cond_t));
 	pthread_cond_init (p->added, NULL);
 
+	p->query = query;
+	p->batch_size = query->batch_size;
+	p->operator_id = operator_id;
+
     p->task_head = 0;
     p->task_tail = 0;
 	p->size = 0;
@@ -65,7 +69,6 @@ result_handler_p result_handler_init(event_manager_p event_manager, int batch_si
         p->tasks[i] = NULL;
     }
 
-	p->batch_size = batch_size;
 	reset_buffer(p);
 
 	p->previous = NULL;
@@ -85,14 +88,18 @@ result_handler_p result_handler_init(event_manager_p event_manager, int batch_si
 
 void result_handler_add_task (result_handler_p p, task_p t) {
 	pthread_mutex_lock(p->mutex);
-		while (p->size == RESULT_HANDLER_QUEUE_LIMIT) {
-		// if (p->size == RESULT_HANDLER_QUEUE_LIMIT) {
-		// 	struct timespec time_to_wait;
-    	// 	time_to_wait.tv_sec = 0;
-		// 	time_to_wait.tv_nsec = 100 * 1000;
+		// while (p->size == RESULT_HANDLER_QUEUE_LIMIT) {
+		if (p->size == RESULT_HANDLER_QUEUE_LIMIT) {
+			struct timespec time_to_wait;
+    		time_to_wait.tv_sec = 0;
+			time_to_wait.tv_nsec = 100 * 1000;
 
-			// pthread_cond_timedwait(p->took, p->mutex, &time_to_wait);
-			pthread_cond_wait(p->took, p->mutex);
+			pthread_cond_timedwait(p->took, p->mutex, &time_to_wait);
+			// pthread_cond_wait(p->took, p->mutex);
+		}
+		if (p->size == RESULT_HANDLER_QUEUE_LIMIT) {
+			printf("Result hanlder of operator %d queue has exceeded\n", p->operator_id);
+			fflush(stdout);
 		}
 		p->size++;
 
