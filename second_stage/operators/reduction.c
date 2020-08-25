@@ -24,6 +24,12 @@
 
 static int free_id = 0;
 
+int reduction_get_output_schema_size(void * reduce_ptr) {
+    reduction_p reduce = (reduction_p) reduce_ptr;
+
+    return reduce->output_schema->size;
+}
+
 reduction_p reduction(schema_p input_schema, 
     int ref_num, int const columns[], enum aggregation_types const expressions[]) {
 
@@ -34,7 +40,7 @@ reduction_p reduction(schema_p input_schema,
         p->operator->reset = (void *) reduction_reset;
         p->operator->process = (void *) reduction_process;
         p->operator->process_output = (void *) reduction_process_output;
-        p->operator->print = (void *) reduction_print_output;
+        p->operator->get_output_schema_size = (void *) reduction_get_output_schema_size;
 
         p->operator->type = OPERATOR_REDUCE;
 

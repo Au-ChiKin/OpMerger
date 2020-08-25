@@ -23,7 +23,7 @@ typedef struct opmerger_operator {
     void (* process_output) (void * operator, batch_p output);
     void (* reset) (void * operator, int new_batch_size);
     void (* generate_patch) (void * operator, char * patch);
-    void (* print) ();
+    int (* get_output_schema_size) (void * operator);
 
     enum operator_types type;
 

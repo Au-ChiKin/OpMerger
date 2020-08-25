@@ -28,7 +28,6 @@ aggregation_p aggregation(schema_p input_schema,
         p->operator->setup = (void *) aggregation_setup;
         // p->operator->reset = (void *) aggregation_reset;
         p->operator->process = (void *) aggregation_process;
-        p->operator->print = (void *) aggregation_print_output;
 
         p->operator->type = OPERATOR_AGGREGATE;
 

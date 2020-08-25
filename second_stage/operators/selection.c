@@ -54,6 +54,12 @@ void ref_value_free(ref_value_p value) {
     }
 } 
 
+int selection_get_output_schema_size(void * select_ptr) {
+    selection_p select = (selection_p) select_ptr;
+
+    return select->output_schema->size;
+}
+
 selection_p selection(
     schema_p input_schema, 
     int ref, ref_value_p value,
@@ -67,7 +73,7 @@ selection_p selection(
         p->operator->process_output = selection_process_output;
         p->operator->reset = selection_reset;
         p->operator->generate_patch = selection_generate_patch;
-        p->operator->print = selection_print_output;
+        p->operator->get_output_schema_size = selection_get_output_schema_size;
 
         p->operator->type = OPERATOR_SELECT;
 
