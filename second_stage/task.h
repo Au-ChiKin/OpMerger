@@ -21,6 +21,8 @@ typedef struct task {
 
     query_event_p event;
     event_manager_p manager;
+
+    long create_time;
 } task_t;
 
 task_p task(query_p query, int oid, batch_p batch, void * dispatcher, event_manager_p manager);

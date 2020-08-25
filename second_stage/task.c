@@ -23,18 +23,7 @@ task_p task(query_p query, int oid, batch_p batch, void * dispatcher, event_mana
     task->output = NULL;
 
     task->manager = manager;
-    task->event = (query_event_p) malloc(sizeof(query_event_t));
-    {
-        task->event->query_id = query->id;
-        task->event->operator_id = task->oid;
-
-        task->event->tuples = query->batch_size;
-
-        int tuple_size = 64;
-        task->event->tuple_size = tuple_size;
-    }
-    event_set_insert(task->event, batch->timestamp);
-    event_set_create(task->event, event_get_mtime());
+    task->create_time = event_get_mtime();
 
     return task;
 }
@@ -44,22 +33,27 @@ void task_run(task_p t) {
     query_p query = t->query;
     int tuple_size = 64;
 
+
+    t->event = (query_event_p) malloc(sizeof(query_event_t));
+    {
+        t->event->query_id = query->id;
+        t->event->operator_id = t->oid;
+
+        t->event->tuples = query->batch_size;
+
+        int tuple_size = 64;
+        t->event->tuple_size = tuple_size;
+    }
+    event_set_insert(t->event, t->batch->timestamp);
+    event_set_create(t->event, t->create_time);
+
     /* Log start time and create the event */
     struct timespec start;
     clock_gettime(CLOCK_MONOTONIC_RAW, &start);
-
-    // query_event_p event = (query_event_p) malloc(sizeof(query_event_t));
     query_event_p event = t->event;
     {
-        event->query_id = query->id;
-        event->operator_id = t->oid;
-
         event->start = start.tv_sec * 1000000 + start.tv_nsec / 1000;
-        event->tuples = query->batch_size;
-        event->tuple_size = tuple_size;
     }
-
-    t->event = event;
 
     u_int8_t * buffer = (u_int8_t *) malloc(1.1 * query->batch_size * tuple_size);
     t->output = batch(1.1 * query->batch_size, 0, buffer, 1.1 * query->batch_size, tuple_size);
