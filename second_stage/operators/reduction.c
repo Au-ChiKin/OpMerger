@@ -27,6 +27,7 @@ reduction_p reduction(schema_p input_schema,
         p->operator->setup = (void *) reduction_setup;
         p->operator->reset = (void *) reduction_reset;
         p->operator->process = (void *) reduction_process;
+        p->operator->process_output = (void *) reduction_process_output;
         p->operator->print = (void *) reduction_print_output;
 
         p->operator->type = OPERATOR_REDUCE;
@@ -117,7 +118,7 @@ static char * generate_reducef (reduction_p reduce, char const * patch) {
     }
 
     /* Set timestamp */
-    _sprintf("    out->tuple.t = (!flag || (flag && out->tuple.t > in->tuple.t)) ? out->tuple.t : in->tuple.t;\n", NULL);
+    _sprintf("    out->tuple.t = (!flag || (flag && (out->tuple.t > in->tuple.t))) ? out->tuple.t : in->tuple.t;\n", NULL);
 
     /* Aggregation */
     for (i = 0; i < aggregation_num; ++i) {
@@ -133,15 +134,15 @@ static char * generate_reducef (reduction_p reduce, char const * patch) {
             _sprintf("    out->tuple._%d += in->tuple._%d * flag;\n", (i + 1), column); 
             break;
         case MIN:
-            _sprintf("    out->tuple._%d = (flag && out->tuple._%d > in->tuple._%d) ? in->tuple._%d : out->tuple._%d;\n",
+            _sprintf("    out->tuple._%d = (flag && (out->tuple._%d > in->tuple._%d)) ? in->tuple._%d : out->tuple._%d;\n",
                     (i + 1), (i + 1), column, column, (i + 1));
             break;
         case MAX:
-            _sprintf("    out->tuple._%d = (flag && out->tuple._%d < in->tuple._%d) ? in->tuple._%d : out->tuple._%d;\n", 
+            _sprintf("    out->tuple._%d = (flag && (out->tuple._%d < in->tuple._%d)) ? in->tuple._%d : out->tuple._%d;\n",
                     (i + 1), (i + 1), column, column, (i + 1));
             break;
         default:
-        //     throw new IllegalArgumentException("error: invalid aggregation type");
+            fprintf(stderr, "error: invalid aggregation type\n");
             break;
         }
     }
@@ -414,7 +415,7 @@ void reduction_process(void * reduce_ptr, batch_p batch, window_p window, batch_
         if (batch->start > 0) {
             if (window->type == RANGE_BASE) {
                 int offset = s - t;
-                args2[0] = batch_get_timestamp(batch, offset) / p;
+                args2[0] = batch_get_first_tuple_timestamp64(batch, offset) / p;
             } else {
                 args2[0] = ((s / (long) t) / p) - 1;
             }
@@ -465,8 +466,13 @@ void reduction_print_output(batch_p outputs, int batch_size, int tuple_size) {
 
     /* print */
     printf("[Results] Required Output buffer size is %d\n", current_offset);
-    printf("[Results] Closing Windows: %d    Pending Windows: %d    Complete Windows: %d    Opening Windows: %d    Mark: %d\n",
-        window_counts[0], window_counts[1], window_counts[2], window_counts[3], window_counts[4]);
+
+    printf("[Results] Closing Windows: %d    ", window_counts[0]);
+    printf(          "Pending Windows: %d    ", window_counts[1]);
+    printf(         "Complete Windows: %d    ", window_counts[2]);
+    printf(          "Opening Windows: %d    ", window_counts[3]);
+    printf(     "Output Buffer Position: %d\n", window_counts[4]);
+
     printf("[Results] Tuple    Timestamp    Sum        Count\n");
 
     int out_num = 100;
@@ -480,7 +486,70 @@ void reduction_print_output(batch_p outputs, int batch_size, int tuple_size) {
 }
 
 void reduction_process_output(void * reduce_ptr, batch_p outputs) {
-    /* Stud, reduction is a pipeline breaker so it does not need to pass any output to another operator in this attempt */
+    reduction_p reduce = (reduction_p) reduce_ptr;
+
+    int current_offset = 0;
+    int tuple_size = reduce->output_schema->size;
+    int batch_size = outputs->size;
+
+    /* Deserialise output buffer */
+    int window_counts_size = 20; /* 4 integers, +1 that is the mark */
+    int * window_counts = (int *) (outputs->buffer + current_offset);
+    current_offset += window_counts_size;
+    
+    outputs->closing_windows = window_counts[0];
+    outputs->pending_windows = window_counts[1];
+    outputs->complete_windows = window_counts[2];
+    outputs->opening_windows = window_counts[3];
+
+    /* Keep only the windows */
+    outputs->start += current_offset;
+
+    // typedef struct {
+    //     long t; /* timestamp */
+    //     float _1; /* sum */
+    //     int _2; /* count */
+    // } output_tuple_t;
+
+    // int output_size = batch_size * tuple_size; /* SystemConf.UNBOUNDED_BUFFER_SIZE */
+    // output_tuple_t * output = (output_tuple_t *) (outputs->buffer + current_offset);
+    // current_offset += output_size;
+
+    // outputs->closing_windows = (u_int8_t *) malloc(window_counts[0] * tuple_size * sizeof(u_int8_t));
+    // memcpy(outputs->closing_windows, output, window_counts[0] * tuple_size);
+    // output += window_counts[0] * tuple_size;
+
+    // outputs->pending_windows = (u_int8_t *) malloc(window_counts[1] * tuple_size * sizeof(u_int8_t));
+    // memcpy(outputs->pending_windows, output, window_counts[1] * tuple_size);
+    // output += window_counts[1] * tuple_size;
+
+    // outputs->complete_windows = (u_int8_t *) malloc(window_counts[2] * tuple_size * sizeof(u_int8_t));
+    // memcpy(outputs->complete_windows, output, window_counts[2] * tuple_size);
+    // output += window_counts[2] * tuple_size;
+
+    // outputs->opening_windows = (u_int8_t *) malloc(window_counts[3] * tuple_size * sizeof(u_int8_t));
+    // memcpy(outputs->opening_windows, output, window_counts[3] * tuple_size);
+    // output += window_counts[3] * tuple_size;
+
+    /* Print for debug */
+    // printf("[Results] Required Output buffer size is %d\n", current_offset);
+
+    // printf("[Results] Closing Windows: %d    ", window_counts[0]);
+    // printf(          "Pending Windows: %d    ", window_counts[1]);
+    // printf(         "Complete Windows: %d    ", window_counts[2]);
+    // printf(          "Opening Windows: %d    ", window_counts[3]);
+    // printf(     "Output Buffer Position: %d\n", window_counts[4]);
+
+    // {
+    //     int out_num = 100;
+    //     if (out_num > window_counts[4] / 16) {
+    //         out_num = window_counts[4] / 16;
+    //     }
+    //     for (int i=0; i<out_num; i++) {
+    //         printf("[Results] %-8d %-12ld %09.5f  %d\n", i, output->t, output->_1, output->_2);
+    //         output += 1;
+    //     }
+    // }
 }
 
 void reduction_reset(void * reduce_ptr, int new_batch_size) {

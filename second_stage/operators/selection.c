@@ -442,21 +442,6 @@ void selection_print_output(selection_p select, batch_p outputs) {
 void selection_process_output (void * select_ptr, batch_p outputs) {
     // printf("[SELECTION] Processing output\n");
 
-    typedef struct {
-        long t;
-        long _1;
-        long _2;
-        long _3;
-        int _4;
-        int _5;
-        int _6;
-        int _7;
-        float _8;
-        float _9;
-        float _10;
-        int _11;
-    } output_tuple_t __attribute__((aligned(1)));
-
     selection_p select = (selection_p) select_ptr;
 
     int work_group_num = select->threads[0] / select->threads_per_group[0];
@@ -471,24 +456,5 @@ void selection_process_output (void * select_ptr, batch_p outputs) {
 
     /* Update pointers to use only the output array (tuples) and exclude flags and partitions */
     outputs->start += select->output_entries[2];
-
-    // printf("Before: count = %d\n", count);
-    int new_count = (int) powf(2, (int) log2f(count) + 1);
-    if (new_count > select->batch_size) {
-        new_count = (int) powf(2, (int) log2f(count));
-    }
-    for (int i= count; i < new_count; i++) {
-        output_tuple_t * p = (output_tuple_t *) (outputs->buffer + outputs->start ) + i;
-        p->t = -1;
-    }
-    count = new_count;
-    // printf("After: count = %d\n", count);
-
-    if (count >= 256) {
-        outputs->size = count / 256 * 256;
-    } else if (count > 128) {
-        outputs->size = 128;
-    } else if (count > 64) {
-        outputs->size = 64;
-    }
+    outputs->size = count;
 }
