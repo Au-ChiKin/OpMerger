@@ -7,9 +7,9 @@
 #include "scheduler/scheduler.h"
 #include "result_handler.h"
 
-#define DISPATCHER_CONCURRENT_TASK 128
-#define DISPATCHER_QUEUE_LIMIT 64
-#define DISPATCHER_INSERT_TIMEOUT 1000 // us
+#define DISPATCHER_CONCURRENT_TASK 32
+#define DISPATCHER_QUEUE_LIMIT 32
+#define DISPATCHER_INSERT_TIMEOUT 250 // us
 
 typedef struct dispatcher * dispatcher_p;
 typedef struct dispatcher {

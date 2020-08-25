@@ -18,9 +18,16 @@ static void * result_handler(void * args) {
 	/* Unblocks the thread (which runs result_handler_init) waiting for this thread to start */
 	p->start = 1;
 
+	static int warned = 0;
     while (1) {
 		pthread_mutex_lock(p->mutex);
 			while (p->size == 0) {
+				if (!warned) {
+					printf("Warning: The scheduler queue has been starved\n");
+					fflush(stdout);
+
+					warned = 1;
+				}
 				pthread_cond_wait(p->added, p->mutex);
 			}
 			

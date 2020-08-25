@@ -20,9 +20,17 @@ static void * scheduler(void * args) {
 
     while (1) {
         pthread_mutex_lock (p->mutex);
+			static int warned = 0;
             while (p->queue_head == p->queue_tail) {
+				if (!warned) {
+					printf("Warning: The scheduler queue has been starved\n");
+					fflush(stdout);
+
+					warned = 1;
+				}
                 pthread_cond_wait(p->added, p->mutex);
             }
+			warned = 0;
 
 			task_p t = take_one_task(p);
         pthread_mutex_unlock (p->mutex);

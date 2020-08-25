@@ -9,7 +9,7 @@
 
 #define SCHEDULER_MAX_PIPELINE_DEPTH 4
 // Warning! Should be much larger than the allowed sum of concurrent tasks of all pipelines
-#define SCHEDULER_QUEUE_LIMIT 1024
+#define SCHEDULER_QUEUE_LIMIT 128
 
 typedef struct scheduler * scheduler_p;
 typedef struct scheduler {
