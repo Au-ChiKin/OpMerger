@@ -172,11 +172,12 @@ static void process_one_task (result_handler_p p, task_p t) {
 
 		/* Log the end */
 		task_end(t);
-		task_free(t);
 
 		if (data) {
 			dispatcher_insert((dispatcher_p) p->downstream, data, p->batch_size, time);
-		}		
+		}
+
+		task_free(t);
 	} else {
 
 		/* Assuming only tumbling windows*/
