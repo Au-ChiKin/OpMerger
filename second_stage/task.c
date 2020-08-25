@@ -51,6 +51,8 @@ void task_run(task_p t) {
     /* Log start time and create the event */
     event_set_start(t->event, event_get_mtime());
 
+    // int output_tuple_size = (* t->query->callbacks[t->oid]->get_output_schema_size) (t->query->operators[t->oid]);
+
     u_int8_t * buffer = (u_int8_t *) malloc(1.1 * query->batch_size * tuple_size);
     t->output = batch(1.1 * query->batch_size, 0, buffer, 1.1 * query->batch_size, tuple_size);
 
@@ -58,6 +60,8 @@ void task_run(task_p t) {
 }
 
 void task_end(task_p t) {
+    dispatcher_close_one_task((dispatcher_p) t->dispatcher);
+
     event_set_end(t->event, event_get_mtime());
     event_manager_add_event(t->manager, t->event);
     t->event = NULL;

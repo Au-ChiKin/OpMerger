@@ -26,11 +26,11 @@ static void * scheduler(void * args) {
 					printf("Warning: The scheduler queue has been starved\n");
 					fflush(stdout);
 
-					warned = 1;
+					warned = 10;
 				}
                 pthread_cond_wait(p->added, p->mutex);
             }
-			warned = 0;
+			warned--;
 
 			task_p t = take_one_task(p);
 			
@@ -125,8 +125,6 @@ static void process_one_task (scheduler_p p, task_p t) {
     if (processed != NULL) {
 		result_handler_p handler = dispatcher_get_handler((dispatcher_p) processed->dispatcher);
 		result_handler_add_task(handler, processed);
-
-		dispatcher_close_one_task((dispatcher_p) processed->dispatcher);
     }
 }
 
