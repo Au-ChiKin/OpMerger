@@ -10,9 +10,15 @@
 #include "generators.h"
 #include "helpers.h"
 
-#define _sprintf(format, __VA_ARGS__...) \
+#define _sprintf(format, ...) \
 {\
     sprintf(s, format, __VA_ARGS__);\
+    strcat(ret, s);\
+}
+
+#define _sprint(format) \
+{\
+    sprintf(s, format);\
     strcat(ret, s);\
 }
 
@@ -107,29 +113,29 @@ void selection_generate_patch(void * select_ptr, char * patch) {
         
         /* Conditions */
         {
-            _sprintf("    flag = flag & ", NULL);
+            _sprint("    flag = flag & ");
 
             _sprintf("(attr_%d ", select->id);
 
             switch (select->com)
             {
             case GREATER:
-                _sprintf(">", NULL);
+                _sprint(">");
                 break;
             case EQUAL:
-                _sprintf("==", NULL);
+                _sprint("==");
                 break;
             case LESS:
-                _sprintf("<", NULL);
+                _sprint("<");
                 break;
             case GREATER_EQUAL:
-                _sprintf(">=", NULL);
+                _sprint(">=");
                 break;
             case LESS_EQUAL:
-                _sprintf("<=", NULL);
+                _sprint("<=");
                 break;
             case UNEQUAL:
-                _sprintf("!=", NULL);
+                _sprint("!=");
                 break;
             default:
                 break;
@@ -148,14 +154,14 @@ void selection_generate_patch(void * select_ptr, char * patch) {
             }
 
             if (i == predicate_num - 1) {
-                _sprintf(";\n", NULL);
+                _sprint(";\n");
             } else {
-                _sprintf(" & ", NULL);
+                _sprint(" & ");
             }
         }
     }
 
-    _sprintf("\n", NULL);
+    _sprint("\n");
     
 }
 
@@ -166,11 +172,11 @@ static char * generate_selectf(selection_p select, char const * patch) {
     /* TODO: support multiple predicates */
     int const predicate_num = 1;
 
-    _sprintf("inline int selectf (__global input_t *in) {\n", NULL);
-    _sprintf("    int flag = 1;\n\n", NULL);
+    _sprint("inline int selectf (__global input_t *in) {\n");
+    _sprint("    int flag = 1;\n\n");
 
     if (patch) {
-        _sprintf(patch, NULL);
+        _sprintf("%s", patch);
     }
 
     for (int i = 0; i < predicate_num; i++) {
@@ -189,29 +195,29 @@ static char * generate_selectf(selection_p select, char const * patch) {
         
         /* Conditions */
         {
-            _sprintf("    flag = flag & ", NULL);
+            _sprint("    flag = flag & ");
 
             _sprintf("(attr_%d ", select->id);
 
             switch (select->com)
             {
             case GREATER:
-                _sprintf(">", NULL);
+                _sprint(">");
                 break;
             case EQUAL:
-                _sprintf("==", NULL);
+                _sprint("==");
                 break;
             case LESS:
-                _sprintf("<", NULL);
+                _sprint("<");
                 break;
             case GREATER_EQUAL:
-                _sprintf(">=", NULL);
+                _sprint(">=");
                 break;
             case LESS_EQUAL:
-                _sprintf("<=", NULL);
+                _sprint("<=");
                 break;
             case UNEQUAL:
-                _sprintf("!=", NULL);
+                _sprint("!=");
                 break;
             default:
                 break;
@@ -230,15 +236,15 @@ static char * generate_selectf(selection_p select, char const * patch) {
             }
 
             if (i == predicate_num - 1) {
-                _sprintf(";\n\n", NULL);
+                _sprint(";\n\n");
             } else {
-                _sprintf(" & ", NULL);
+                _sprint(" & ");
             }
         }
     }
-    _sprintf("    return flag;\n", NULL);
+    _sprint("    return flag;\n");
 
-    _sprintf("}\n\n", NULL);
+    _sprint("}\n\n");
 
     return ret;    
 }
@@ -413,7 +419,7 @@ void selection_print_output(selection_p select, batch_p outputs) {
     } output_tuple_t __attribute__((aligned(1)));
 
     /* Deserialise output buffer */
-    int * flags = (int *) (outputs->buffer + outputs->start + select->output_entries[0]);
+    // int * flags = (int *) (outputs->buffer + outputs->start + select->output_entries[0]);
 
     int * partitions = (int *) (outputs->buffer + outputs->start + select->output_entries[1]);
 
