@@ -8,8 +8,8 @@
 #include "result_handler.h"
 
 #define DISPATCHER_CONCURRENT_TASK 1024
-#define DISPATCHER_QUEUE_LIMIT 32
-#define DISPATCHER_INSERT_TIMEOUT 250 // us
+#define DISPATCHER_QUEUE_LIMIT 1024
+#define DISPATCHER_INSERT_TIMEOUT 10 // us
 
 typedef struct dispatcher * dispatcher_p;
 typedef struct dispatcher {
