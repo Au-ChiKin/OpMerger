@@ -22,6 +22,8 @@ task_p task(query_p query, int oid, batch_p batch, void * dispatcher) {
 
     task->output = NULL;
 
+    task->event = (query_event_p) malloc(sizeof(query_event_t));
+
     return task;
 }
 
@@ -34,7 +36,7 @@ void task_run(task_p t) {
     struct timespec start;
     clock_gettime(CLOCK_MONOTONIC_RAW, &start);
 
-    query_event_p event = (query_event_p) malloc(sizeof(query_event_t));
+    query_event_p event = t->event;
     {
         event->query_id = query->id;
         event->operator_id = t->oid;
@@ -43,8 +45,6 @@ void task_run(task_p t) {
         event->tuples = query->batch_size;
         event->tuple_size = tuple_size;
     }
-
-    t->event = event;
 
     u_int8_t * buffer = (u_int8_t *) malloc(1.1 * query->batch_size * tuple_size);
     t->output = batch(1.1 * query->batch_size, 0, buffer, 1.1 * query->batch_size, tuple_size);
