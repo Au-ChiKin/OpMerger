@@ -103,6 +103,10 @@ void result_handler_add_task (result_handler_p p, task_p t) {
 		}
 		p->size++;
 
+		if (p->tasks[p->task_tail]) {
+			task_free(p->tasks[p->task_tail]);
+		}
+
 		p->tasks[p->task_tail] = t;
 		p->task_tail = (p->task_tail + 1) % RESULT_HANDLER_QUEUE_LIMIT;
 	pthread_mutex_unlock(p->mutex);
