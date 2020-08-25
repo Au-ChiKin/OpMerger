@@ -140,6 +140,10 @@ static void send_one_task(dispatcher_p p, task_p t) {
 static void create_task(dispatcher_p p, batch_p batch) {
     task_p new_task = task(p->query, p->operator_id, batch, (void *)p, p->manager);
 
+	if (p->tasks[p->task_tail]) {
+		task_free(p->tasks[p->task_tail]);
+	}
+
     p->tasks[p->task_tail] = new_task;
     p->task_tail = (p->task_tail + 1) % DISPATCHER_QUEUE_LIMIT;
 }

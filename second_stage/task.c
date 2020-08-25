@@ -33,7 +33,6 @@ void task_run(task_p t) {
     query_p query = t->query;
     int tuple_size = 64;
 
-
     t->event = (query_event_p) malloc(sizeof(query_event_t));
     {
         t->event->query_id = query->id;
@@ -48,12 +47,7 @@ void task_run(task_p t) {
     event_set_create(t->event, t->create_time);
 
     /* Log start time and create the event */
-    struct timespec start;
-    clock_gettime(CLOCK_MONOTONIC_RAW, &start);
-    query_event_p event = t->event;
-    {
-        event->start = start.tv_sec * 1000000 + start.tv_nsec / 1000;
-    }
+    event_set_start(t->event, event_get_mtime());
 
     u_int8_t * buffer = (u_int8_t *) malloc(1.1 * query->batch_size * tuple_size);
     t->output = batch(1.1 * query->batch_size, 0, buffer, 1.1 * query->batch_size, tuple_size);
@@ -87,6 +81,8 @@ void task_free(task_p t) {
     } else {
         batch_free(t->batch);
     }
-    batch_free_all(t->output);
+    if (t->output) {
+        batch_free_all(t->output);
+    }
     free(t);
 }
