@@ -9,7 +9,8 @@
 static pthread_t thr = NULL;
 
 static task_p scheduler_collect_task(scheduler_p p, task_p task);
-static void process_one_task (scheduler_p m);
+static void process_one_task (scheduler_p m, task_p t);
+static task_p take_one_task(scheduler_p p);
 
 static void * scheduler(void * args) {
 	scheduler_p p = (scheduler_p) args;
@@ -23,10 +24,11 @@ static void * scheduler(void * args) {
                 pthread_cond_wait(p->added, p->mutex);
             }
 
-			process_one_task(p);
+			task_p t = take_one_task(p);
         pthread_mutex_unlock (p->mutex);
-
 		pthread_cond_signal(p->took);
+
+		process_one_task(p, t);
     }
 
 	return (args) ? NULL : args;
@@ -103,15 +105,9 @@ static task_p scheduler_collect_task(scheduler_p p, task_p task) {
 	return ret;
 }
 
-static void process_one_task (scheduler_p p) {
+static void process_one_task (scheduler_p p, task_p t) {
     /* Run the head task */
-    task_p t = p->queue[p->queue_head];
-
 	task_run(t);
-
-	p->queue_size--;
-	p->queue[p->queue_head] = NULL;
-    p->queue_head = (p->queue_head + 1) % SCHEDULER_QUEUE_LIMIT;
 
     /* Handle task popping out from the pipeline */
 	task_p processed = scheduler_collect_task(p, t);
@@ -120,5 +116,17 @@ static void process_one_task (scheduler_p p) {
     if (processed != NULL) {
 		result_handler_p handler = dispatcher_get_handler((dispatcher_p) processed->dispatcher);
 		result_handler_add_task(handler, processed);
+
+		dispatcher_close_one_task((dispatcher_p) processed->dispatcher);
     }
+}
+
+static task_p take_one_task(scheduler_p p) {
+    task_p t = p->queue[p->queue_head];
+	p->queue[p->queue_head] = NULL;
+
+	p->queue_size--;
+    p->queue_head = (p->queue_head + 1) % SCHEDULER_QUEUE_LIMIT;
+
+	return t;
 }

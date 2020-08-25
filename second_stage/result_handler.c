@@ -88,14 +88,8 @@ result_handler_p result_handler_init(event_manager_p event_manager, query_p quer
 
 void result_handler_add_task (result_handler_p p, task_p t) {
 	pthread_mutex_lock(p->mutex);
-		// while (p->size == RESULT_HANDLER_QUEUE_LIMIT) {
-		if (p->size == RESULT_HANDLER_QUEUE_LIMIT) {
-			struct timespec time_to_wait;
-    		time_to_wait.tv_sec = 0;
-			time_to_wait.tv_nsec = 100 * 1000;
-
-			pthread_cond_timedwait(p->took, p->mutex, &time_to_wait);
-			// pthread_cond_wait(p->took, p->mutex);
+		while (p->size == RESULT_HANDLER_QUEUE_LIMIT) {
+			pthread_cond_wait(p->took, p->mutex);
 		}
 		if (p->size == RESULT_HANDLER_QUEUE_LIMIT) {
 			printf("Result hanlder of operator %d queue has exceeded\n", p->operator_id);
@@ -180,7 +174,6 @@ static void process_one_task (result_handler_p p, task_p t) {
 		if (data) {
 			dispatcher_insert((dispatcher_p) p->downstream, data, p->batch_size, time);
 		}
-
 		task_free(t);
 	} else {
 

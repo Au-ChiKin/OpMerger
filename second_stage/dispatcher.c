@@ -13,7 +13,7 @@ static void send_one_task(dispatcher_p p, task_p t);
 static void * dispatcher(void * args) {
 	dispatcher_p p = (dispatcher_p) args;
 
-	/* Unblocks the thread (which runs result_handler_init) waiting for this thread to attach to the JVM */
+	/* Unblocks the thread (which runs result_handler_init) waiting for this thread to start*/
 	p->start = 1;
 
     while (1) {
@@ -29,10 +29,25 @@ static void * dispatcher(void * args) {
 		pthread_mutex_unlock(p->mutex);
 		pthread_cond_signal(p->took);
 
-        send_one_task(p, t);
+		pthread_mutex_lock(p->mutex_t);
+			while (p->cur_tasks == DISPATCHER_CONCURRENT_TASK) {
+				pthread_cond_wait(p->finished, p->mutex_t);
+			}
+
+        	send_one_task(p, t);
+
+			p->cur_tasks++;
+		pthread_mutex_unlock(p->mutex_t);
     }
 
 	return (args) ? NULL : args;
+}
+
+void dispatcher_close_one_task(dispatcher_p p) {
+	pthread_mutex_lock(p->mutex_t);
+		p->cur_tasks--;
+	pthread_mutex_unlock(p->mutex_t);
+	pthread_cond_signal(p->finished);
 }
 
 dispatcher_p dispatcher_init(scheduler_p scheduler, query_p query, int oid, event_manager_p event_manager) {
@@ -51,16 +66,24 @@ dispatcher_p dispatcher_init(scheduler_p scheduler, query_p query, int oid, even
     p->handler = result_handler_init(event_manager, query, oid);
 	p->manager = event_manager;
 
+	p->cur_tasks = 0;
+
     p->start = 0;
 
 	p->mutex = (pthread_mutex_t *) malloc (sizeof(pthread_mutex_t));
 	pthread_mutex_init (p->mutex, NULL);
+
+	p->mutex_t = (pthread_mutex_t *) malloc (sizeof(pthread_mutex_t));
+	pthread_mutex_init (p->mutex_t, NULL);
 
 	p->took = (pthread_cond_t *) malloc (sizeof(pthread_cond_t));
 	pthread_cond_init (p->took, NULL);
 
 	p->added = (pthread_cond_t *) malloc (sizeof(pthread_cond_t));
 	pthread_cond_init (p->added, NULL);
+
+	p->finished = (pthread_cond_t *) malloc (sizeof(pthread_cond_t));
+	pthread_cond_init (p->finished, NULL);
 
     p->task_head = 0;
     p->task_tail = 0;
@@ -87,19 +110,13 @@ void dispatcher_insert(dispatcher_p p, u_int8_t * data, int len, long upstream_t
 	batch_reset_timestamp(new_batch, upstream_time);
 
 	pthread_mutex_lock(p->mutex);
-		// while (p->size == DISPATCHER_QUEUE_LIMIT) {
-		if (p->size == DISPATCHER_QUEUE_LIMIT) {
-			struct timespec time_to_wait;
-    		time_to_wait.tv_sec = 0;
-			time_to_wait.tv_nsec = DISPATCHER_INSERT_TIMEOUT * 1000;
-
-			pthread_cond_timedwait(p->took, p->mutex, &time_to_wait);
-			// pthread_cond_wait(p->took, p->mutex);
+		while (p->size == DISPATCHER_QUEUE_LIMIT) {
+			pthread_cond_wait(p->took, p->mutex);
 		}
 		if (p->size == DISPATCHER_QUEUE_LIMIT) {
 			printf("Dispatcher queue of operator %d has exceeded\n", p->operator_id);
 			fflush(stdout);
-		}		
+		}
 		p->size++;
     
         assemble(p, new_batch, len);

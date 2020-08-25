@@ -34,13 +34,13 @@ void print_tuples(cbuf_handle_t cbufs [], int n);
 void run_processing_gpu(
     u_int8_t * buffers [], int buffer_size, int buffer_num,
     u_int8_t * result, 
-    enum test_cases mode, int work_load, int pipeline_num, bool is_merging, bool is_debug) {
+    enum test_cases mode, int work_load, int pipeline_depth, bool is_merging, bool is_debug) {
     
     /* Used as an output stream */
     batch_p output = batch(6 * buffer_size, 0, result, 6 * buffer_size, TUPLE_SIZE);
 
     int const operator_num = 2;
-    gpu_init(operator_num, pipeline_num, NULL);
+    gpu_init(operator_num, pipeline_depth, NULL);
 
     /* Construct schemas */
     schema_p schema1 = schema();
@@ -133,7 +133,7 @@ void run_processing_gpu(
                 query_setup(query1);
 
                 /* Start scheduler */
-                scheduler_p scheduler  = scheduler_init(pipeline_num);
+                scheduler_p scheduler  = scheduler_init(pipeline_depth);
 
                 /* Start throughput monitoring */
                 event_manager_p manager = event_manager_init(query1->operator_num);
@@ -154,8 +154,6 @@ void run_processing_gpu(
 
                 int b=0;
                 while (1) {
-                    // usleep(250);
-
                     dispatcher_insert(dispatchers[0], buffers[b], buffer_size, event_get_mtime());
 
                     b = (b+1) % buffer_num;
@@ -228,7 +226,7 @@ void run_processing_gpu(
                 query_setup(query1);
 
                 /* Start scheduler */
-                scheduler_p scheduler  = scheduler_init(pipeline_num);
+                scheduler_p scheduler  = scheduler_init(pipeline_depth);
 
                 /* Start throughput monitoring */
                 event_manager_p manager = event_manager_init(query1->operator_num);
@@ -416,12 +414,12 @@ int main(int argc, char * argv[]) {
     int work_load = 64; // default to be 64MB
     int batch_size = 32; // default to be 32MB per batch
     int buffer_num = 1;
-    int pipeline_num = 1;
+    int pipeline_depth = 2;
     int tuple_per_insert = batch_size * ((1024 * 1024) / TUPLE_SIZE);
     enum test_cases mode = QUERY1;
 
     parse_arguments(argc, argv, 
-        &mode, &work_load, &batch_size, &buffer_num, &pipeline_num,
+        &mode, &work_load, &batch_size, &buffer_num, &pipeline_depth,
         &is_merging, &is_debug);
 
     if (work_load < batch_size) {
@@ -465,7 +463,7 @@ int main(int argc, char * argv[]) {
     run_processing_gpu(
         buffers, batch_size, buffer_num, /* input */
         result, /* output */
-        mode, work_load, pipeline_num, is_merging, is_debug);  /* configs */
+        mode, work_load, pipeline_depth, is_merging, is_debug);  /* configs */
 
     /* Clear up */
     /* Temperory using 1 buffer */

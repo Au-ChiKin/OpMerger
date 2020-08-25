@@ -7,20 +7,25 @@
 #include "scheduler/scheduler.h"
 #include "result_handler.h"
 
-#define DISPATCHER_QUEUE_LIMIT 1000
+#define DISPATCHER_CONCURRENT_TASK 25
+#define DISPATCHER_QUEUE_LIMIT 25
 #define DISPATCHER_INSERT_TIMEOUT 100 // ms
 
 typedef struct dispatcher * dispatcher_p;
 typedef struct dispatcher {
     pthread_t thr;
     pthread_mutex_t * mutex; // For p->size
+    pthread_mutex_t * mutex_t; // For p->cur_tasks
     pthread_cond_t * took;
     pthread_cond_t * added;
+    pthread_cond_t * finished;
     volatile unsigned start;
 
     scheduler_p scheduler;
     query_p query;
     int operator_id;
+
+    volatile int cur_tasks;
 
     u_int8_t ** buffers;
     int buffer_num;
@@ -45,5 +50,7 @@ result_handler_p dispatcher_get_handler(dispatcher_p p);
 void dispatcher_set_downstream(dispatcher_p p, dispatcher_p downstream);
 
 void dispatcher_set_output_stream(dispatcher_p p, batch_p output_stream);
+
+void dispatcher_close_one_task(dispatcher_p p);
 
 #endif

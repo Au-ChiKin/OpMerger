@@ -8,7 +8,7 @@
 #include "monitor/event_manager.h"
 
 #define SCHEDULER_MAX_PIPELINE_DEPTH 4
-#define SCHEDULER_QUEUE_LIMIT 10000
+#define SCHEDULER_QUEUE_LIMIT 50
 
 typedef struct scheduler * scheduler_p;
 typedef struct scheduler {

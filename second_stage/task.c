@@ -4,6 +4,8 @@
 #include <time.h>
 #include <stdio.h>
 
+#include "dispatcher.h"
+
 #define MAX_ID INT_MAX
 static int free_id = 0;
 
