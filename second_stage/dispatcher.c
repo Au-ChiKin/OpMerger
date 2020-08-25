@@ -49,6 +49,7 @@ dispatcher_p dispatcher_init(scheduler_p scheduler, query_p query, int oid, even
     p->operator_id = oid;
 
     p->handler = result_handler_init(event_manager, query, oid);
+	p->manager = event_manager;
 
     p->start = 0;
 
@@ -137,7 +138,7 @@ static void send_one_task(dispatcher_p p, task_p t) {
 }
 
 static void create_task(dispatcher_p p, batch_p batch) {
-    task_p new_task = task(p->query, p->operator_id, batch, (void *)p);
+    task_p new_task = task(p->query, p->operator_id, batch, (void *)p, p->manager);
 
     p->tasks[p->task_tail] = new_task;
     p->task_tail = (p->task_tail + 1) % DISPATCHER_QUEUE_LIMIT;

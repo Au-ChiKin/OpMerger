@@ -20,15 +20,16 @@ typedef struct task {
     batch_p output;
 
     query_event_p event;
+    event_manager_p manager;
 } task_t;
 
-task_p task(query_p query, int oid, batch_p batch, void * dispatcher);
+task_p task(query_p query, int oid, batch_p batch, void * dispatcher, event_manager_p manager);
 
 void task_run(task_p t);
 
-bool task_has_downstream(task_p t);
+void task_end(task_p t);
 
-task_p task_transfer_output(task_p from);
+bool task_has_downstream(task_p t);
 
 void task_free(task_p t);
 

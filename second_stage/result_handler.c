@@ -171,15 +171,12 @@ static void process_one_task (result_handler_p p, task_p t) {
 		u_int8_t * data = fill_buffer(p, t->output, &time);
 
 		/* Log the end */
-		event_set_end(t->event, event_get_mtime());
-		event_manager_add_event(p->manager, t->event);
-		t->event = NULL;
+		task_end(t);
+		task_free(t);
 
 		if (data) {
 			dispatcher_insert((dispatcher_p) p->downstream, data, p->batch_size, time);
-		}
-		
-		task_free(t);
+		}		
 	} else {
 
 		/* Assuming only tumbling windows*/
@@ -217,11 +214,9 @@ static void process_one_task (result_handler_p p, task_p t) {
 			}
 
 			/* Log the end */
-			event_set_end(p->previous->event, event_get_mtime());
-			event_manager_add_event(p->manager, p->previous->event);
-			p->previous->event = NULL;
-
+			task_end(p->previous);
 			task_free(p->previous);
+
 			p->previous = t;
 		} else {
 			p->previous = t;

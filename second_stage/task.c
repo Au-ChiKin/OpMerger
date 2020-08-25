@@ -9,7 +9,7 @@ static int free_id = 0;
 
 bool task_is_most_upstream(task_p t);
 
-task_p task(query_p query, int oid, batch_p batch, void * dispatcher) {
+task_p task(query_p query, int oid, batch_p batch, void * dispatcher, event_manager_p manager) {
     task_p task = (task_p) malloc(sizeof(task_t));
 
     task->id = free_id++ % MAX_ID;
@@ -22,6 +22,7 @@ task_p task(query_p query, int oid, batch_p batch, void * dispatcher) {
 
     task->output = NULL;
 
+    task->manager = manager;
     task->event = (query_event_p) malloc(sizeof(query_event_t));
     {
         task->event->query_id = query->id;
@@ -51,32 +52,18 @@ void task_run(task_p t) {
     query_process(t->query, t->oid, t->batch, t->output);
 }
 
+void task_end(task_p t) {
+    event_set_end(t->event, event_get_mtime());
+    event_manager_add_event(t->manager, t->event);
+    t->event = NULL;
+}
+
 bool task_is_most_upstream(task_p t) {
     return t->oid == 0;
 }
 
 bool task_has_downstream(task_p t) {
     return t->oid < t->query->operator_num - 1 ;
-}
-
-task_p task_transfer_output(task_p from) {
-    if (!task_has_downstream(from)) {
-        fprintf(stderr, "error: output transfer only applys to from an upstream operator to a down stream one\n");
-        exit(1);
-    }
-
-    query_p query = from->query;
-
-    /* Get output batch ready for being an input */
-    query_process_output(query, from->oid, from->output);
-
-    /* Pass output batch ownership */
-    task_p ret = task(query, from->oid+1, from->output, from->dispatcher);
-    from->output = NULL;
-
-    ret->event = from->event;
-
-    return ret;
 }
 
 void task_process_output(task_p t) {
