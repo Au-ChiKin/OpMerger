@@ -22,7 +22,7 @@ static void * monitor(void * args) {
 	return (args) ? NULL : args;
 }
 
-monitor_p monitor_init(event_manager_p manager) {
+monitor_p monitor_init(event_manager_p manager, scheduler_p scheduler, int pipeline_num, dispatcher_p dispatchers[]) {
 
 	monitor_p p = (monitor_p) malloc (sizeof(monitor_t));
 	if (! p) {
@@ -31,6 +31,11 @@ monitor_p monitor_init(event_manager_p manager) {
 	}
 
     p->manager = manager;
+
+	p->pipeline_num = pipeline_num;
+	p->dispatchers = dispatchers;
+
+	p->scheduler = scheduler;
 
 	/* Initialise thread */
 	if (pthread_create(&thr, NULL, monitor, (void *) p)) {
@@ -58,6 +63,13 @@ static void print_data(monitor_p p) {
 
 		printf("(%d) t: %9.3f MB/s  l: %9.3f us   ", i, throughput, latency_avg);
 	}
-	printf("(avg) t: %9.3f MB/s", avg_throughput / operators);
+	// printf("(avg) t: %9.3f MB/s", avg_throughput / operators);
+
+	printf("sch queue: %d   ", p->scheduler->queue_size);
+
+	for (int i=0; i<p->pipeline_num; i++) {
+		printf("d%d queue: %d   r%d queue: %d   ", 
+			i, p->dispatchers[i]->size, i, dispatcher_get_handler(p->dispatchers[i])->size);
+	}
 	printf("\n");
 }
