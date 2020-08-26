@@ -16,7 +16,7 @@ typedef struct gpu_query {
 	
 	/* It seems that resultHandler is a thread created to monitor the performance of GPU but
 	   it is only used when there is a join (i.e. the exce2 is used) */
-	resultHandlerP handler;
+	// resultHandlerP handler;
 
 	int cur_config; // which config this query is currently using
 	gpu_config_p configs [NCONTEXTS]; // each config (i.e. context in Saber) has two command queues. 

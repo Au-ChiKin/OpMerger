@@ -24,7 +24,7 @@ static gpu_query_p queries [MAX_QUERIES];
 static int pipeline_depth;
 static gpu_config_p pipeline [MAX_DEPTH];
 
-static resultHandlerP resultHandler = NULL;
+// static resultHandlerP resultHandler = NULL;
 
 static event_manager_p event_manager = NULL;
 
