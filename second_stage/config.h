@@ -4,7 +4,7 @@
 #define MAX_SOURCE_LENGTH 100 * 1024
 
 #define MAX_THREADS_PER_GROUP 256 /* Should be queried from the device */
-#define PARTIAL_WINDOWS 1024 * 1024 * 30 /* window number limit in a batch */
+#define PARTIAL_WINDOWS 1024 * 1024 /* window number limit in a batch */
 #define HASH_TABLE_SIZE 1024 * 1024
 
 #undef OPMERGER_DEBUG

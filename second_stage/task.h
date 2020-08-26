@@ -33,6 +33,8 @@ void task_end(task_p t);
 
 bool task_has_downstream(task_p t);
 
+bool task_is_most_upstream(task_p t);
+
 void task_free(task_p t);
 
 void task_process_output(task_p t);

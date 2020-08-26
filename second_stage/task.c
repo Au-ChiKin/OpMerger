@@ -9,8 +9,6 @@
 #define MAX_ID INT_MAX
 static int free_id = 0;
 
-bool task_is_most_upstream(task_p t);
-
 task_p task(query_p query, int oid, batch_p batch, void * dispatcher, event_manager_p manager) {
     task_p task = (task_p) malloc(sizeof(task_t));
 
@@ -60,7 +58,7 @@ void task_run(task_p t) {
 }
 
 void task_end(task_p t) {
-    dispatcher_close_one_task((dispatcher_p) t->dispatcher);
+    dispatcher_close_one_task((dispatcher_p) t->dispatcher, t);
 
     event_set_end(t->event, event_get_mtime());
     event_manager_add_event(t->manager, t->event);

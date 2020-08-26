@@ -29,25 +29,33 @@ static void * dispatcher(void * args) {
 		pthread_mutex_unlock(p->mutex);
 		pthread_cond_signal(p->took);
 
-		pthread_mutex_lock(p->mutex_t);
-			while (p->cur_tasks == DISPATCHER_CONCURRENT_TASK) {
-				pthread_cond_wait(p->finished, p->mutex_t);
-			}
+		// if (t->query->operator_num > 1 && task_is_most_upstream(t)) {
+			pthread_mutex_lock(p->mutex_t);
+				while (p->cur_tasks == DISPATCHER_CONCURRENT_TASK) {
+					pthread_cond_wait(p->finished, p->mutex_t);
+				}
 
-        	send_one_task(p, t);
+				send_one_task(p, t);
 
-			p->cur_tasks++;
-		pthread_mutex_unlock(p->mutex_t);
+				p->cur_tasks++;
+			pthread_mutex_unlock(p->mutex_t);
+		// } else {
+			// send_one_task(p, t);
+		// }
     }
 
 	return (args) ? NULL : args;
 }
 
-void dispatcher_close_one_task(dispatcher_p p) {
-	pthread_mutex_lock(p->mutex_t);
-		p->cur_tasks--;
-	pthread_mutex_unlock(p->mutex_t);
-	pthread_cond_signal(p->finished);
+void dispatcher_close_one_task(dispatcher_p p, task_p t) {
+	// if (t->query->operator_num > 1 && task_is_most_upstream(t)) {
+		pthread_mutex_lock(p->mutex_t);
+			p->cur_tasks--;
+		pthread_mutex_unlock(p->mutex_t);
+		pthread_cond_signal(p->finished);
+	// } else {
+	// 	return;
+	// }
 }
 
 dispatcher_p dispatcher_init(scheduler_p scheduler, query_p query, int oid, event_manager_p event_manager) {
