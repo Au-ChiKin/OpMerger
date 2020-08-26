@@ -1,7 +1,7 @@
 <profiling>
 	<head>
 		<unit>μs</unit>
-	<date>Wednesday, August 26&lt;sup&gt;th&lt;/sup&gt; 2020 at &lt;b&gt; 6:14:12&lt;/b&gt;</date>
+	<date>Wednesday, August 26&lt;sup&gt;th&lt;/sup&gt; 2020 at &lt;b&gt; 6:15:58&lt;/b&gt;</date>
 	</head>
 
 	<!-- List tasks -->
@@ -42,168 +42,168 @@
 		<name>Copy Image to Image</name>
 	</task>
 	<task>
-		<id>94488354677776</id>
+		<id>94066820420720</id>
 		<name>clearKernel</name>
 	</task>
 	<task>
-		<id>94488354679824</id>
+		<id>94066820422768</id>
 		<name>clearKernel</name>
 	</task>
 	<task>
-		<id>94488354681904</id>
+		<id>94066820424848</id>
 		<name>clearKernel</name>
 	</task>
 	<task>
-		<id>94488354683952</id>
+		<id>94066820426896</id>
 		<name>clearKernel</name>
 	</task>
 	<task>
-		<id>94488354686032</id>
+		<id>94066820428976</id>
 		<name>clearKernel</name>
 	</task>
 	<task>
-		<id>94488354688080</id>
+		<id>94066820431024</id>
 		<name>clearKernel</name>
 	</task>
 	<task>
-		<id>94488354690160</id>
+		<id>94066820433104</id>
 		<name>clearKernel</name>
 	</task>
 	<task>
-		<id>94488354692208</id>
+		<id>94066820435152</id>
 		<name>clearKernel</name>
 	</task>
 	<task>
-		<id>94488354694288</id>
+		<id>94066820437232</id>
 		<name>clearKernel</name>
 	</task>
 	<task>
-		<id>94488354696336</id>
+		<id>94066820439280</id>
 		<name>computeOffsetKernel</name>
 	</task>
 	<task>
-		<id>94488354698416</id>
+		<id>94066820441360</id>
 		<name>computeOffsetKernel</name>
 	</task>
 	<task>
-		<id>94488354700512</id>
+		<id>94066820443456</id>
 		<name>computeOffsetKernel</name>
 	</task>
 	<task>
-		<id>94488354702640</id>
+		<id>94066820445584</id>
 		<name>computeOffsetKernel</name>
 	</task>
 	<task>
-		<id>94488354704736</id>
+		<id>94066820447680</id>
 		<name>computeOffsetKernel</name>
 	</task>
 	<task>
-		<id>94488354706864</id>
+		<id>94066820449808</id>
 		<name>computeOffsetKernel</name>
 	</task>
 	<task>
-		<id>94488354708960</id>
+		<id>94066820451904</id>
 		<name>computeOffsetKernel</name>
 	</task>
 	<task>
-		<id>94488354711088</id>
+		<id>94066820454032</id>
 		<name>computeOffsetKernel</name>
 	</task>
 	<task>
-		<id>94488354713184</id>
+		<id>94066820456128</id>
 		<name>computeOffsetKernel</name>
 	</task>
 	<task>
-		<id>94488354715312</id>
+		<id>94066820458256</id>
 		<name>computeOffsetKernel</name>
 	</task>
 	<task>
-		<id>94488354790112</id>
+		<id>94066820533056</id>
 		<name>clearKernel</name>
 	</task>
 	<task>
-		<id>94488354932304</id>
+		<id>94066820675248</id>
 		<name>computePointersKernel</name>
 	</task>
 	<task>
-		<id>94488354934432</id>
+		<id>94066820677376</id>
 		<name>computePointersKernel</name>
 	</task>
 	<task>
-		<id>94488354936528</id>
+		<id>94066820679472</id>
 		<name>computePointersKernel</name>
 	</task>
 	<task>
-		<id>94488354938656</id>
+		<id>94066820681600</id>
 		<name>computePointersKernel</name>
 	</task>
 	<task>
-		<id>94488354940752</id>
+		<id>94066820683696</id>
 		<name>computePointersKernel</name>
 	</task>
 	<task>
-		<id>94488354942880</id>
+		<id>94066820685824</id>
 		<name>computePointersKernel</name>
 	</task>
 	<task>
-		<id>94488354944976</id>
+		<id>94066820687920</id>
 		<name>computePointersKernel</name>
 	</task>
 	<task>
-		<id>94488354947104</id>
+		<id>94066820690048</id>
 		<name>computePointersKernel</name>
 	</task>
 	<task>
-		<id>94488354949200</id>
+		<id>94066820692144</id>
 		<name>computePointersKernel</name>
 	</task>
 	<task>
-		<id>94488354951328</id>
+		<id>94066820694272</id>
 		<name>computePointersKernel</name>
 	</task>
 	<task>
-		<id>94488354953424</id>
+		<id>94066820696368</id>
 		<name>reduceKernel</name>
 	</task>
 	<task>
-		<id>94488354955552</id>
+		<id>94066820698496</id>
 		<name>reduceKernel</name>
 	</task>
 	<task>
-		<id>94488354957600</id>
+		<id>94066820700544</id>
 		<name>reduceKernel</name>
 	</task>
 	<task>
-		<id>94488354959680</id>
+		<id>94066820702624</id>
 		<name>reduceKernel</name>
 	</task>
 	<task>
-		<id>94488354961728</id>
+		<id>94066820704672</id>
 		<name>reduceKernel</name>
 	</task>
 	<task>
-		<id>94488354963808</id>
+		<id>94066820706752</id>
 		<name>reduceKernel</name>
 	</task>
 	<task>
-		<id>94488354965856</id>
+		<id>94066820708800</id>
 		<name>reduceKernel</name>
 	</task>
 	<task>
-		<id>94488354967936</id>
+		<id>94066820710880</id>
 		<name>reduceKernel</name>
 	</task>
 	<task>
-		<id>94488354969984</id>
+		<id>94066820712928</id>
 		<name>reduceKernel</name>
 	</task>
 	<task>
-		<id>94488354972064</id>
+		<id>94066820715008</id>
 		<name>reduceKernel</name>
 	</task>
 
 	<!-- List devices -->
-	<device><!-- device->id = 94488344863344 -->
+	<device><!-- device->id = 94066810606192 -->
 		<name>Quadro K5200</name>
 		<details>
 			<detail>
@@ -314,450 +314,450 @@ The major_version.minor_version value returned will be 1.0.</help>
 			<taskInstance>
 				<idTask>2</idTask><!-- task.name = Write Buffer -->
 				<name>Write Buffer</name>
-				<start>936079</start>
-				<end>938992</end>
+				<start>938962</start>
+				<end>941841</end>
 				<ocl_size>8388608</ocl_size>
-				<ocl_bandwidth>2880</ocl_bandwidth>
+				<ocl_bandwidth>2913</ocl_bandwidth>
 			</taskInstance>
 			<taskInstance>
-				<idTask>94488354790112</idTask><!-- task.name = clearKernel -->
+				<idTask>94066820533056</idTask><!-- task.name = clearKernel -->
 				<name>clearKernel</name>
-				<start>938644</start>
-				<end>938667</end>
+				<start>941475</start>
+				<end>941489</end>
 				<ocl_global_work_size>131072</ocl_global_work_size>
 				<ocl_local_work_size>256</ocl_local_work_size>
-				<ocl_queued>936086</ocl_queued>
-				<ocl_submit>936093</ocl_submit>
+				<ocl_queued>938963</ocl_queued>
+				<ocl_submit>938970</ocl_submit>
 			</taskInstance>
 			<taskInstance>
-				<idTask>94488354696336</idTask><!-- task.name = computeOffsetKernel -->
+				<idTask>94066820439280</idTask><!-- task.name = computeOffsetKernel -->
 				<name>computeOffsetKernel</name>
-				<start>939467</start>
-				<end>939483</end>
+				<start>942300</start>
+				<end>942310</end>
 				<ocl_global_work_size>131072</ocl_global_work_size>
 				<ocl_local_work_size>256</ocl_local_work_size>
-				<ocl_queued>936950</ocl_queued>
-				<ocl_submit>936953</ocl_submit>
+				<ocl_queued>939839</ocl_queued>
+				<ocl_submit>939843</ocl_submit>
 			</taskInstance>
 			<taskInstance>
-				<idTask>94488354932304</idTask><!-- task.name = computePointersKernel -->
+				<idTask>94066820675248</idTask><!-- task.name = computePointersKernel -->
 				<name>computePointersKernel</name>
-				<start>939490</start>
-				<end>939805</end>
+				<start>942318</start>
+				<end>942628</end>
 				<ocl_global_work_size>131072</ocl_global_work_size>
 				<ocl_local_work_size>256</ocl_local_work_size>
-				<ocl_queued>936986</ocl_queued>
-				<ocl_submit>936988</ocl_submit>
+				<ocl_queued>939877</ocl_queued>
+				<ocl_submit>939880</ocl_submit>
 			</taskInstance>
 			<taskInstance>
-				<idTask>94488354953424</idTask><!-- task.name = reduceKernel -->
+				<idTask>94066820696368</idTask><!-- task.name = reduceKernel -->
 				<name>reduceKernel</name>
-				<start>939808</start>
-				<end>940805</end>
+				<start>942629</start>
+				<end>943611</end>
 				<ocl_global_work_size>131072</ocl_global_work_size>
 				<ocl_local_work_size>256</ocl_local_work_size>
-				<ocl_queued>937018</ocl_queued>
-				<ocl_submit>937021</ocl_submit>
+				<ocl_queued>939910</ocl_queued>
+				<ocl_submit>939913</ocl_submit>
 			</taskInstance>
 			<taskInstance>
 				<idTask>1</idTask><!-- task.name = Read Buffer -->
 				<name>Read Buffer</name>
-				<start>940818</start>
-				<end>940820</end>
-				<ocl_size>20</ocl_size>
-				<ocl_bandwidth>7</ocl_bandwidth>
-			</taskInstance>
-			<taskInstance>
-				<idTask>1</idTask><!-- task.name = Read Buffer -->
-				<name>Read Buffer</name>
-				<start>940961</start>
-				<end>949059</end>
-				<ocl_size>8388608</ocl_size>
-				<ocl_bandwidth>1035</ocl_bandwidth>
-			</taskInstance>
-			<taskInstance>
-				<idTask>2</idTask><!-- task.name = Write Buffer -->
-				<name>Write Buffer</name>
-				<start>968523</start>
-				<end>969995</end>
-				<ocl_size>8388608</ocl_size>
-				<ocl_bandwidth>5699</ocl_bandwidth>
-			</taskInstance>
-			<taskInstance>
-				<idTask>94488354790112</idTask><!-- task.name = clearKernel -->
-				<name>clearKernel</name>
-				<start>970007</start>
-				<end>970029</end>
-				<ocl_global_work_size>131072</ocl_global_work_size>
-				<ocl_local_work_size>256</ocl_local_work_size>
-				<ocl_queued>966850</ocl_queued>
-				<ocl_submit>966853</ocl_submit>
-			</taskInstance>
-			<taskInstance>
-				<idTask>94488354696336</idTask><!-- task.name = computeOffsetKernel -->
-				<name>computeOffsetKernel</name>
-				<start>970027</start>
-				<end>970047</end>
-				<ocl_global_work_size>131072</ocl_global_work_size>
-				<ocl_local_work_size>256</ocl_local_work_size>
-				<ocl_queued>966875</ocl_queued>
-				<ocl_submit>966878</ocl_submit>
-			</taskInstance>
-			<taskInstance>
-				<idTask>94488354932304</idTask><!-- task.name = computePointersKernel -->
-				<name>computePointersKernel</name>
-				<start>970056</start>
-				<end>971172</end>
-				<ocl_global_work_size>131072</ocl_global_work_size>
-				<ocl_local_work_size>256</ocl_local_work_size>
-				<ocl_queued>966900</ocl_queued>
-				<ocl_submit>966903</ocl_submit>
-			</taskInstance>
-			<taskInstance>
-				<idTask>94488354953424</idTask><!-- task.name = reduceKernel -->
-				<name>reduceKernel</name>
-				<start>971172</start>
-				<end>974536</end>
-				<ocl_global_work_size>131072</ocl_global_work_size>
-				<ocl_local_work_size>256</ocl_local_work_size>
-				<ocl_queued>966921</ocl_queued>
-				<ocl_submit>966923</ocl_submit>
-			</taskInstance>
-			<taskInstance>
-				<idTask>1</idTask><!-- task.name = Read Buffer -->
-				<name>Read Buffer</name>
-				<start>984570</start>
-				<end>984573</end>
-				<ocl_size>20</ocl_size>
-				<ocl_bandwidth>7</ocl_bandwidth>
-			</taskInstance>
-			<taskInstance>
-				<idTask>1</idTask><!-- task.name = Read Buffer -->
-				<name>Read Buffer</name>
-				<start>985552</start>
-				<end>991780</end>
-				<ocl_size>8388608</ocl_size>
-				<ocl_bandwidth>1346</ocl_bandwidth>
-			</taskInstance>
-			<taskInstance>
-				<idTask>2</idTask><!-- task.name = Write Buffer -->
-				<name>Write Buffer</name>
-				<start>1014029</start>
-				<end>1025585</end>
-				<ocl_size>8388608</ocl_size>
-				<ocl_bandwidth>725</ocl_bandwidth>
-			</taskInstance>
-			<taskInstance>
-				<idTask>94488354790112</idTask><!-- task.name = clearKernel -->
-				<name>clearKernel</name>
-				<start>1025583</start>
-				<end>1025599</end>
-				<ocl_global_work_size>131072</ocl_global_work_size>
-				<ocl_local_work_size>256</ocl_local_work_size>
-				<ocl_queued>1013809</ocl_queued>
-				<ocl_submit>1013816</ocl_submit>
-			</taskInstance>
-			<taskInstance>
-				<idTask>94488354696336</idTask><!-- task.name = computeOffsetKernel -->
-				<name>computeOffsetKernel</name>
-				<start>1025604</start>
-				<end>1025617</end>
-				<ocl_global_work_size>131072</ocl_global_work_size>
-				<ocl_local_work_size>256</ocl_local_work_size>
-				<ocl_queued>1013845</ocl_queued>
-				<ocl_submit>1013851</ocl_submit>
-			</taskInstance>
-			<taskInstance>
-				<idTask>94488354932304</idTask><!-- task.name = computePointersKernel -->
-				<name>computePointersKernel</name>
-				<start>1025619</start>
-				<end>1025935</end>
-				<ocl_global_work_size>131072</ocl_global_work_size>
-				<ocl_local_work_size>256</ocl_local_work_size>
-				<ocl_queued>1013873</ocl_queued>
-				<ocl_submit>1013877</ocl_submit>
-			</taskInstance>
-			<taskInstance>
-				<idTask>94488354953424</idTask><!-- task.name = reduceKernel -->
-				<name>reduceKernel</name>
-				<start>1025939</start>
-				<end>1026933</end>
-				<ocl_global_work_size>131072</ocl_global_work_size>
-				<ocl_local_work_size>256</ocl_local_work_size>
-				<ocl_queued>1013895</ocl_queued>
-				<ocl_submit>1013898</ocl_submit>
-			</taskInstance>
-			<taskInstance>
-				<idTask>1</idTask><!-- task.name = Read Buffer -->
-				<name>Read Buffer</name>
-				<start>1028116</start>
-				<end>1028119</end>
-				<ocl_size>20</ocl_size>
-				<ocl_bandwidth>7</ocl_bandwidth>
-			</taskInstance>
-			<taskInstance>
-				<idTask>1</idTask><!-- task.name = Read Buffer -->
-				<name>Read Buffer</name>
-				<start>1029114</start>
-				<end>1034607</end>
-				<ocl_size>8388608</ocl_size>
-				<ocl_bandwidth>1527</ocl_bandwidth>
-			</taskInstance>
-			<taskInstance>
-				<idTask>2</idTask><!-- task.name = Write Buffer -->
-				<name>Write Buffer</name>
-				<start>1058035</start>
-				<end>1060692</end>
-				<ocl_size>8388608</ocl_size>
-				<ocl_bandwidth>3156</ocl_bandwidth>
-			</taskInstance>
-			<taskInstance>
-				<idTask>94488354790112</idTask><!-- task.name = clearKernel -->
-				<name>clearKernel</name>
-				<start>1060698</start>
-				<end>1060713</end>
-				<ocl_global_work_size>131072</ocl_global_work_size>
-				<ocl_local_work_size>256</ocl_local_work_size>
-				<ocl_queued>1055901</ocl_queued>
-				<ocl_submit>1055904</ocl_submit>
-			</taskInstance>
-			<taskInstance>
-				<idTask>94488354696336</idTask><!-- task.name = computeOffsetKernel -->
-				<name>computeOffsetKernel</name>
-				<start>1060715</start>
-				<end>1060729</end>
-				<ocl_global_work_size>131072</ocl_global_work_size>
-				<ocl_local_work_size>256</ocl_local_work_size>
-				<ocl_queued>1055923</ocl_queued>
-				<ocl_submit>1055925</ocl_submit>
-			</taskInstance>
-			<taskInstance>
-				<idTask>94488354932304</idTask><!-- task.name = computePointersKernel -->
-				<name>computePointersKernel</name>
-				<start>1060731</start>
-				<end>1061847</end>
-				<ocl_global_work_size>131072</ocl_global_work_size>
-				<ocl_local_work_size>256</ocl_local_work_size>
-				<ocl_queued>1055941</ocl_queued>
-				<ocl_submit>1055943</ocl_submit>
-			</taskInstance>
-			<taskInstance>
-				<idTask>94488354953424</idTask><!-- task.name = reduceKernel -->
-				<name>reduceKernel</name>
-				<start>1061847</start>
-				<end>1065693</end>
-				<ocl_global_work_size>131072</ocl_global_work_size>
-				<ocl_local_work_size>256</ocl_local_work_size>
-				<ocl_queued>1055957</ocl_queued>
-				<ocl_submit>1055959</ocl_submit>
-			</taskInstance>
-			<taskInstance>
-				<idTask>1</idTask><!-- task.name = Read Buffer -->
-				<name>Read Buffer</name>
-				<start>1065712</start>
-				<end>1065714</end>
-				<ocl_size>20</ocl_size>
-				<ocl_bandwidth>7</ocl_bandwidth>
-			</taskInstance>
-			<taskInstance>
-				<idTask>1</idTask><!-- task.name = Read Buffer -->
-				<name>Read Buffer</name>
-				<start>1065840</start>
-				<end>1067483</end>
-				<ocl_size>8388608</ocl_size>
-				<ocl_bandwidth>5105</ocl_bandwidth>
-			</taskInstance>
-			<taskInstance>
-				<idTask>2</idTask><!-- task.name = Write Buffer -->
-				<name>Write Buffer</name>
-				<start>1075715</start>
-				<end>1077194</end>
-				<ocl_size>8388608</ocl_size>
-				<ocl_bandwidth>5668</ocl_bandwidth>
-			</taskInstance>
-			<taskInstance>
-				<idTask>94488354790112</idTask><!-- task.name = clearKernel -->
-				<name>clearKernel</name>
-				<start>1077204</start>
-				<end>1077223</end>
-				<ocl_global_work_size>131072</ocl_global_work_size>
-				<ocl_local_work_size>256</ocl_local_work_size>
-				<ocl_queued>1072864</ocl_queued>
-				<ocl_submit>1072867</ocl_submit>
-			</taskInstance>
-			<taskInstance>
-				<idTask>94488354696336</idTask><!-- task.name = computeOffsetKernel -->
-				<name>computeOffsetKernel</name>
-				<start>1077226</start>
-				<end>1077245</end>
-				<ocl_global_work_size>131072</ocl_global_work_size>
-				<ocl_local_work_size>256</ocl_local_work_size>
-				<ocl_queued>1072886</ocl_queued>
-				<ocl_submit>1072888</ocl_submit>
-			</taskInstance>
-			<taskInstance>
-				<idTask>94488354932304</idTask><!-- task.name = computePointersKernel -->
-				<name>computePointersKernel</name>
-				<start>1077248</start>
-				<end>1078373</end>
-				<ocl_global_work_size>131072</ocl_global_work_size>
-				<ocl_local_work_size>256</ocl_local_work_size>
-				<ocl_queued>1072904</ocl_queued>
-				<ocl_submit>1072906</ocl_submit>
-			</taskInstance>
-			<taskInstance>
-				<idTask>94488354953424</idTask><!-- task.name = reduceKernel -->
-				<name>reduceKernel</name>
-				<start>1078374</start>
-				<end>1082000</end>
-				<ocl_global_work_size>131072</ocl_global_work_size>
-				<ocl_local_work_size>256</ocl_local_work_size>
-				<ocl_queued>1072920</ocl_queued>
-				<ocl_submit>1072923</ocl_submit>
-			</taskInstance>
-			<taskInstance>
-				<idTask>1</idTask><!-- task.name = Read Buffer -->
-				<name>Read Buffer</name>
-				<start>1082044</start>
-				<end>1082047</end>
-				<ocl_size>20</ocl_size>
-				<ocl_bandwidth>7</ocl_bandwidth>
-			</taskInstance>
-			<taskInstance>
-				<idTask>1</idTask><!-- task.name = Read Buffer -->
-				<name>Read Buffer</name>
-				<start>1082208</start>
-				<end>1084143</end>
-				<ocl_size>8388608</ocl_size>
-				<ocl_bandwidth>4335</ocl_bandwidth>
-			</taskInstance>
-			<taskInstance>
-				<idTask>2</idTask><!-- task.name = Write Buffer -->
-				<name>Write Buffer</name>
-				<start>1091777</start>
-				<end>1093247</end>
-				<ocl_size>8388608</ocl_size>
-				<ocl_bandwidth>5705</ocl_bandwidth>
-			</taskInstance>
-			<taskInstance>
-				<idTask>94488354790112</idTask><!-- task.name = clearKernel -->
-				<name>clearKernel</name>
-				<start>1093248</start>
-				<end>1093268</end>
-				<ocl_global_work_size>131072</ocl_global_work_size>
-				<ocl_local_work_size>256</ocl_local_work_size>
-				<ocl_queued>1090305</ocl_queued>
-				<ocl_submit>1090308</ocl_submit>
-			</taskInstance>
-			<taskInstance>
-				<idTask>94488354696336</idTask><!-- task.name = computeOffsetKernel -->
-				<name>computeOffsetKernel</name>
-				<start>1093270</start>
-				<end>1093291</end>
-				<ocl_global_work_size>131072</ocl_global_work_size>
-				<ocl_local_work_size>256</ocl_local_work_size>
-				<ocl_queued>1090327</ocl_queued>
-				<ocl_submit>1090329</ocl_submit>
-			</taskInstance>
-			<taskInstance>
-				<idTask>94488354932304</idTask><!-- task.name = computePointersKernel -->
-				<name>computePointersKernel</name>
-				<start>1093293</start>
-				<end>1094415</end>
-				<ocl_global_work_size>131072</ocl_global_work_size>
-				<ocl_local_work_size>256</ocl_local_work_size>
-				<ocl_queued>1090344</ocl_queued>
-				<ocl_submit>1090346</ocl_submit>
-			</taskInstance>
-			<taskInstance>
-				<idTask>94488354953424</idTask><!-- task.name = reduceKernel -->
-				<name>reduceKernel</name>
-				<start>1094417</start>
-				<end>1097864</end>
-				<ocl_global_work_size>131072</ocl_global_work_size>
-				<ocl_local_work_size>256</ocl_local_work_size>
-				<ocl_queued>1090361</ocl_queued>
-				<ocl_submit>1090363</ocl_submit>
-			</taskInstance>
-			<taskInstance>
-				<idTask>1</idTask><!-- task.name = Read Buffer -->
-				<name>Read Buffer</name>
-				<start>1098787</start>
-				<end>1098790</end>
+				<start>943614</start>
+				<end>943617</end>
 				<ocl_size>20</ocl_size>
 				<ocl_bandwidth>8</ocl_bandwidth>
 			</taskInstance>
 			<taskInstance>
 				<idTask>1</idTask><!-- task.name = Read Buffer -->
 				<name>Read Buffer</name>
-				<start>1099163</start>
-				<end>1101041</end>
+				<start>943737</start>
+				<end>951614</end>
 				<ocl_size>8388608</ocl_size>
-				<ocl_bandwidth>4467</ocl_bandwidth>
+				<ocl_bandwidth>1065</ocl_bandwidth>
 			</taskInstance>
 			<taskInstance>
 				<idTask>2</idTask><!-- task.name = Write Buffer -->
 				<name>Write Buffer</name>
-				<start>1111306</start>
-				<end>1115123</end>
+				<start>993171</start>
+				<end>994656</end>
 				<ocl_size>8388608</ocl_size>
-				<ocl_bandwidth>2197</ocl_bandwidth>
+				<ocl_bandwidth>5651</ocl_bandwidth>
 			</taskInstance>
 			<taskInstance>
-				<idTask>94488354790112</idTask><!-- task.name = clearKernel -->
+				<idTask>94066820533056</idTask><!-- task.name = clearKernel -->
 				<name>clearKernel</name>
-				<start>1115130</start>
-				<end>1115145</end>
+				<start>994659</start>
+				<end>994671</end>
 				<ocl_global_work_size>131072</ocl_global_work_size>
 				<ocl_local_work_size>256</ocl_local_work_size>
-				<ocl_queued>1111085</ocl_queued>
-				<ocl_submit>1111092</ocl_submit>
+				<ocl_queued>993027</ocl_queued>
+				<ocl_submit>993031</ocl_submit>
 			</taskInstance>
 			<taskInstance>
-				<idTask>94488354696336</idTask><!-- task.name = computeOffsetKernel -->
+				<idTask>94066820439280</idTask><!-- task.name = computeOffsetKernel -->
 				<name>computeOffsetKernel</name>
-				<start>1115151</start>
-				<end>1115164</end>
+				<start>994673</start>
+				<end>994682</end>
 				<ocl_global_work_size>131072</ocl_global_work_size>
 				<ocl_local_work_size>256</ocl_local_work_size>
-				<ocl_queued>1111122</ocl_queued>
-				<ocl_submit>1111128</ocl_submit>
+				<ocl_queued>993058</ocl_queued>
+				<ocl_submit>993061</ocl_submit>
 			</taskInstance>
 			<taskInstance>
-				<idTask>94488354932304</idTask><!-- task.name = computePointersKernel -->
+				<idTask>94066820675248</idTask><!-- task.name = computePointersKernel -->
 				<name>computePointersKernel</name>
-				<start>1115166</start>
-				<end>1115488</end>
+				<start>994686</start>
+				<end>994998</end>
 				<ocl_global_work_size>131072</ocl_global_work_size>
 				<ocl_local_work_size>256</ocl_local_work_size>
-				<ocl_queued>1111149</ocl_queued>
-				<ocl_submit>1111153</ocl_submit>
+				<ocl_queued>993077</ocl_queued>
+				<ocl_submit>993079</ocl_submit>
 			</taskInstance>
 			<taskInstance>
-				<idTask>94488354953424</idTask><!-- task.name = reduceKernel -->
+				<idTask>94066820696368</idTask><!-- task.name = reduceKernel -->
 				<name>reduceKernel</name>
-				<start>1115490</start>
-				<end>1116486</end>
+				<start>995000</start>
+				<end>995983</end>
 				<ocl_global_work_size>131072</ocl_global_work_size>
 				<ocl_local_work_size>256</ocl_local_work_size>
-				<ocl_queued>1111173</ocl_queued>
-				<ocl_submit>1111178</ocl_submit>
+				<ocl_queued>993094</ocl_queued>
+				<ocl_submit>993096</ocl_submit>
 			</taskInstance>
 			<taskInstance>
 				<idTask>1</idTask><!-- task.name = Read Buffer -->
 				<name>Read Buffer</name>
-				<start>1116497</start>
-				<end>1116499</end>
+				<start>995997</start>
+				<end>996000</end>
+				<ocl_size>20</ocl_size>
+				<ocl_bandwidth>6</ocl_bandwidth>
+			</taskInstance>
+			<taskInstance>
+				<idTask>1</idTask><!-- task.name = Read Buffer -->
+				<name>Read Buffer</name>
+				<start>996101</start>
+				<end>1001454</end>
+				<ocl_size>8388608</ocl_size>
+				<ocl_bandwidth>1566</ocl_bandwidth>
+			</taskInstance>
+			<taskInstance>
+				<idTask>2</idTask><!-- task.name = Write Buffer -->
+				<name>Write Buffer</name>
+				<start>1037524</start>
+				<end>1038997</end>
+				<ocl_size>8388608</ocl_size>
+				<ocl_bandwidth>5695</ocl_bandwidth>
+			</taskInstance>
+			<taskInstance>
+				<idTask>94066820533056</idTask><!-- task.name = clearKernel -->
+				<name>clearKernel</name>
+				<start>1038997</start>
+				<end>1039008</end>
+				<ocl_global_work_size>131072</ocl_global_work_size>
+				<ocl_local_work_size>256</ocl_local_work_size>
+				<ocl_queued>1037370</ocl_queued>
+				<ocl_submit>1037374</ocl_submit>
+			</taskInstance>
+			<taskInstance>
+				<idTask>94066820439280</idTask><!-- task.name = computeOffsetKernel -->
+				<name>computeOffsetKernel</name>
+				<start>1039013</start>
+				<end>1039022</end>
+				<ocl_global_work_size>131072</ocl_global_work_size>
+				<ocl_local_work_size>256</ocl_local_work_size>
+				<ocl_queued>1037395</ocl_queued>
+				<ocl_submit>1037399</ocl_submit>
+			</taskInstance>
+			<taskInstance>
+				<idTask>94066820675248</idTask><!-- task.name = computePointersKernel -->
+				<name>computePointersKernel</name>
+				<start>1039023</start>
+				<end>1039334</end>
+				<ocl_global_work_size>131072</ocl_global_work_size>
+				<ocl_local_work_size>256</ocl_local_work_size>
+				<ocl_queued>1037414</ocl_queued>
+				<ocl_submit>1037417</ocl_submit>
+			</taskInstance>
+			<taskInstance>
+				<idTask>94066820696368</idTask><!-- task.name = reduceKernel -->
+				<name>reduceKernel</name>
+				<start>1039338</start>
+				<end>1040322</end>
+				<ocl_global_work_size>131072</ocl_global_work_size>
+				<ocl_local_work_size>256</ocl_local_work_size>
+				<ocl_queued>1037433</ocl_queued>
+				<ocl_submit>1037437</ocl_submit>
+			</taskInstance>
+			<taskInstance>
+				<idTask>1</idTask><!-- task.name = Read Buffer -->
+				<name>Read Buffer</name>
+				<start>1040329</start>
+				<end>1040332</end>
 				<ocl_size>20</ocl_size>
 				<ocl_bandwidth>7</ocl_bandwidth>
 			</taskInstance>
 			<taskInstance>
 				<idTask>1</idTask><!-- task.name = Read Buffer -->
 				<name>Read Buffer</name>
-				<start>1116670</start>
-				<end>1118563</end>
+				<start>1040426</start>
+				<end>1041906</end>
 				<ocl_size>8388608</ocl_size>
-				<ocl_bandwidth>4431</ocl_bandwidth>
+				<ocl_bandwidth>5667</ocl_bandwidth>
+			</taskInstance>
+			<taskInstance>
+				<idTask>2</idTask><!-- task.name = Write Buffer -->
+				<name>Write Buffer</name>
+				<start>1061882</start>
+				<end>1063374</end>
+				<ocl_size>8388608</ocl_size>
+				<ocl_bandwidth>5620</ocl_bandwidth>
+			</taskInstance>
+			<taskInstance>
+				<idTask>94066820533056</idTask><!-- task.name = clearKernel -->
+				<name>clearKernel</name>
+				<start>1063375</start>
+				<end>1063387</end>
+				<ocl_global_work_size>131072</ocl_global_work_size>
+				<ocl_local_work_size>256</ocl_local_work_size>
+				<ocl_queued>1061728</ocl_queued>
+				<ocl_submit>1061730</ocl_submit>
+			</taskInstance>
+			<taskInstance>
+				<idTask>94066820439280</idTask><!-- task.name = computeOffsetKernel -->
+				<name>computeOffsetKernel</name>
+				<start>1063389</start>
+				<end>1063398</end>
+				<ocl_global_work_size>131072</ocl_global_work_size>
+				<ocl_local_work_size>256</ocl_local_work_size>
+				<ocl_queued>1061749</ocl_queued>
+				<ocl_submit>1061751</ocl_submit>
+			</taskInstance>
+			<taskInstance>
+				<idTask>94066820675248</idTask><!-- task.name = computePointersKernel -->
+				<name>computePointersKernel</name>
+				<start>1063402</start>
+				<end>1063716</end>
+				<ocl_global_work_size>131072</ocl_global_work_size>
+				<ocl_local_work_size>256</ocl_local_work_size>
+				<ocl_queued>1061768</ocl_queued>
+				<ocl_submit>1061770</ocl_submit>
+			</taskInstance>
+			<taskInstance>
+				<idTask>94066820696368</idTask><!-- task.name = reduceKernel -->
+				<name>reduceKernel</name>
+				<start>1063718</start>
+				<end>1064701</end>
+				<ocl_global_work_size>131072</ocl_global_work_size>
+				<ocl_local_work_size>256</ocl_local_work_size>
+				<ocl_queued>1061784</ocl_queued>
+				<ocl_submit>1061787</ocl_submit>
+			</taskInstance>
+			<taskInstance>
+				<idTask>1</idTask><!-- task.name = Read Buffer -->
+				<name>Read Buffer</name>
+				<start>1064709</start>
+				<end>1064711</end>
+				<ocl_size>20</ocl_size>
+				<ocl_bandwidth>7</ocl_bandwidth>
+			</taskInstance>
+			<taskInstance>
+				<idTask>1</idTask><!-- task.name = Read Buffer -->
+				<name>Read Buffer</name>
+				<start>1064804</start>
+				<end>1066376</end>
+				<ocl_size>8388608</ocl_size>
+				<ocl_bandwidth>5334</ocl_bandwidth>
+			</taskInstance>
+			<taskInstance>
+				<idTask>2</idTask><!-- task.name = Write Buffer -->
+				<name>Write Buffer</name>
+				<start>1086387</start>
+				<end>1087863</end>
+				<ocl_size>8388608</ocl_size>
+				<ocl_bandwidth>5683</ocl_bandwidth>
+			</taskInstance>
+			<taskInstance>
+				<idTask>94066820533056</idTask><!-- task.name = clearKernel -->
+				<name>clearKernel</name>
+				<start>1087868</start>
+				<end>1087880</end>
+				<ocl_global_work_size>131072</ocl_global_work_size>
+				<ocl_local_work_size>256</ocl_local_work_size>
+				<ocl_queued>1086230</ocl_queued>
+				<ocl_submit>1086233</ocl_submit>
+			</taskInstance>
+			<taskInstance>
+				<idTask>94066820439280</idTask><!-- task.name = computeOffsetKernel -->
+				<name>computeOffsetKernel</name>
+				<start>1087884</start>
+				<end>1087893</end>
+				<ocl_global_work_size>131072</ocl_global_work_size>
+				<ocl_local_work_size>256</ocl_local_work_size>
+				<ocl_queued>1086252</ocl_queued>
+				<ocl_submit>1086254</ocl_submit>
+			</taskInstance>
+			<taskInstance>
+				<idTask>94066820675248</idTask><!-- task.name = computePointersKernel -->
+				<name>computePointersKernel</name>
+				<start>1087895</start>
+				<end>1088206</end>
+				<ocl_global_work_size>131072</ocl_global_work_size>
+				<ocl_local_work_size>256</ocl_local_work_size>
+				<ocl_queued>1086269</ocl_queued>
+				<ocl_submit>1086272</ocl_submit>
+			</taskInstance>
+			<taskInstance>
+				<idTask>94066820696368</idTask><!-- task.name = reduceKernel -->
+				<name>reduceKernel</name>
+				<start>1088208</start>
+				<end>1089194</end>
+				<ocl_global_work_size>131072</ocl_global_work_size>
+				<ocl_local_work_size>256</ocl_local_work_size>
+				<ocl_queued>1086285</ocl_queued>
+				<ocl_submit>1086287</ocl_submit>
+			</taskInstance>
+			<taskInstance>
+				<idTask>1</idTask><!-- task.name = Read Buffer -->
+				<name>Read Buffer</name>
+				<start>1089201</start>
+				<end>1089203</end>
+				<ocl_size>20</ocl_size>
+				<ocl_bandwidth>7</ocl_bandwidth>
+			</taskInstance>
+			<taskInstance>
+				<idTask>1</idTask><!-- task.name = Read Buffer -->
+				<name>Read Buffer</name>
+				<start>1089298</start>
+				<end>1090848</end>
+				<ocl_size>8388608</ocl_size>
+				<ocl_bandwidth>5410</ocl_bandwidth>
+			</taskInstance>
+			<taskInstance>
+				<idTask>2</idTask><!-- task.name = Write Buffer -->
+				<name>Write Buffer</name>
+				<start>1110768</start>
+				<end>1112246</end>
+				<ocl_size>8388608</ocl_size>
+				<ocl_bandwidth>5678</ocl_bandwidth>
+			</taskInstance>
+			<taskInstance>
+				<idTask>94066820533056</idTask><!-- task.name = clearKernel -->
+				<name>clearKernel</name>
+				<start>1112244</start>
+				<end>1112256</end>
+				<ocl_global_work_size>131072</ocl_global_work_size>
+				<ocl_local_work_size>256</ocl_local_work_size>
+				<ocl_queued>1110611</ocl_queued>
+				<ocl_submit>1110614</ocl_submit>
+			</taskInstance>
+			<taskInstance>
+				<idTask>94066820439280</idTask><!-- task.name = computeOffsetKernel -->
+				<name>computeOffsetKernel</name>
+				<start>1112261</start>
+				<end>1112270</end>
+				<ocl_global_work_size>131072</ocl_global_work_size>
+				<ocl_local_work_size>256</ocl_local_work_size>
+				<ocl_queued>1110634</ocl_queued>
+				<ocl_submit>1110636</ocl_submit>
+			</taskInstance>
+			<taskInstance>
+				<idTask>94066820675248</idTask><!-- task.name = computePointersKernel -->
+				<name>computePointersKernel</name>
+				<start>1112272</start>
+				<end>1112587</end>
+				<ocl_global_work_size>131072</ocl_global_work_size>
+				<ocl_local_work_size>256</ocl_local_work_size>
+				<ocl_queued>1110650</ocl_queued>
+				<ocl_submit>1110653</ocl_submit>
+			</taskInstance>
+			<taskInstance>
+				<idTask>94066820696368</idTask><!-- task.name = reduceKernel -->
+				<name>reduceKernel</name>
+				<start>1112589</start>
+				<end>1113573</end>
+				<ocl_global_work_size>131072</ocl_global_work_size>
+				<ocl_local_work_size>256</ocl_local_work_size>
+				<ocl_queued>1110667</ocl_queued>
+				<ocl_submit>1110669</ocl_submit>
+			</taskInstance>
+			<taskInstance>
+				<idTask>1</idTask><!-- task.name = Read Buffer -->
+				<name>Read Buffer</name>
+				<start>1113576</start>
+				<end>1113578</end>
+				<ocl_size>20</ocl_size>
+				<ocl_bandwidth>7</ocl_bandwidth>
+			</taskInstance>
+			<taskInstance>
+				<idTask>1</idTask><!-- task.name = Read Buffer -->
+				<name>Read Buffer</name>
+				<start>1113668</start>
+				<end>1115194</end>
+				<ocl_size>8388608</ocl_size>
+				<ocl_bandwidth>5498</ocl_bandwidth>
+			</taskInstance>
+			<taskInstance>
+				<idTask>2</idTask><!-- task.name = Write Buffer -->
+				<name>Write Buffer</name>
+				<start>1135188</start>
+				<end>1136683</end>
+				<ocl_size>8388608</ocl_size>
+				<ocl_bandwidth>5609</ocl_bandwidth>
+			</taskInstance>
+			<taskInstance>
+				<idTask>94066820533056</idTask><!-- task.name = clearKernel -->
+				<name>clearKernel</name>
+				<start>1136687</start>
+				<end>1136699</end>
+				<ocl_global_work_size>131072</ocl_global_work_size>
+				<ocl_local_work_size>256</ocl_local_work_size>
+				<ocl_queued>1135029</ocl_queued>
+				<ocl_submit>1135031</ocl_submit>
+			</taskInstance>
+			<taskInstance>
+				<idTask>94066820439280</idTask><!-- task.name = computeOffsetKernel -->
+				<name>computeOffsetKernel</name>
+				<start>1136704</start>
+				<end>1136713</end>
+				<ocl_global_work_size>131072</ocl_global_work_size>
+				<ocl_local_work_size>256</ocl_local_work_size>
+				<ocl_queued>1135052</ocl_queued>
+				<ocl_submit>1135054</ocl_submit>
+			</taskInstance>
+			<taskInstance>
+				<idTask>94066820675248</idTask><!-- task.name = computePointersKernel -->
+				<name>computePointersKernel</name>
+				<start>1136714</start>
+				<end>1137029</end>
+				<ocl_global_work_size>131072</ocl_global_work_size>
+				<ocl_local_work_size>256</ocl_local_work_size>
+				<ocl_queued>1135069</ocl_queued>
+				<ocl_submit>1135071</ocl_submit>
+			</taskInstance>
+			<taskInstance>
+				<idTask>94066820696368</idTask><!-- task.name = reduceKernel -->
+				<name>reduceKernel</name>
+				<start>1137031</start>
+				<end>1138013</end>
+				<ocl_global_work_size>131072</ocl_global_work_size>
+				<ocl_local_work_size>256</ocl_local_work_size>
+				<ocl_queued>1135086</ocl_queued>
+				<ocl_submit>1135088</ocl_submit>
+			</taskInstance>
+			<taskInstance>
+				<idTask>1</idTask><!-- task.name = Read Buffer -->
+				<name>Read Buffer</name>
+				<start>1138019</start>
+				<end>1138022</end>
+				<ocl_size>20</ocl_size>
+				<ocl_bandwidth>7</ocl_bandwidth>
+			</taskInstance>
+			<taskInstance>
+				<idTask>1</idTask><!-- task.name = Read Buffer -->
+				<name>Read Buffer</name>
+				<start>1138105</start>
+				<end>1139676</end>
+				<ocl_size>8388608</ocl_size>
+				<ocl_bandwidth>5338</ocl_bandwidth>
 			</taskInstance>
 		</stream>
 		<stream>
@@ -765,450 +765,386 @@ The major_version.minor_version value returned will be 1.0.</help>
 			<taskInstance>
 				<idTask>2</idTask><!-- task.name = Write Buffer -->
 				<name>Write Buffer</name>
-				<start>939195</start>
-				<end>940744</end>
+				<start>953299</start>
+				<end>954780</end>
 				<ocl_size>8388608</ocl_size>
-				<ocl_bandwidth>5417</ocl_bandwidth>
+				<ocl_bandwidth>5663</ocl_bandwidth>
 			</taskInstance>
 			<taskInstance>
-				<idTask>94488354679824</idTask><!-- task.name = clearKernel -->
+				<idTask>94066820422768</idTask><!-- task.name = clearKernel -->
 				<name>clearKernel</name>
-				<start>940298</start>
-				<end>940318</end>
+				<start>954328</start>
+				<end>954342</end>
 				<ocl_global_work_size>131072</ocl_global_work_size>
 				<ocl_local_work_size>256</ocl_local_work_size>
-				<ocl_queued>937681</ocl_queued>
-				<ocl_submit>937689</ocl_submit>
+				<ocl_queued>953401</ocl_queued>
+				<ocl_submit>953408</ocl_submit>
 			</taskInstance>
 			<taskInstance>
-				<idTask>94488354700512</idTask><!-- task.name = computeOffsetKernel -->
+				<idTask>94066820443456</idTask><!-- task.name = computeOffsetKernel -->
 				<name>computeOffsetKernel</name>
-				<start>941080</start>
-				<end>941093</end>
+				<start>955010</start>
+				<end>955020</end>
 				<ocl_global_work_size>131072</ocl_global_work_size>
 				<ocl_local_work_size>256</ocl_local_work_size>
-				<ocl_queued>938501</ocl_queued>
-				<ocl_submit>938504</ocl_submit>
+				<ocl_queued>954135</ocl_queued>
+				<ocl_submit>954139</ocl_submit>
 			</taskInstance>
 			<taskInstance>
-				<idTask>94488354936528</idTask><!-- task.name = computePointersKernel -->
+				<idTask>94066820679472</idTask><!-- task.name = computePointersKernel -->
 				<name>computePointersKernel</name>
-				<start>941101</start>
-				<end>942209</end>
+				<start>955033</start>
+				<end>955344</end>
 				<ocl_global_work_size>131072</ocl_global_work_size>
 				<ocl_local_work_size>256</ocl_local_work_size>
-				<ocl_queued>938541</ocl_queued>
-				<ocl_submit>938545</ocl_submit>
+				<ocl_queued>954185</ocl_queued>
+				<ocl_submit>954188</ocl_submit>
 			</taskInstance>
 			<taskInstance>
-				<idTask>94488354957600</idTask><!-- task.name = reduceKernel -->
+				<idTask>94066820700544</idTask><!-- task.name = reduceKernel -->
 				<name>reduceKernel</name>
-				<start>942210</start>
-				<end>945640</end>
+				<start>955352</start>
+				<end>956338</end>
 				<ocl_global_work_size>131072</ocl_global_work_size>
 				<ocl_local_work_size>256</ocl_local_work_size>
-				<ocl_queued>938571</ocl_queued>
-				<ocl_submit>938574</ocl_submit>
+				<ocl_queued>954221</ocl_queued>
+				<ocl_submit>954224</ocl_submit>
 			</taskInstance>
 			<taskInstance>
 				<idTask>1</idTask><!-- task.name = Read Buffer -->
 				<name>Read Buffer</name>
-				<start>949721</start>
-				<end>949724</end>
+				<start>956348</start>
+				<end>956351</end>
 				<ocl_size>20</ocl_size>
 				<ocl_bandwidth>7</ocl_bandwidth>
 			</taskInstance>
 			<taskInstance>
 				<idTask>1</idTask><!-- task.name = Read Buffer -->
 				<name>Read Buffer</name>
-				<start>950681</start>
-				<end>956283</end>
+				<start>956465</start>
+				<end>961809</end>
 				<ocl_size>8388608</ocl_size>
-				<ocl_bandwidth>1497</ocl_bandwidth>
+				<ocl_bandwidth>1569</ocl_bandwidth>
 			</taskInstance>
 			<taskInstance>
 				<idTask>2</idTask><!-- task.name = Write Buffer -->
 				<name>Write Buffer</name>
-				<start>977429</start>
-				<end>990209</end>
+				<start>1003177</start>
+				<end>1004645</end>
 				<ocl_size>8388608</ocl_size>
-				<ocl_bandwidth>656</ocl_bandwidth>
+				<ocl_bandwidth>5713</ocl_bandwidth>
 			</taskInstance>
 			<taskInstance>
-				<idTask>94488354679824</idTask><!-- task.name = clearKernel -->
+				<idTask>94066820422768</idTask><!-- task.name = clearKernel -->
 				<name>clearKernel</name>
-				<start>990221</start>
-				<end>990235</end>
+				<start>1004646</start>
+				<end>1004658</end>
 				<ocl_global_work_size>131072</ocl_global_work_size>
 				<ocl_local_work_size>256</ocl_local_work_size>
-				<ocl_queued>977213</ocl_queued>
-				<ocl_submit>977219</ocl_submit>
+				<ocl_queued>1003022</ocl_queued>
+				<ocl_submit>1003025</ocl_submit>
 			</taskInstance>
 			<taskInstance>
-				<idTask>94488354700512</idTask><!-- task.name = computeOffsetKernel -->
+				<idTask>94066820443456</idTask><!-- task.name = computeOffsetKernel -->
 				<name>computeOffsetKernel</name>
-				<start>990237</start>
-				<end>990251</end>
+				<start>1004662</start>
+				<end>1004671</end>
 				<ocl_global_work_size>131072</ocl_global_work_size>
 				<ocl_local_work_size>256</ocl_local_work_size>
-				<ocl_queued>977245</ocl_queued>
-				<ocl_submit>977251</ocl_submit>
+				<ocl_queued>1003051</ocl_queued>
+				<ocl_submit>1003054</ocl_submit>
 			</taskInstance>
 			<taskInstance>
-				<idTask>94488354936528</idTask><!-- task.name = computePointersKernel -->
+				<idTask>94066820679472</idTask><!-- task.name = computePointersKernel -->
 				<name>computePointersKernel</name>
-				<start>990253</start>
-				<end>990568</end>
+				<start>1004673</start>
+				<end>1004987</end>
 				<ocl_global_work_size>131072</ocl_global_work_size>
 				<ocl_local_work_size>256</ocl_local_work_size>
-				<ocl_queued>977280</ocl_queued>
-				<ocl_submit>977283</ocl_submit>
+				<ocl_queued>1003068</ocl_queued>
+				<ocl_submit>1003070</ocl_submit>
 			</taskInstance>
 			<taskInstance>
-				<idTask>94488354957600</idTask><!-- task.name = reduceKernel -->
+				<idTask>94066820700544</idTask><!-- task.name = reduceKernel -->
 				<name>reduceKernel</name>
-				<start>990570</start>
-				<end>991568</end>
+				<start>1004989</start>
+				<end>1005970</end>
 				<ocl_global_work_size>131072</ocl_global_work_size>
 				<ocl_local_work_size>256</ocl_local_work_size>
-				<ocl_queued>977301</ocl_queued>
-				<ocl_submit>977305</ocl_submit>
+				<ocl_queued>1003084</ocl_queued>
+				<ocl_submit>1003086</ocl_submit>
 			</taskInstance>
 			<taskInstance>
 				<idTask>1</idTask><!-- task.name = Read Buffer -->
 				<name>Read Buffer</name>
-				<start>992664</start>
-				<end>992666</end>
+				<start>1005977</start>
+				<end>1005980</end>
 				<ocl_size>20</ocl_size>
 				<ocl_bandwidth>7</ocl_bandwidth>
 			</taskInstance>
 			<taskInstance>
 				<idTask>1</idTask><!-- task.name = Read Buffer -->
 				<name>Read Buffer</name>
-				<start>993660</start>
-				<end>999963</end>
+				<start>1006099</start>
+				<end>1011243</end>
 				<ocl_size>8388608</ocl_size>
-				<ocl_bandwidth>1331</ocl_bandwidth>
+				<ocl_bandwidth>1630</ocl_bandwidth>
 			</taskInstance>
 			<taskInstance>
 				<idTask>2</idTask><!-- task.name = Write Buffer -->
 				<name>Write Buffer</name>
-				<start>1027320</start>
-				<end>1036486</end>
+				<start>1042332</start>
+				<end>1043798</end>
 				<ocl_size>8388608</ocl_size>
-				<ocl_bandwidth>915</ocl_bandwidth>
+				<ocl_bandwidth>5724</ocl_bandwidth>
 			</taskInstance>
 			<taskInstance>
-				<idTask>94488354679824</idTask><!-- task.name = clearKernel -->
+				<idTask>94066820422768</idTask><!-- task.name = clearKernel -->
 				<name>clearKernel</name>
-				<start>1036500</start>
-				<end>1036529</end>
+				<start>1043797</start>
+				<end>1043809</end>
 				<ocl_global_work_size>131072</ocl_global_work_size>
 				<ocl_local_work_size>256</ocl_local_work_size>
-				<ocl_queued>1021317</ocl_queued>
-				<ocl_submit>1021320</ocl_submit>
+				<ocl_queued>1042178</ocl_queued>
+				<ocl_submit>1042181</ocl_submit>
 			</taskInstance>
 			<taskInstance>
-				<idTask>94488354700512</idTask><!-- task.name = computeOffsetKernel -->
+				<idTask>94066820443456</idTask><!-- task.name = computeOffsetKernel -->
 				<name>computeOffsetKernel</name>
-				<start>1036532</start>
-				<end>1036555</end>
+				<start>1043813</start>
+				<end>1043823</end>
 				<ocl_global_work_size>131072</ocl_global_work_size>
 				<ocl_local_work_size>256</ocl_local_work_size>
-				<ocl_queued>1021342</ocl_queued>
-				<ocl_submit>1021346</ocl_submit>
+				<ocl_queued>1042200</ocl_queued>
+				<ocl_submit>1042202</ocl_submit>
 			</taskInstance>
 			<taskInstance>
-				<idTask>94488354936528</idTask><!-- task.name = computePointersKernel -->
+				<idTask>94066820679472</idTask><!-- task.name = computePointersKernel -->
 				<name>computePointersKernel</name>
-				<start>1036558</start>
-				<end>1037680</end>
+				<start>1043824</start>
+				<end>1044137</end>
 				<ocl_global_work_size>131072</ocl_global_work_size>
 				<ocl_local_work_size>256</ocl_local_work_size>
-				<ocl_queued>1021362</ocl_queued>
-				<ocl_submit>1021366</ocl_submit>
+				<ocl_queued>1042216</ocl_queued>
+				<ocl_submit>1042219</ocl_submit>
 			</taskInstance>
 			<taskInstance>
-				<idTask>94488354957600</idTask><!-- task.name = reduceKernel -->
+				<idTask>94066820700544</idTask><!-- task.name = reduceKernel -->
 				<name>reduceKernel</name>
-				<start>1037684</start>
-				<end>1041540</end>
+				<start>1044140</start>
+				<end>1045123</end>
 				<ocl_global_work_size>131072</ocl_global_work_size>
 				<ocl_local_work_size>256</ocl_local_work_size>
-				<ocl_queued>1021383</ocl_queued>
-				<ocl_submit>1021387</ocl_submit>
+				<ocl_queued>1042233</ocl_queued>
+				<ocl_submit>1042236</ocl_submit>
 			</taskInstance>
 			<taskInstance>
 				<idTask>1</idTask><!-- task.name = Read Buffer -->
 				<name>Read Buffer</name>
-				<start>1041548</start>
-				<end>1041551</end>
+				<start>1045135</start>
+				<end>1045138</end>
+				<ocl_size>20</ocl_size>
+				<ocl_bandwidth>6</ocl_bandwidth>
+			</taskInstance>
+			<taskInstance>
+				<idTask>1</idTask><!-- task.name = Read Buffer -->
+				<name>Read Buffer</name>
+				<start>1045232</start>
+				<end>1046782</end>
+				<ocl_size>8388608</ocl_size>
+				<ocl_bandwidth>5414</ocl_bandwidth>
+			</taskInstance>
+			<taskInstance>
+				<idTask>2</idTask><!-- task.name = Write Buffer -->
+				<name>Write Buffer</name>
+				<start>1066813</start>
+				<end>1068286</end>
+				<ocl_size>8388608</ocl_size>
+				<ocl_bandwidth>5693</ocl_bandwidth>
+			</taskInstance>
+			<taskInstance>
+				<idTask>94066820422768</idTask><!-- task.name = clearKernel -->
+				<name>clearKernel</name>
+				<start>1068288</start>
+				<end>1068299</end>
+				<ocl_global_work_size>131072</ocl_global_work_size>
+				<ocl_local_work_size>256</ocl_local_work_size>
+				<ocl_queued>1066660</ocl_queued>
+				<ocl_submit>1066663</ocl_submit>
+			</taskInstance>
+			<taskInstance>
+				<idTask>94066820443456</idTask><!-- task.name = computeOffsetKernel -->
+				<name>computeOffsetKernel</name>
+				<start>1068302</start>
+				<end>1068312</end>
+				<ocl_global_work_size>131072</ocl_global_work_size>
+				<ocl_local_work_size>256</ocl_local_work_size>
+				<ocl_queued>1066681</ocl_queued>
+				<ocl_submit>1066683</ocl_submit>
+			</taskInstance>
+			<taskInstance>
+				<idTask>94066820679472</idTask><!-- task.name = computePointersKernel -->
+				<name>computePointersKernel</name>
+				<start>1068314</start>
+				<end>1068626</end>
+				<ocl_global_work_size>131072</ocl_global_work_size>
+				<ocl_local_work_size>256</ocl_local_work_size>
+				<ocl_queued>1066698</ocl_queued>
+				<ocl_submit>1066700</ocl_submit>
+			</taskInstance>
+			<taskInstance>
+				<idTask>94066820700544</idTask><!-- task.name = reduceKernel -->
+				<name>reduceKernel</name>
+				<start>1068630</start>
+				<end>1069623</end>
+				<ocl_global_work_size>131072</ocl_global_work_size>
+				<ocl_local_work_size>256</ocl_local_work_size>
+				<ocl_queued>1066715</ocl_queued>
+				<ocl_submit>1066718</ocl_submit>
+			</taskInstance>
+			<taskInstance>
+				<idTask>1</idTask><!-- task.name = Read Buffer -->
+				<name>Read Buffer</name>
+				<start>1069632</start>
+				<end>1069635</end>
 				<ocl_size>20</ocl_size>
 				<ocl_bandwidth>7</ocl_bandwidth>
 			</taskInstance>
 			<taskInstance>
 				<idTask>1</idTask><!-- task.name = Read Buffer -->
 				<name>Read Buffer</name>
-				<start>1041678</start>
-				<end>1047029</end>
+				<start>1069727</start>
+				<end>1071283</end>
 				<ocl_size>8388608</ocl_size>
-				<ocl_bandwidth>1567</ocl_bandwidth>
+				<ocl_bandwidth>5393</ocl_bandwidth>
 			</taskInstance>
 			<taskInstance>
 				<idTask>2</idTask><!-- task.name = Write Buffer -->
 				<name>Write Buffer</name>
-				<start>1061149</start>
-				<end>1062964</end>
+				<start>1091280</start>
+				<end>1092751</end>
 				<ocl_size>8388608</ocl_size>
-				<ocl_bandwidth>4620</ocl_bandwidth>
+				<ocl_bandwidth>5703</ocl_bandwidth>
 			</taskInstance>
 			<taskInstance>
-				<idTask>94488354679824</idTask><!-- task.name = clearKernel -->
+				<idTask>94066820422768</idTask><!-- task.name = clearKernel -->
 				<name>clearKernel</name>
-				<start>1062973</start>
-				<end>1062993</end>
+				<start>1092753</start>
+				<end>1092764</end>
 				<ocl_global_work_size>131072</ocl_global_work_size>
 				<ocl_local_work_size>256</ocl_local_work_size>
-				<ocl_queued>1058427</ocl_queued>
-				<ocl_submit>1058430</ocl_submit>
+				<ocl_queued>1091125</ocl_queued>
+				<ocl_submit>1091128</ocl_submit>
 			</taskInstance>
 			<taskInstance>
-				<idTask>94488354700512</idTask><!-- task.name = computeOffsetKernel -->
+				<idTask>94066820443456</idTask><!-- task.name = computeOffsetKernel -->
 				<name>computeOffsetKernel</name>
-				<start>1062996</start>
-				<end>1063016</end>
+				<start>1092768</start>
+				<end>1092777</end>
 				<ocl_global_work_size>131072</ocl_global_work_size>
 				<ocl_local_work_size>256</ocl_local_work_size>
-				<ocl_queued>1058450</ocl_queued>
-				<ocl_submit>1058452</ocl_submit>
+				<ocl_queued>1091147</ocl_queued>
+				<ocl_submit>1091149</ocl_submit>
 			</taskInstance>
 			<taskInstance>
-				<idTask>94488354936528</idTask><!-- task.name = computePointersKernel -->
+				<idTask>94066820679472</idTask><!-- task.name = computePointersKernel -->
 				<name>computePointersKernel</name>
-				<start>1063018</start>
-				<end>1064151</end>
+				<start>1092779</start>
+				<end>1093091</end>
 				<ocl_global_work_size>131072</ocl_global_work_size>
 				<ocl_local_work_size>256</ocl_local_work_size>
-				<ocl_queued>1058469</ocl_queued>
-				<ocl_submit>1058471</ocl_submit>
+				<ocl_queued>1091163</ocl_queued>
+				<ocl_submit>1091165</ocl_submit>
 			</taskInstance>
 			<taskInstance>
-				<idTask>94488354957600</idTask><!-- task.name = reduceKernel -->
+				<idTask>94066820700544</idTask><!-- task.name = reduceKernel -->
 				<name>reduceKernel</name>
-				<start>1064152</start>
-				<end>1067807</end>
+				<start>1093093</start>
+				<end>1094078</end>
 				<ocl_global_work_size>131072</ocl_global_work_size>
 				<ocl_local_work_size>256</ocl_local_work_size>
-				<ocl_queued>1058486</ocl_queued>
-				<ocl_submit>1058488</ocl_submit>
+				<ocl_queued>1091179</ocl_queued>
+				<ocl_submit>1091181</ocl_submit>
 			</taskInstance>
 			<taskInstance>
 				<idTask>1</idTask><!-- task.name = Read Buffer -->
 				<name>Read Buffer</name>
-				<start>1067823</start>
-				<end>1067825</end>
-				<ocl_size>20</ocl_size>
-				<ocl_bandwidth>8</ocl_bandwidth>
-			</taskInstance>
-			<taskInstance>
-				<idTask>1</idTask><!-- task.name = Read Buffer -->
-				<name>Read Buffer</name>
-				<start>1067933</start>
-				<end>1069819</end>
-				<ocl_size>8388608</ocl_size>
-				<ocl_bandwidth>4446</ocl_bandwidth>
-			</taskInstance>
-			<taskInstance>
-				<idTask>2</idTask><!-- task.name = Write Buffer -->
-				<name>Write Buffer</name>
-				<start>1077258</start>
-				<end>1078732</end>
-				<ocl_size>8388608</ocl_size>
-				<ocl_bandwidth>5692</ocl_bandwidth>
-			</taskInstance>
-			<taskInstance>
-				<idTask>94488354679824</idTask><!-- task.name = clearKernel -->
-				<name>clearKernel</name>
-				<start>1078737</start>
-				<end>1078762</end>
-				<ocl_global_work_size>131072</ocl_global_work_size>
-				<ocl_local_work_size>256</ocl_local_work_size>
-				<ocl_queued>1075590</ocl_queued>
-				<ocl_submit>1075593</ocl_submit>
-			</taskInstance>
-			<taskInstance>
-				<idTask>94488354700512</idTask><!-- task.name = computeOffsetKernel -->
-				<name>computeOffsetKernel</name>
-				<start>1078765</start>
-				<end>1078786</end>
-				<ocl_global_work_size>131072</ocl_global_work_size>
-				<ocl_local_work_size>256</ocl_local_work_size>
-				<ocl_queued>1075613</ocl_queued>
-				<ocl_submit>1075616</ocl_submit>
-			</taskInstance>
-			<taskInstance>
-				<idTask>94488354936528</idTask><!-- task.name = computePointersKernel -->
-				<name>computePointersKernel</name>
-				<start>1078788</start>
-				<end>1079910</end>
-				<ocl_global_work_size>131072</ocl_global_work_size>
-				<ocl_local_work_size>256</ocl_local_work_size>
-				<ocl_queued>1075631</ocl_queued>
-				<ocl_submit>1075633</ocl_submit>
-			</taskInstance>
-			<taskInstance>
-				<idTask>94488354957600</idTask><!-- task.name = reduceKernel -->
-				<name>reduceKernel</name>
-				<start>1079912</start>
-				<end>1083348</end>
-				<ocl_global_work_size>131072</ocl_global_work_size>
-				<ocl_local_work_size>256</ocl_local_work_size>
-				<ocl_queued>1075648</ocl_queued>
-				<ocl_submit>1075651</ocl_submit>
-			</taskInstance>
-			<taskInstance>
-				<idTask>1</idTask><!-- task.name = Read Buffer -->
-				<name>Read Buffer</name>
-				<start>1084422</start>
-				<end>1084424</end>
-				<ocl_size>20</ocl_size>
-				<ocl_bandwidth>8</ocl_bandwidth>
-			</taskInstance>
-			<taskInstance>
-				<idTask>1</idTask><!-- task.name = Read Buffer -->
-				<name>Read Buffer</name>
-				<start>1084781</start>
-				<end>1086678</end>
-				<ocl_size>8388608</ocl_size>
-				<ocl_bandwidth>4422</ocl_bandwidth>
-			</taskInstance>
-			<taskInstance>
-				<idTask>2</idTask><!-- task.name = Write Buffer -->
-				<name>Write Buffer</name>
-				<start>1096576</start>
-				<end>1100120</end>
-				<ocl_size>8388608</ocl_size>
-				<ocl_bandwidth>2366</ocl_bandwidth>
-			</taskInstance>
-			<taskInstance>
-				<idTask>94488354679824</idTask><!-- task.name = clearKernel -->
-				<name>clearKernel</name>
-				<start>1100118</start>
-				<end>1100135</end>
-				<ocl_global_work_size>131072</ocl_global_work_size>
-				<ocl_local_work_size>256</ocl_local_work_size>
-				<ocl_queued>1096438</ocl_queued>
-				<ocl_submit>1096442</ocl_submit>
-			</taskInstance>
-			<taskInstance>
-				<idTask>94488354700512</idTask><!-- task.name = computeOffsetKernel -->
-				<name>computeOffsetKernel</name>
-				<start>1100141</start>
-				<end>1100154</end>
-				<ocl_global_work_size>131072</ocl_global_work_size>
-				<ocl_local_work_size>256</ocl_local_work_size>
-				<ocl_queued>1096465</ocl_queued>
-				<ocl_submit>1096469</ocl_submit>
-			</taskInstance>
-			<taskInstance>
-				<idTask>94488354936528</idTask><!-- task.name = computePointersKernel -->
-				<name>computePointersKernel</name>
-				<start>1100154</start>
-				<end>1100469</end>
-				<ocl_global_work_size>131072</ocl_global_work_size>
-				<ocl_local_work_size>256</ocl_local_work_size>
-				<ocl_queued>1096484</ocl_queued>
-				<ocl_submit>1096488</ocl_submit>
-			</taskInstance>
-			<taskInstance>
-				<idTask>94488354957600</idTask><!-- task.name = reduceKernel -->
-				<name>reduceKernel</name>
-				<start>1100472</start>
-				<end>1101455</end>
-				<ocl_global_work_size>131072</ocl_global_work_size>
-				<ocl_local_work_size>256</ocl_local_work_size>
-				<ocl_queued>1096504</ocl_queued>
-				<ocl_submit>1096507</ocl_submit>
-			</taskInstance>
-			<taskInstance>
-				<idTask>1</idTask><!-- task.name = Read Buffer -->
-				<name>Read Buffer</name>
-				<start>1101464</start>
-				<end>1101466</end>
-				<ocl_size>20</ocl_size>
-				<ocl_bandwidth>8</ocl_bandwidth>
-			</taskInstance>
-			<taskInstance>
-				<idTask>1</idTask><!-- task.name = Read Buffer -->
-				<name>Read Buffer</name>
-				<start>1101877</start>
-				<end>1103789</end>
-				<ocl_size>8388608</ocl_size>
-				<ocl_bandwidth>4386</ocl_bandwidth>
-			</taskInstance>
-			<taskInstance>
-				<idTask>2</idTask><!-- task.name = Write Buffer -->
-				<name>Write Buffer</name>
-				<start>1115574</start>
-				<end>1118224</end>
-				<ocl_size>8388608</ocl_size>
-				<ocl_bandwidth>3165</ocl_bandwidth>
-			</taskInstance>
-			<taskInstance>
-				<idTask>94488354679824</idTask><!-- task.name = clearKernel -->
-				<name>clearKernel</name>
-				<start>1118234</start>
-				<end>1118246</end>
-				<ocl_global_work_size>131072</ocl_global_work_size>
-				<ocl_local_work_size>256</ocl_local_work_size>
-				<ocl_queued>1113446</ocl_queued>
-				<ocl_submit>1113450</ocl_submit>
-			</taskInstance>
-			<taskInstance>
-				<idTask>94488354700512</idTask><!-- task.name = computeOffsetKernel -->
-				<name>computeOffsetKernel</name>
-				<start>1118248</start>
-				<end>1118258</end>
-				<ocl_global_work_size>131072</ocl_global_work_size>
-				<ocl_local_work_size>256</ocl_local_work_size>
-				<ocl_queued>1113470</ocl_queued>
-				<ocl_submit>1113474</ocl_submit>
-			</taskInstance>
-			<taskInstance>
-				<idTask>94488354936528</idTask><!-- task.name = computePointersKernel -->
-				<name>computePointersKernel</name>
-				<start>1118259</start>
-				<end>1119360</end>
-				<ocl_global_work_size>131072</ocl_global_work_size>
-				<ocl_local_work_size>256</ocl_local_work_size>
-				<ocl_queued>1113490</ocl_queued>
-				<ocl_submit>1113494</ocl_submit>
-			</taskInstance>
-			<taskInstance>
-				<idTask>94488354957600</idTask><!-- task.name = reduceKernel -->
-				<name>reduceKernel</name>
-				<start>1119362</start>
-				<end>1122746</end>
-				<ocl_global_work_size>131072</ocl_global_work_size>
-				<ocl_local_work_size>256</ocl_local_work_size>
-				<ocl_queued>1113509</ocl_queued>
-				<ocl_submit>1113512</ocl_submit>
-			</taskInstance>
-			<taskInstance>
-				<idTask>1</idTask><!-- task.name = Read Buffer -->
-				<name>Read Buffer</name>
-				<start>1122758</start>
-				<end>1122760</end>
+				<start>1094086</start>
+				<end>1094089</end>
 				<ocl_size>20</ocl_size>
 				<ocl_bandwidth>7</ocl_bandwidth>
 			</taskInstance>
 			<taskInstance>
 				<idTask>1</idTask><!-- task.name = Read Buffer -->
 				<name>Read Buffer</name>
-				<start>1122856</start>
-				<end>1124372</end>
+				<start>1094173</start>
+				<end>1095672</end>
 				<ocl_size>8388608</ocl_size>
-				<ocl_bandwidth>5530</ocl_bandwidth>
+				<ocl_bandwidth>5597</ocl_bandwidth>
+			</taskInstance>
+			<taskInstance>
+				<idTask>2</idTask><!-- task.name = Write Buffer -->
+				<name>Write Buffer</name>
+				<start>1115629</start>
+				<end>1117104</end>
+				<ocl_size>8388608</ocl_size>
+				<ocl_bandwidth>5690</ocl_bandwidth>
+			</taskInstance>
+			<taskInstance>
+				<idTask>94066820422768</idTask><!-- task.name = clearKernel -->
+				<name>clearKernel</name>
+				<start>1117103</start>
+				<end>1117115</end>
+				<ocl_global_work_size>131072</ocl_global_work_size>
+				<ocl_local_work_size>256</ocl_local_work_size>
+				<ocl_queued>1115474</ocl_queued>
+				<ocl_submit>1115479</ocl_submit>
+			</taskInstance>
+			<taskInstance>
+				<idTask>94066820443456</idTask><!-- task.name = computeOffsetKernel -->
+				<name>computeOffsetKernel</name>
+				<start>1117119</start>
+				<end>1117129</end>
+				<ocl_global_work_size>131072</ocl_global_work_size>
+				<ocl_local_work_size>256</ocl_local_work_size>
+				<ocl_queued>1115501</ocl_queued>
+				<ocl_submit>1115505</ocl_submit>
+			</taskInstance>
+			<taskInstance>
+				<idTask>94066820679472</idTask><!-- task.name = computePointersKernel -->
+				<name>computePointersKernel</name>
+				<start>1117131</start>
+				<end>1117441</end>
+				<ocl_global_work_size>131072</ocl_global_work_size>
+				<ocl_local_work_size>256</ocl_local_work_size>
+				<ocl_queued>1115520</ocl_queued>
+				<ocl_submit>1115524</ocl_submit>
+			</taskInstance>
+			<taskInstance>
+				<idTask>94066820700544</idTask><!-- task.name = reduceKernel -->
+				<name>reduceKernel</name>
+				<start>1117443</start>
+				<end>1118427</end>
+				<ocl_global_work_size>131072</ocl_global_work_size>
+				<ocl_local_work_size>256</ocl_local_work_size>
+				<ocl_queued>1115539</ocl_queued>
+				<ocl_submit>1115542</ocl_submit>
+			</taskInstance>
+			<taskInstance>
+				<idTask>1</idTask><!-- task.name = Read Buffer -->
+				<name>Read Buffer</name>
+				<start>1118433</start>
+				<end>1118435</end>
+				<ocl_size>20</ocl_size>
+				<ocl_bandwidth>9</ocl_bandwidth>
+			</taskInstance>
+			<taskInstance>
+				<idTask>1</idTask><!-- task.name = Read Buffer -->
+				<name>Read Buffer</name>
+				<start>1118524</start>
+				<end>1120018</end>
+				<ocl_size>8388608</ocl_size>
+				<ocl_bandwidth>5615</ocl_bandwidth>
 			</taskInstance>
 		</stream>
 		<stream>
@@ -1216,386 +1152,386 @@ The major_version.minor_version value returned will be 1.0.</help>
 			<taskInstance>
 				<idTask>2</idTask><!-- task.name = Write Buffer -->
 				<name>Write Buffer</name>
-				<start>940880</start>
-				<end>952655</end>
+				<start>963463</start>
+				<end>964948</end>
 				<ocl_size>8388608</ocl_size>
-				<ocl_bandwidth>712</ocl_bandwidth>
+				<ocl_bandwidth>5649</ocl_bandwidth>
 			</taskInstance>
 			<taskInstance>
-				<idTask>94488354683952</idTask><!-- task.name = clearKernel -->
+				<idTask>94066820426896</idTask><!-- task.name = clearKernel -->
 				<name>clearKernel</name>
-				<start>952055</start>
-				<end>952069</end>
+				<start>964600</start>
+				<end>964612</end>
 				<ocl_global_work_size>131072</ocl_global_work_size>
 				<ocl_local_work_size>256</ocl_local_work_size>
-				<ocl_queued>939185</ocl_queued>
-				<ocl_submit>939192</ocl_submit>
+				<ocl_queued>963441</ocl_queued>
+				<ocl_submit>963445</ocl_submit>
 			</taskInstance>
 			<taskInstance>
-				<idTask>94488354704736</idTask><!-- task.name = computeOffsetKernel -->
+				<idTask>94066820447680</idTask><!-- task.name = computeOffsetKernel -->
 				<name>computeOffsetKernel</name>
-				<start>952936</start>
-				<end>952949</end>
+				<start>965090</start>
+				<end>965101</end>
 				<ocl_global_work_size>131072</ocl_global_work_size>
 				<ocl_local_work_size>256</ocl_local_work_size>
-				<ocl_queued>940108</ocl_queued>
-				<ocl_submit>940112</ocl_submit>
+				<ocl_queued>963951</ocl_queued>
+				<ocl_submit>963953</ocl_submit>
 			</taskInstance>
 			<taskInstance>
-				<idTask>94488354940752</idTask><!-- task.name = computePointersKernel -->
+				<idTask>94066820683696</idTask><!-- task.name = computePointersKernel -->
 				<name>computePointersKernel</name>
-				<start>952951</start>
-				<end>954073</end>
+				<start>965104</start>
+				<end>965420</end>
 				<ocl_global_work_size>131072</ocl_global_work_size>
 				<ocl_local_work_size>256</ocl_local_work_size>
-				<ocl_queued>940147</ocl_queued>
-				<ocl_submit>940150</ocl_submit>
+				<ocl_queued>963974</ocl_queued>
+				<ocl_submit>963976</ocl_submit>
 			</taskInstance>
 			<taskInstance>
-				<idTask>94488354961728</idTask><!-- task.name = reduceKernel -->
+				<idTask>94066820704672</idTask><!-- task.name = reduceKernel -->
 				<name>reduceKernel</name>
-				<start>954079</start>
-				<end>957491</end>
+				<start>965423</start>
+				<end>966405</end>
 				<ocl_global_work_size>131072</ocl_global_work_size>
 				<ocl_local_work_size>256</ocl_local_work_size>
-				<ocl_queued>940181</ocl_queued>
-				<ocl_submit>940184</ocl_submit>
+				<ocl_queued>963994</ocl_queued>
+				<ocl_submit>963997</ocl_submit>
 			</taskInstance>
 			<taskInstance>
 				<idTask>1</idTask><!-- task.name = Read Buffer -->
 				<name>Read Buffer</name>
-				<start>957504</start>
-				<end>957506</end>
+				<start>966413</start>
+				<end>966415</end>
+				<ocl_size>20</ocl_size>
+				<ocl_bandwidth>11</ocl_bandwidth>
+			</taskInstance>
+			<taskInstance>
+				<idTask>1</idTask><!-- task.name = Read Buffer -->
+				<name>Read Buffer</name>
+				<start>966530</start>
+				<end>971745</end>
+				<ocl_size>8388608</ocl_size>
+				<ocl_bandwidth>1608</ocl_bandwidth>
+			</taskInstance>
+			<taskInstance>
+				<idTask>2</idTask><!-- task.name = Write Buffer -->
+				<name>Write Buffer</name>
+				<start>1012821</start>
+				<end>1014290</end>
+				<ocl_size>8388608</ocl_size>
+				<ocl_bandwidth>5708</ocl_bandwidth>
+			</taskInstance>
+			<taskInstance>
+				<idTask>94066820426896</idTask><!-- task.name = clearKernel -->
+				<name>clearKernel</name>
+				<start>1014288</start>
+				<end>1014300</end>
+				<ocl_global_work_size>131072</ocl_global_work_size>
+				<ocl_local_work_size>256</ocl_local_work_size>
+				<ocl_queued>1012665</ocl_queued>
+				<ocl_submit>1012667</ocl_submit>
+			</taskInstance>
+			<taskInstance>
+				<idTask>94066820447680</idTask><!-- task.name = computeOffsetKernel -->
+				<name>computeOffsetKernel</name>
+				<start>1014305</start>
+				<end>1014314</end>
+				<ocl_global_work_size>131072</ocl_global_work_size>
+				<ocl_local_work_size>256</ocl_local_work_size>
+				<ocl_queued>1012688</ocl_queued>
+				<ocl_submit>1012690</ocl_submit>
+			</taskInstance>
+			<taskInstance>
+				<idTask>94066820683696</idTask><!-- task.name = computePointersKernel -->
+				<name>computePointersKernel</name>
+				<start>1014316</start>
+				<end>1014632</end>
+				<ocl_global_work_size>131072</ocl_global_work_size>
+				<ocl_local_work_size>256</ocl_local_work_size>
+				<ocl_queued>1012705</ocl_queued>
+				<ocl_submit>1012707</ocl_submit>
+			</taskInstance>
+			<taskInstance>
+				<idTask>94066820704672</idTask><!-- task.name = reduceKernel -->
+				<name>reduceKernel</name>
+				<start>1014633</start>
+				<end>1015615</end>
+				<ocl_global_work_size>131072</ocl_global_work_size>
+				<ocl_local_work_size>256</ocl_local_work_size>
+				<ocl_queued>1012721</ocl_queued>
+				<ocl_submit>1012723</ocl_submit>
+			</taskInstance>
+			<taskInstance>
+				<idTask>1</idTask><!-- task.name = Read Buffer -->
+				<name>Read Buffer</name>
+				<start>1015626</start>
+				<end>1015630</end>
+				<ocl_size>20</ocl_size>
+				<ocl_bandwidth>6</ocl_bandwidth>
+			</taskInstance>
+			<taskInstance>
+				<idTask>1</idTask><!-- task.name = Read Buffer -->
+				<name>Read Buffer</name>
+				<start>1015750</start>
+				<end>1020976</end>
+				<ocl_size>8388608</ocl_size>
+				<ocl_bandwidth>1605</ocl_bandwidth>
+			</taskInstance>
+			<taskInstance>
+				<idTask>2</idTask><!-- task.name = Write Buffer -->
+				<name>Write Buffer</name>
+				<start>1047211</start>
+				<end>1048673</end>
+				<ocl_size>8388608</ocl_size>
+				<ocl_bandwidth>5738</ocl_bandwidth>
+			</taskInstance>
+			<taskInstance>
+				<idTask>94066820426896</idTask><!-- task.name = clearKernel -->
+				<name>clearKernel</name>
+				<start>1048674</start>
+				<end>1048685</end>
+				<ocl_global_work_size>131072</ocl_global_work_size>
+				<ocl_local_work_size>256</ocl_local_work_size>
+				<ocl_queued>1047053</ocl_queued>
+				<ocl_submit>1047056</ocl_submit>
+			</taskInstance>
+			<taskInstance>
+				<idTask>94066820447680</idTask><!-- task.name = computeOffsetKernel -->
+				<name>computeOffsetKernel</name>
+				<start>1048689</start>
+				<end>1048698</end>
+				<ocl_global_work_size>131072</ocl_global_work_size>
+				<ocl_local_work_size>256</ocl_local_work_size>
+				<ocl_queued>1047074</ocl_queued>
+				<ocl_submit>1047076</ocl_submit>
+			</taskInstance>
+			<taskInstance>
+				<idTask>94066820683696</idTask><!-- task.name = computePointersKernel -->
+				<name>computePointersKernel</name>
+				<start>1048700</start>
+				<end>1049011</end>
+				<ocl_global_work_size>131072</ocl_global_work_size>
+				<ocl_local_work_size>256</ocl_local_work_size>
+				<ocl_queued>1047090</ocl_queued>
+				<ocl_submit>1047093</ocl_submit>
+			</taskInstance>
+			<taskInstance>
+				<idTask>94066820704672</idTask><!-- task.name = reduceKernel -->
+				<name>reduceKernel</name>
+				<start>1049013</start>
+				<end>1050003</end>
+				<ocl_global_work_size>131072</ocl_global_work_size>
+				<ocl_local_work_size>256</ocl_local_work_size>
+				<ocl_queued>1047107</ocl_queued>
+				<ocl_submit>1047109</ocl_submit>
+			</taskInstance>
+			<taskInstance>
+				<idTask>1</idTask><!-- task.name = Read Buffer -->
+				<name>Read Buffer</name>
+				<start>1050016</start>
+				<end>1050019</end>
 				<ocl_size>20</ocl_size>
 				<ocl_bandwidth>7</ocl_bandwidth>
 			</taskInstance>
 			<taskInstance>
 				<idTask>1</idTask><!-- task.name = Read Buffer -->
 				<name>Read Buffer</name>
-				<start>958311</start>
-				<end>965140</end>
+				<start>1050118</start>
+				<end>1051717</end>
 				<ocl_size>8388608</ocl_size>
-				<ocl_bandwidth>1228</ocl_bandwidth>
+				<ocl_bandwidth>5245</ocl_bandwidth>
 			</taskInstance>
 			<taskInstance>
 				<idTask>2</idTask><!-- task.name = Write Buffer -->
 				<name>Write Buffer</name>
-				<start>991889</start>
-				<end>1001888</end>
+				<start>1071723</start>
+				<end>1073198</end>
 				<ocl_size>8388608</ocl_size>
-				<ocl_bandwidth>838</ocl_bandwidth>
+				<ocl_bandwidth>5688</ocl_bandwidth>
 			</taskInstance>
 			<taskInstance>
-				<idTask>94488354683952</idTask><!-- task.name = clearKernel -->
+				<idTask>94066820426896</idTask><!-- task.name = clearKernel -->
 				<name>clearKernel</name>
-				<start>1001911</start>
-				<end>1001940</end>
+				<start>1073197</start>
+				<end>1073209</end>
 				<ocl_global_work_size>131072</ocl_global_work_size>
 				<ocl_local_work_size>256</ocl_local_work_size>
-				<ocl_queued>985406</ocl_queued>
-				<ocl_submit>985409</ocl_submit>
+				<ocl_queued>1071566</ocl_queued>
+				<ocl_submit>1071569</ocl_submit>
 			</taskInstance>
 			<taskInstance>
-				<idTask>94488354704736</idTask><!-- task.name = computeOffsetKernel -->
+				<idTask>94066820447680</idTask><!-- task.name = computeOffsetKernel -->
 				<name>computeOffsetKernel</name>
-				<start>1001944</start>
-				<end>1001970</end>
+				<start>1073213</start>
+				<end>1073223</end>
 				<ocl_global_work_size>131072</ocl_global_work_size>
 				<ocl_local_work_size>256</ocl_local_work_size>
-				<ocl_queued>985435</ocl_queued>
-				<ocl_submit>985438</ocl_submit>
+				<ocl_queued>1071588</ocl_queued>
+				<ocl_submit>1071590</ocl_submit>
 			</taskInstance>
 			<taskInstance>
-				<idTask>94488354940752</idTask><!-- task.name = computePointersKernel -->
+				<idTask>94066820683696</idTask><!-- task.name = computePointersKernel -->
 				<name>computePointersKernel</name>
-				<start>1001973</start>
-				<end>1003094</end>
+				<start>1073223</start>
+				<end>1073539</end>
 				<ocl_global_work_size>131072</ocl_global_work_size>
 				<ocl_local_work_size>256</ocl_local_work_size>
-				<ocl_queued>985452</ocl_queued>
-				<ocl_submit>985455</ocl_submit>
+				<ocl_queued>1071604</ocl_queued>
+				<ocl_submit>1071606</ocl_submit>
 			</taskInstance>
 			<taskInstance>
-				<idTask>94488354961728</idTask><!-- task.name = reduceKernel -->
+				<idTask>94066820704672</idTask><!-- task.name = reduceKernel -->
 				<name>reduceKernel</name>
-				<start>1003095</start>
-				<end>1006922</end>
+				<start>1073540</start>
+				<end>1074527</end>
 				<ocl_global_work_size>131072</ocl_global_work_size>
 				<ocl_local_work_size>256</ocl_local_work_size>
-				<ocl_queued>985472</ocl_queued>
-				<ocl_submit>985474</ocl_submit>
+				<ocl_queued>1071620</ocl_queued>
+				<ocl_submit>1071622</ocl_submit>
 			</taskInstance>
 			<taskInstance>
 				<idTask>1</idTask><!-- task.name = Read Buffer -->
 				<name>Read Buffer</name>
-				<start>1006938</start>
-				<end>1006941</end>
+				<start>1074534</start>
+				<end>1074537</end>
+				<ocl_size>20</ocl_size>
+				<ocl_bandwidth>6</ocl_bandwidth>
+			</taskInstance>
+			<taskInstance>
+				<idTask>1</idTask><!-- task.name = Read Buffer -->
+				<name>Read Buffer</name>
+				<start>1074620</start>
+				<end>1076141</end>
+				<ocl_size>8388608</ocl_size>
+				<ocl_bandwidth>5515</ocl_bandwidth>
+			</taskInstance>
+			<taskInstance>
+				<idTask>2</idTask><!-- task.name = Write Buffer -->
+				<name>Write Buffer</name>
+				<start>1096104</start>
+				<end>1097569</end>
+				<ocl_size>8388608</ocl_size>
+				<ocl_bandwidth>5725</ocl_bandwidth>
+			</taskInstance>
+			<taskInstance>
+				<idTask>94066820426896</idTask><!-- task.name = clearKernel -->
+				<name>clearKernel</name>
+				<start>1097575</start>
+				<end>1097586</end>
+				<ocl_global_work_size>131072</ocl_global_work_size>
+				<ocl_local_work_size>256</ocl_local_work_size>
+				<ocl_queued>1095949</ocl_queued>
+				<ocl_submit>1095952</ocl_submit>
+			</taskInstance>
+			<taskInstance>
+				<idTask>94066820447680</idTask><!-- task.name = computeOffsetKernel -->
+				<name>computeOffsetKernel</name>
+				<start>1097591</start>
+				<end>1097602</end>
+				<ocl_global_work_size>131072</ocl_global_work_size>
+				<ocl_local_work_size>256</ocl_local_work_size>
+				<ocl_queued>1095971</ocl_queued>
+				<ocl_submit>1095973</ocl_submit>
+			</taskInstance>
+			<taskInstance>
+				<idTask>94066820683696</idTask><!-- task.name = computePointersKernel -->
+				<name>computePointersKernel</name>
+				<start>1097603</start>
+				<end>1097913</end>
+				<ocl_global_work_size>131072</ocl_global_work_size>
+				<ocl_local_work_size>256</ocl_local_work_size>
+				<ocl_queued>1095988</ocl_queued>
+				<ocl_submit>1095990</ocl_submit>
+			</taskInstance>
+			<taskInstance>
+				<idTask>94066820704672</idTask><!-- task.name = reduceKernel -->
+				<name>reduceKernel</name>
+				<start>1097916</start>
+				<end>1098896</end>
+				<ocl_global_work_size>131072</ocl_global_work_size>
+				<ocl_local_work_size>256</ocl_local_work_size>
+				<ocl_queued>1096005</ocl_queued>
+				<ocl_submit>1096007</ocl_submit>
+			</taskInstance>
+			<taskInstance>
+				<idTask>1</idTask><!-- task.name = Read Buffer -->
+				<name>Read Buffer</name>
+				<start>1098904</start>
+				<end>1098906</end>
+				<ocl_size>20</ocl_size>
+				<ocl_bandwidth>9</ocl_bandwidth>
+			</taskInstance>
+			<taskInstance>
+				<idTask>1</idTask><!-- task.name = Read Buffer -->
+				<name>Read Buffer</name>
+				<start>1098991</start>
+				<end>1100505</end>
+				<ocl_size>8388608</ocl_size>
+				<ocl_bandwidth>5541</ocl_bandwidth>
+			</taskInstance>
+			<taskInstance>
+				<idTask>2</idTask><!-- task.name = Write Buffer -->
+				<name>Write Buffer</name>
+				<start>1120455</start>
+				<end>1121927</end>
+				<ocl_size>8388608</ocl_size>
+				<ocl_bandwidth>5700</ocl_bandwidth>
+			</taskInstance>
+			<taskInstance>
+				<idTask>94066820426896</idTask><!-- task.name = clearKernel -->
+				<name>clearKernel</name>
+				<start>1121926</start>
+				<end>1121938</end>
+				<ocl_global_work_size>131072</ocl_global_work_size>
+				<ocl_local_work_size>256</ocl_local_work_size>
+				<ocl_queued>1120298</ocl_queued>
+				<ocl_submit>1120301</ocl_submit>
+			</taskInstance>
+			<taskInstance>
+				<idTask>94066820447680</idTask><!-- task.name = computeOffsetKernel -->
+				<name>computeOffsetKernel</name>
+				<start>1121942</start>
+				<end>1121952</end>
+				<ocl_global_work_size>131072</ocl_global_work_size>
+				<ocl_local_work_size>256</ocl_local_work_size>
+				<ocl_queued>1120321</ocl_queued>
+				<ocl_submit>1120323</ocl_submit>
+			</taskInstance>
+			<taskInstance>
+				<idTask>94066820683696</idTask><!-- task.name = computePointersKernel -->
+				<name>computePointersKernel</name>
+				<start>1121953</start>
+				<end>1122271</end>
+				<ocl_global_work_size>131072</ocl_global_work_size>
+				<ocl_local_work_size>256</ocl_local_work_size>
+				<ocl_queued>1120337</ocl_queued>
+				<ocl_submit>1120339</ocl_submit>
+			</taskInstance>
+			<taskInstance>
+				<idTask>94066820704672</idTask><!-- task.name = reduceKernel -->
+				<name>reduceKernel</name>
+				<start>1122274</start>
+				<end>1123262</end>
+				<ocl_global_work_size>131072</ocl_global_work_size>
+				<ocl_local_work_size>256</ocl_local_work_size>
+				<ocl_queued>1120353</ocl_queued>
+				<ocl_submit>1120355</ocl_submit>
+			</taskInstance>
+			<taskInstance>
+				<idTask>1</idTask><!-- task.name = Read Buffer -->
+				<name>Read Buffer</name>
+				<start>1123275</start>
+				<end>1123278</end>
 				<ocl_size>20</ocl_size>
 				<ocl_bandwidth>7</ocl_bandwidth>
 			</taskInstance>
 			<taskInstance>
 				<idTask>1</idTask><!-- task.name = Read Buffer -->
 				<name>Read Buffer</name>
-				<start>1007061</start>
-				<end>1012308</end>
+				<start>1123372</start>
+				<end>1124904</end>
 				<ocl_size>8388608</ocl_size>
-				<ocl_bandwidth>1598</ocl_bandwidth>
-			</taskInstance>
-			<taskInstance>
-				<idTask>2</idTask><!-- task.name = Write Buffer -->
-				<name>Write Buffer</name>
-				<start>1036576</start>
-				<end>1038046</end>
-				<ocl_size>8388608</ocl_size>
-				<ocl_bandwidth>5703</ocl_bandwidth>
-			</taskInstance>
-			<taskInstance>
-				<idTask>94488354683952</idTask><!-- task.name = clearKernel -->
-				<name>clearKernel</name>
-				<start>1038065</start>
-				<end>1038083</end>
-				<ocl_global_work_size>131072</ocl_global_work_size>
-				<ocl_local_work_size>256</ocl_local_work_size>
-				<ocl_queued>1028959</ocl_queued>
-				<ocl_submit>1028962</ocl_submit>
-			</taskInstance>
-			<taskInstance>
-				<idTask>94488354704736</idTask><!-- task.name = computeOffsetKernel -->
-				<name>computeOffsetKernel</name>
-				<start>1038086</start>
-				<end>1038105</end>
-				<ocl_global_work_size>131072</ocl_global_work_size>
-				<ocl_local_work_size>256</ocl_local_work_size>
-				<ocl_queued>1028981</ocl_queued>
-				<ocl_submit>1028983</ocl_submit>
-			</taskInstance>
-			<taskInstance>
-				<idTask>94488354940752</idTask><!-- task.name = computePointersKernel -->
-				<name>computePointersKernel</name>
-				<start>1038108</start>
-				<end>1039581</end>
-				<ocl_global_work_size>131072</ocl_global_work_size>
-				<ocl_local_work_size>256</ocl_local_work_size>
-				<ocl_queued>1028999</ocl_queued>
-				<ocl_submit>1029001</ocl_submit>
-			</taskInstance>
-			<taskInstance>
-				<idTask>94488354961728</idTask><!-- task.name = reduceKernel -->
-				<name>reduceKernel</name>
-				<start>1039582</start>
-				<end>1043209</end>
-				<ocl_global_work_size>131072</ocl_global_work_size>
-				<ocl_local_work_size>256</ocl_local_work_size>
-				<ocl_queued>1029015</ocl_queued>
-				<ocl_submit>1029017</ocl_submit>
-			</taskInstance>
-			<taskInstance>
-				<idTask>1</idTask><!-- task.name = Read Buffer -->
-				<name>Read Buffer</name>
-				<start>1047699</start>
-				<end>1047701</end>
-				<ocl_size>20</ocl_size>
-				<ocl_bandwidth>7</ocl_bandwidth>
-			</taskInstance>
-			<taskInstance>
-				<idTask>1</idTask><!-- task.name = Read Buffer -->
-				<name>Read Buffer</name>
-				<start>1048465</start>
-				<end>1054128</end>
-				<ocl_size>8388608</ocl_size>
-				<ocl_bandwidth>1481</ocl_bandwidth>
-			</taskInstance>
-			<taskInstance>
-				<idTask>2</idTask><!-- task.name = Write Buffer -->
-				<name>Write Buffer</name>
-				<start>1063033</start>
-				<end>1064502</end>
-				<ocl_size>8388608</ocl_size>
-				<ocl_bandwidth>5709</ocl_bandwidth>
-			</taskInstance>
-			<taskInstance>
-				<idTask>94488354683952</idTask><!-- task.name = clearKernel -->
-				<name>clearKernel</name>
-				<start>1064518</start>
-				<end>1064540</end>
-				<ocl_global_work_size>131072</ocl_global_work_size>
-				<ocl_local_work_size>256</ocl_local_work_size>
-				<ocl_queued>1061546</ocl_queued>
-				<ocl_submit>1061549</ocl_submit>
-			</taskInstance>
-			<taskInstance>
-				<idTask>94488354704736</idTask><!-- task.name = computeOffsetKernel -->
-				<name>computeOffsetKernel</name>
-				<start>1064545</start>
-				<end>1064565</end>
-				<ocl_global_work_size>131072</ocl_global_work_size>
-				<ocl_local_work_size>256</ocl_local_work_size>
-				<ocl_queued>1061569</ocl_queued>
-				<ocl_submit>1061571</ocl_submit>
-			</taskInstance>
-			<taskInstance>
-				<idTask>94488354940752</idTask><!-- task.name = computePointersKernel -->
-				<name>computePointersKernel</name>
-				<start>1064565</start>
-				<end>1065703</end>
-				<ocl_global_work_size>131072</ocl_global_work_size>
-				<ocl_local_work_size>256</ocl_local_work_size>
-				<ocl_queued>1061586</ocl_queued>
-				<ocl_submit>1061588</ocl_submit>
-			</taskInstance>
-			<taskInstance>
-				<idTask>94488354961728</idTask><!-- task.name = reduceKernel -->
-				<name>reduceKernel</name>
-				<start>1065706</start>
-				<end>1069082</end>
-				<ocl_global_work_size>131072</ocl_global_work_size>
-				<ocl_local_work_size>256</ocl_local_work_size>
-				<ocl_queued>1061604</ocl_queued>
-				<ocl_submit>1061606</ocl_submit>
-			</taskInstance>
-			<taskInstance>
-				<idTask>1</idTask><!-- task.name = Read Buffer -->
-				<name>Read Buffer</name>
-				<start>1070095</start>
-				<end>1070097</end>
-				<ocl_size>20</ocl_size>
-				<ocl_bandwidth>8</ocl_bandwidth>
-			</taskInstance>
-			<taskInstance>
-				<idTask>1</idTask><!-- task.name = Read Buffer -->
-				<name>Read Buffer</name>
-				<start>1070468</start>
-				<end>1072369</end>
-				<ocl_size>8388608</ocl_size>
-				<ocl_bandwidth>4413</ocl_bandwidth>
-			</taskInstance>
-			<taskInstance>
-				<idTask>2</idTask><!-- task.name = Write Buffer -->
-				<name>Write Buffer</name>
-				<start>1082506</start>
-				<end>1086343</end>
-				<ocl_size>8388608</ocl_size>
-				<ocl_bandwidth>2186</ocl_bandwidth>
-			</taskInstance>
-			<taskInstance>
-				<idTask>94488354683952</idTask><!-- task.name = clearKernel -->
-				<name>clearKernel</name>
-				<start>1086361</start>
-				<end>1086373</end>
-				<ocl_global_work_size>131072</ocl_global_work_size>
-				<ocl_local_work_size>256</ocl_local_work_size>
-				<ocl_queued>1082287</ocl_queued>
-				<ocl_submit>1082294</ocl_submit>
-			</taskInstance>
-			<taskInstance>
-				<idTask>94488354704736</idTask><!-- task.name = computeOffsetKernel -->
-				<name>computeOffsetKernel</name>
-				<start>1086378</start>
-				<end>1086393</end>
-				<ocl_global_work_size>131072</ocl_global_work_size>
-				<ocl_local_work_size>256</ocl_local_work_size>
-				<ocl_queued>1082322</ocl_queued>
-				<ocl_submit>1082328</ocl_submit>
-			</taskInstance>
-			<taskInstance>
-				<idTask>94488354940752</idTask><!-- task.name = computePointersKernel -->
-				<name>computePointersKernel</name>
-				<start>1086398</start>
-				<end>1086716</end>
-				<ocl_global_work_size>131072</ocl_global_work_size>
-				<ocl_local_work_size>256</ocl_local_work_size>
-				<ocl_queued>1082347</ocl_queued>
-				<ocl_submit>1082350</ocl_submit>
-			</taskInstance>
-			<taskInstance>
-				<idTask>94488354961728</idTask><!-- task.name = reduceKernel -->
-				<name>reduceKernel</name>
-				<start>1086718</start>
-				<end>1087705</end>
-				<ocl_global_work_size>131072</ocl_global_work_size>
-				<ocl_local_work_size>256</ocl_local_work_size>
-				<ocl_queued>1082368</ocl_queued>
-				<ocl_submit>1082372</ocl_submit>
-			</taskInstance>
-			<taskInstance>
-				<idTask>1</idTask><!-- task.name = Read Buffer -->
-				<name>Read Buffer</name>
-				<start>1087732</start>
-				<end>1087735</end>
-				<ocl_size>20</ocl_size>
-				<ocl_bandwidth>7</ocl_bandwidth>
-			</taskInstance>
-			<taskInstance>
-				<idTask>1</idTask><!-- task.name = Read Buffer -->
-				<name>Read Buffer</name>
-				<start>1087899</start>
-				<end>1089795</end>
-				<ocl_size>8388608</ocl_size>
-				<ocl_bandwidth>4426</ocl_bandwidth>
-			</taskInstance>
-			<taskInstance>
-				<idTask>2</idTask><!-- task.name = Write Buffer -->
-				<name>Write Buffer</name>
-				<start>1100569</start>
-				<end>1103996</end>
-				<ocl_size>8388608</ocl_size>
-				<ocl_bandwidth>2448</ocl_bandwidth>
-			</taskInstance>
-			<taskInstance>
-				<idTask>94488354683952</idTask><!-- task.name = clearKernel -->
-				<name>clearKernel</name>
-				<start>1104004</start>
-				<end>1104017</end>
-				<ocl_global_work_size>131072</ocl_global_work_size>
-				<ocl_local_work_size>256</ocl_local_work_size>
-				<ocl_queued>1099007</ocl_queued>
-				<ocl_submit>1099009</ocl_submit>
-			</taskInstance>
-			<taskInstance>
-				<idTask>94488354704736</idTask><!-- task.name = computeOffsetKernel -->
-				<name>computeOffsetKernel</name>
-				<start>1104022</start>
-				<end>1104034</end>
-				<ocl_global_work_size>131072</ocl_global_work_size>
-				<ocl_local_work_size>256</ocl_local_work_size>
-				<ocl_queued>1099031</ocl_queued>
-				<ocl_submit>1099034</ocl_submit>
-			</taskInstance>
-			<taskInstance>
-				<idTask>94488354940752</idTask><!-- task.name = computePointersKernel -->
-				<name>computePointersKernel</name>
-				<start>1104037</start>
-				<end>1105170</end>
-				<ocl_global_work_size>131072</ocl_global_work_size>
-				<ocl_local_work_size>256</ocl_local_work_size>
-				<ocl_queued>1099048</ocl_queued>
-				<ocl_submit>1099051</ocl_submit>
-			</taskInstance>
-			<taskInstance>
-				<idTask>94488354961728</idTask><!-- task.name = reduceKernel -->
-				<name>reduceKernel</name>
-				<start>1105170</start>
-				<end>1109024</end>
-				<ocl_global_work_size>131072</ocl_global_work_size>
-				<ocl_local_work_size>256</ocl_local_work_size>
-				<ocl_queued>1099063</ocl_queued>
-				<ocl_submit>1099065</ocl_submit>
-			</taskInstance>
-			<taskInstance>
-				<idTask>1</idTask><!-- task.name = Read Buffer -->
-				<name>Read Buffer</name>
-				<start>1109034</start>
-				<end>1109037</end>
-				<ocl_size>20</ocl_size>
-				<ocl_bandwidth>8</ocl_bandwidth>
-			</taskInstance>
-			<taskInstance>
-				<idTask>1</idTask><!-- task.name = Read Buffer -->
-				<name>Read Buffer</name>
-				<start>1109166</start>
-				<end>1110776</end>
-				<ocl_size>8388608</ocl_size>
-				<ocl_bandwidth>5207</ocl_bandwidth>
+				<ocl_bandwidth>5475</ocl_bandwidth>
 			</taskInstance>
 		</stream>
 		<stream>
@@ -1603,386 +1539,386 @@ The major_version.minor_version value returned will be 1.0.</help>
 			<taskInstance>
 				<idTask>2</idTask><!-- task.name = Write Buffer -->
 				<name>Write Buffer</name>
-				<start>954293</start>
-				<end>965047</end>
+				<start>973369</start>
+				<end>974856</end>
 				<ocl_size>8388608</ocl_size>
-				<ocl_bandwidth>780</ocl_bandwidth>
+				<ocl_bandwidth>5640</ocl_bandwidth>
 			</taskInstance>
 			<taskInstance>
-				<idTask>94488354688080</idTask><!-- task.name = clearKernel -->
+				<idTask>94066820431024</idTask><!-- task.name = clearKernel -->
 				<name>clearKernel</name>
-				<start>964910</start>
-				<end>964925</end>
+				<start>974523</start>
+				<end>974535</end>
 				<ocl_global_work_size>131072</ocl_global_work_size>
 				<ocl_local_work_size>256</ocl_local_work_size>
-				<ocl_queued>951112</ocl_queued>
-				<ocl_submit>951117</ocl_submit>
+				<ocl_queued>973367</ocl_queued>
+				<ocl_submit>973372</ocl_submit>
 			</taskInstance>
 			<taskInstance>
-				<idTask>94488354708960</idTask><!-- task.name = computeOffsetKernel -->
+				<idTask>94066820451904</idTask><!-- task.name = computeOffsetKernel -->
 				<name>computeOffsetKernel</name>
-				<start>965376</start>
-				<end>965389</end>
+				<start>975017</start>
+				<end>975026</end>
 				<ocl_global_work_size>131072</ocl_global_work_size>
 				<ocl_local_work_size>256</ocl_local_work_size>
-				<ocl_queued>951590</ocl_queued>
-				<ocl_submit>951593</ocl_submit>
+				<ocl_queued>973879</ocl_queued>
+				<ocl_submit>973881</ocl_submit>
 			</taskInstance>
 			<taskInstance>
-				<idTask>94488354944976</idTask><!-- task.name = computePointersKernel -->
+				<idTask>94066820687920</idTask><!-- task.name = computePointersKernel -->
 				<name>computePointersKernel</name>
-				<start>965392</start>
-				<end>966512</end>
+				<start>975032</start>
+				<end>975349</end>
 				<ocl_global_work_size>131072</ocl_global_work_size>
 				<ocl_local_work_size>256</ocl_local_work_size>
-				<ocl_queued>951621</ocl_queued>
-				<ocl_submit>951623</ocl_submit>
+				<ocl_queued>973900</ocl_queued>
+				<ocl_submit>973902</ocl_submit>
 			</taskInstance>
 			<taskInstance>
-				<idTask>94488354965856</idTask><!-- task.name = reduceKernel -->
+				<idTask>94066820708800</idTask><!-- task.name = reduceKernel -->
 				<name>reduceKernel</name>
-				<start>966499</start>
-				<end>970369</end>
+				<start>975349</start>
+				<end>976339</end>
 				<ocl_global_work_size>131072</ocl_global_work_size>
 				<ocl_local_work_size>256</ocl_local_work_size>
-				<ocl_queued>951639</ocl_queued>
-				<ocl_submit>951642</ocl_submit>
+				<ocl_queued>973920</ocl_queued>
+				<ocl_submit>973923</ocl_submit>
 			</taskInstance>
 			<taskInstance>
 				<idTask>1</idTask><!-- task.name = Read Buffer -->
 				<name>Read Buffer</name>
-				<start>970407</start>
-				<end>970409</end>
-				<ocl_size>20</ocl_size>
-				<ocl_bandwidth>8</ocl_bandwidth>
-			</taskInstance>
-			<taskInstance>
-				<idTask>1</idTask><!-- task.name = Read Buffer -->
-				<name>Read Buffer</name>
-				<start>970515</start>
-				<end>975697</end>
-				<ocl_size>8388608</ocl_size>
-				<ocl_bandwidth>1618</ocl_bandwidth>
-			</taskInstance>
-			<taskInstance>
-				<idTask>2</idTask><!-- task.name = Write Buffer -->
-				<name>Write Buffer</name>
-				<start>1001974</start>
-				<end>1003446</end>
-				<ocl_size>8388608</ocl_size>
-				<ocl_bandwidth>5701</ocl_bandwidth>
-			</taskInstance>
-			<taskInstance>
-				<idTask>94488354688080</idTask><!-- task.name = clearKernel -->
-				<name>clearKernel</name>
-				<start>1003454</start>
-				<end>1003473</end>
-				<ocl_global_work_size>131072</ocl_global_work_size>
-				<ocl_local_work_size>256</ocl_local_work_size>
-				<ocl_queued>993499</ocl_queued>
-				<ocl_submit>993502</ocl_submit>
-			</taskInstance>
-			<taskInstance>
-				<idTask>94488354708960</idTask><!-- task.name = computeOffsetKernel -->
-				<name>computeOffsetKernel</name>
-				<start>1003478</start>
-				<end>1003497</end>
-				<ocl_global_work_size>131072</ocl_global_work_size>
-				<ocl_local_work_size>256</ocl_local_work_size>
-				<ocl_queued>993522</ocl_queued>
-				<ocl_submit>993524</ocl_submit>
-			</taskInstance>
-			<taskInstance>
-				<idTask>94488354944976</idTask><!-- task.name = computePointersKernel -->
-				<name>computePointersKernel</name>
-				<start>1003498</start>
-				<end>1004783</end>
-				<ocl_global_work_size>131072</ocl_global_work_size>
-				<ocl_local_work_size>256</ocl_local_work_size>
-				<ocl_queued>993544</ocl_queued>
-				<ocl_submit>993547</ocl_submit>
-			</taskInstance>
-			<taskInstance>
-				<idTask>94488354965856</idTask><!-- task.name = reduceKernel -->
-				<name>reduceKernel</name>
-				<start>1004785</start>
-				<end>1008560</end>
-				<ocl_global_work_size>131072</ocl_global_work_size>
-				<ocl_local_work_size>256</ocl_local_work_size>
-				<ocl_queued>993565</ocl_queued>
-				<ocl_submit>993567</ocl_submit>
-			</taskInstance>
-			<taskInstance>
-				<idTask>1</idTask><!-- task.name = Read Buffer -->
-				<name>Read Buffer</name>
-				<start>1012969</start>
-				<end>1012971</end>
-				<ocl_size>20</ocl_size>
-				<ocl_bandwidth>8</ocl_bandwidth>
-			</taskInstance>
-			<taskInstance>
-				<idTask>1</idTask><!-- task.name = Read Buffer -->
-				<name>Read Buffer</name>
-				<start>1013744</start>
-				<end>1019508</end>
-				<ocl_size>8388608</ocl_size>
-				<ocl_bandwidth>1455</ocl_bandwidth>
-			</taskInstance>
-			<taskInstance>
-				<idTask>2</idTask><!-- task.name = Write Buffer -->
-				<name>Write Buffer</name>
-				<start>1038124</start>
-				<end>1039587</end>
-				<ocl_size>8388608</ocl_size>
-				<ocl_bandwidth>5734</ocl_bandwidth>
-			</taskInstance>
-			<taskInstance>
-				<idTask>94488354688080</idTask><!-- task.name = clearKernel -->
-				<name>clearKernel</name>
-				<start>1039588</start>
-				<end>1039769</end>
-				<ocl_global_work_size>131072</ocl_global_work_size>
-				<ocl_local_work_size>256</ocl_local_work_size>
-				<ocl_queued>1036248</ocl_queued>
-				<ocl_submit>1036251</ocl_submit>
-			</taskInstance>
-			<taskInstance>
-				<idTask>94488354708960</idTask><!-- task.name = computeOffsetKernel -->
-				<name>computeOffsetKernel</name>
-				<start>1039772</start>
-				<end>1039793</end>
-				<ocl_global_work_size>131072</ocl_global_work_size>
-				<ocl_local_work_size>256</ocl_local_work_size>
-				<ocl_queued>1036271</ocl_queued>
-				<ocl_submit>1036274</ocl_submit>
-			</taskInstance>
-			<taskInstance>
-				<idTask>94488354944976</idTask><!-- task.name = computePointersKernel -->
-				<name>computePointersKernel</name>
-				<start>1039795</start>
-				<end>1041233</end>
-				<ocl_global_work_size>131072</ocl_global_work_size>
-				<ocl_local_work_size>256</ocl_local_work_size>
-				<ocl_queued>1036289</ocl_queued>
-				<ocl_submit>1036292</ocl_submit>
-			</taskInstance>
-			<taskInstance>
-				<idTask>94488354965856</idTask><!-- task.name = reduceKernel -->
-				<name>reduceKernel</name>
-				<start>1041234</start>
-				<end>1044650</end>
-				<ocl_global_work_size>131072</ocl_global_work_size>
-				<ocl_local_work_size>256</ocl_local_work_size>
-				<ocl_queued>1036306</ocl_queued>
-				<ocl_submit>1036309</ocl_submit>
-			</taskInstance>
-			<taskInstance>
-				<idTask>1</idTask><!-- task.name = Read Buffer -->
-				<name>Read Buffer</name>
-				<start>1055044</start>
-				<end>1055046</end>
-				<ocl_size>20</ocl_size>
-				<ocl_bandwidth>8</ocl_bandwidth>
-			</taskInstance>
-			<taskInstance>
-				<idTask>1</idTask><!-- task.name = Read Buffer -->
-				<name>Read Buffer</name>
-				<start>1056059</start>
-				<end>1057932</end>
-				<ocl_size>8388608</ocl_size>
-				<ocl_bandwidth>4479</ocl_bandwidth>
-			</taskInstance>
-			<taskInstance>
-				<idTask>2</idTask><!-- task.name = Write Buffer -->
-				<name>Write Buffer</name>
-				<start>1067898</start>
-				<end>1071446</end>
-				<ocl_size>8388608</ocl_size>
-				<ocl_bandwidth>2364</ocl_bandwidth>
-			</taskInstance>
-			<taskInstance>
-				<idTask>94488354688080</idTask><!-- task.name = clearKernel -->
-				<name>clearKernel</name>
-				<start>1071447</start>
-				<end>1071461</end>
-				<ocl_global_work_size>131072</ocl_global_work_size>
-				<ocl_local_work_size>256</ocl_local_work_size>
-				<ocl_queued>1067759</ocl_queued>
-				<ocl_submit>1067761</ocl_submit>
-			</taskInstance>
-			<taskInstance>
-				<idTask>94488354708960</idTask><!-- task.name = computeOffsetKernel -->
-				<name>computeOffsetKernel</name>
-				<start>1071464</start>
-				<end>1071477</end>
-				<ocl_global_work_size>131072</ocl_global_work_size>
-				<ocl_local_work_size>256</ocl_local_work_size>
-				<ocl_queued>1067786</ocl_queued>
-				<ocl_submit>1067788</ocl_submit>
-			</taskInstance>
-			<taskInstance>
-				<idTask>94488354944976</idTask><!-- task.name = computePointersKernel -->
-				<name>computePointersKernel</name>
-				<start>1071480</start>
-				<end>1071797</end>
-				<ocl_global_work_size>131072</ocl_global_work_size>
-				<ocl_local_work_size>256</ocl_local_work_size>
-				<ocl_queued>1067807</ocl_queued>
-				<ocl_submit>1067809</ocl_submit>
-			</taskInstance>
-			<taskInstance>
-				<idTask>94488354965856</idTask><!-- task.name = reduceKernel -->
-				<name>reduceKernel</name>
-				<start>1071799</start>
-				<end>1072792</end>
-				<ocl_global_work_size>131072</ocl_global_work_size>
-				<ocl_local_work_size>256</ocl_local_work_size>
-				<ocl_queued>1067824</ocl_queued>
-				<ocl_submit>1067827</ocl_submit>
-			</taskInstance>
-			<taskInstance>
-				<idTask>1</idTask><!-- task.name = Read Buffer -->
-				<name>Read Buffer</name>
-				<start>1072806</start>
-				<end>1072808</end>
-				<ocl_size>20</ocl_size>
-				<ocl_bandwidth>8</ocl_bandwidth>
-			</taskInstance>
-			<taskInstance>
-				<idTask>1</idTask><!-- task.name = Read Buffer -->
-				<name>Read Buffer</name>
-				<start>1073206</start>
-				<end>1075097</end>
-				<ocl_size>8388608</ocl_size>
-				<ocl_bandwidth>4436</ocl_bandwidth>
-			</taskInstance>
-			<taskInstance>
-				<idTask>2</idTask><!-- task.name = Write Buffer -->
-				<name>Write Buffer</name>
-				<start>1086788</start>
-				<end>1089449</end>
-				<ocl_size>8388608</ocl_size>
-				<ocl_bandwidth>3152</ocl_bandwidth>
-			</taskInstance>
-			<taskInstance>
-				<idTask>94488354688080</idTask><!-- task.name = clearKernel -->
-				<name>clearKernel</name>
-				<start>1089456</start>
-				<end>1089471</end>
-				<ocl_global_work_size>131072</ocl_global_work_size>
-				<ocl_local_work_size>256</ocl_local_work_size>
-				<ocl_queued>1084645</ocl_queued>
-				<ocl_submit>1084647</ocl_submit>
-			</taskInstance>
-			<taskInstance>
-				<idTask>94488354708960</idTask><!-- task.name = computeOffsetKernel -->
-				<name>computeOffsetKernel</name>
-				<start>1089475</start>
-				<end>1089488</end>
-				<ocl_global_work_size>131072</ocl_global_work_size>
-				<ocl_local_work_size>256</ocl_local_work_size>
-				<ocl_queued>1084667</ocl_queued>
-				<ocl_submit>1084670</ocl_submit>
-			</taskInstance>
-			<taskInstance>
-				<idTask>94488354944976</idTask><!-- task.name = computePointersKernel -->
-				<name>computePointersKernel</name>
-				<start>1089488</start>
-				<end>1090605</end>
-				<ocl_global_work_size>131072</ocl_global_work_size>
-				<ocl_local_work_size>256</ocl_local_work_size>
-				<ocl_queued>1084684</ocl_queued>
-				<ocl_submit>1084686</ocl_submit>
-			</taskInstance>
-			<taskInstance>
-				<idTask>94488354965856</idTask><!-- task.name = reduceKernel -->
-				<name>reduceKernel</name>
-				<start>1090607</start>
-				<end>1094446</end>
-				<ocl_global_work_size>131072</ocl_global_work_size>
-				<ocl_local_work_size>256</ocl_local_work_size>
-				<ocl_queued>1084701</ocl_queued>
-				<ocl_submit>1084703</ocl_submit>
-			</taskInstance>
-			<taskInstance>
-				<idTask>1</idTask><!-- task.name = Read Buffer -->
-				<name>Read Buffer</name>
-				<start>1094462</start>
-				<end>1094464</end>
+				<start>976345</start>
+				<end>976347</end>
 				<ocl_size>20</ocl_size>
 				<ocl_bandwidth>7</ocl_bandwidth>
 			</taskInstance>
 			<taskInstance>
 				<idTask>1</idTask><!-- task.name = Read Buffer -->
 				<name>Read Buffer</name>
-				<start>1094573</start>
-				<end>1096155</end>
+				<start>976448</start>
+				<end>981591</end>
 				<ocl_size>8388608</ocl_size>
-				<ocl_bandwidth>5303</ocl_bandwidth>
+				<ocl_bandwidth>1631</ocl_bandwidth>
 			</taskInstance>
 			<taskInstance>
 				<idTask>2</idTask><!-- task.name = Write Buffer -->
 				<name>Write Buffer</name>
-				<start>1104392</start>
-				<end>1105871</end>
+				<start>1022647</start>
+				<end>1024115</end>
 				<ocl_size>8388608</ocl_size>
-				<ocl_bandwidth>5673</ocl_bandwidth>
+				<ocl_bandwidth>5713</ocl_bandwidth>
 			</taskInstance>
 			<taskInstance>
-				<idTask>94488354688080</idTask><!-- task.name = clearKernel -->
+				<idTask>94066820431024</idTask><!-- task.name = clearKernel -->
 				<name>clearKernel</name>
-				<start>1105889</start>
-				<end>1105907</end>
+				<start>1024116</start>
+				<end>1024128</end>
 				<ocl_global_work_size>131072</ocl_global_work_size>
 				<ocl_local_work_size>256</ocl_local_work_size>
-				<ocl_queued>1101534</ocl_queued>
-				<ocl_submit>1101537</ocl_submit>
+				<ocl_queued>1022499</ocl_queued>
+				<ocl_submit>1022503</ocl_submit>
 			</taskInstance>
 			<taskInstance>
-				<idTask>94488354708960</idTask><!-- task.name = computeOffsetKernel -->
+				<idTask>94066820451904</idTask><!-- task.name = computeOffsetKernel -->
 				<name>computeOffsetKernel</name>
-				<start>1105911</start>
-				<end>1105930</end>
+				<start>1024133</start>
+				<end>1024143</end>
 				<ocl_global_work_size>131072</ocl_global_work_size>
 				<ocl_local_work_size>256</ocl_local_work_size>
-				<ocl_queued>1101558</ocl_queued>
-				<ocl_submit>1101560</ocl_submit>
+				<ocl_queued>1022524</ocl_queued>
+				<ocl_submit>1022526</ocl_submit>
 			</taskInstance>
 			<taskInstance>
-				<idTask>94488354944976</idTask><!-- task.name = computePointersKernel -->
+				<idTask>94066820687920</idTask><!-- task.name = computePointersKernel -->
 				<name>computePointersKernel</name>
-				<start>1105933</start>
-				<end>1107075</end>
+				<start>1024143</start>
+				<end>1024454</end>
 				<ocl_global_work_size>131072</ocl_global_work_size>
 				<ocl_local_work_size>256</ocl_local_work_size>
-				<ocl_queued>1101575</ocl_queued>
-				<ocl_submit>1101577</ocl_submit>
+				<ocl_queued>1022540</ocl_queued>
+				<ocl_submit>1022544</ocl_submit>
 			</taskInstance>
 			<taskInstance>
-				<idTask>94488354965856</idTask><!-- task.name = reduceKernel -->
+				<idTask>94066820708800</idTask><!-- task.name = reduceKernel -->
 				<name>reduceKernel</name>
-				<start>1107077</start>
-				<end>1110704</end>
+				<start>1024456</start>
+				<end>1025438</end>
 				<ocl_global_work_size>131072</ocl_global_work_size>
 				<ocl_local_work_size>256</ocl_local_work_size>
-				<ocl_queued>1101591</ocl_queued>
-				<ocl_submit>1101593</ocl_submit>
+				<ocl_queued>1022560</ocl_queued>
+				<ocl_submit>1022564</ocl_submit>
 			</taskInstance>
 			<taskInstance>
 				<idTask>1</idTask><!-- task.name = Read Buffer -->
 				<name>Read Buffer</name>
-				<start>1110834</start>
-				<end>1110836</end>
+				<start>1025448</start>
+				<end>1025450</end>
 				<ocl_size>20</ocl_size>
 				<ocl_bandwidth>7</ocl_bandwidth>
 			</taskInstance>
 			<taskInstance>
 				<idTask>1</idTask><!-- task.name = Read Buffer -->
 				<name>Read Buffer</name>
-				<start>1111014</start>
-				<end>1112941</end>
+				<start>1025563</start>
+				<end>1030986</end>
 				<ocl_size>8388608</ocl_size>
-				<ocl_bandwidth>4351</ocl_bandwidth>
+				<ocl_bandwidth>1546</ocl_bandwidth>
+			</taskInstance>
+			<taskInstance>
+				<idTask>2</idTask><!-- task.name = Write Buffer -->
+				<name>Write Buffer</name>
+				<start>1052159</start>
+				<end>1053629</end>
+				<ocl_size>8388608</ocl_size>
+				<ocl_bandwidth>5708</ocl_bandwidth>
+			</taskInstance>
+			<taskInstance>
+				<idTask>94066820431024</idTask><!-- task.name = clearKernel -->
+				<name>clearKernel</name>
+				<start>1053629</start>
+				<end>1053641</end>
+				<ocl_global_work_size>131072</ocl_global_work_size>
+				<ocl_local_work_size>256</ocl_local_work_size>
+				<ocl_queued>1051997</ocl_queued>
+				<ocl_submit>1052001</ocl_submit>
+			</taskInstance>
+			<taskInstance>
+				<idTask>94066820451904</idTask><!-- task.name = computeOffsetKernel -->
+				<name>computeOffsetKernel</name>
+				<start>1053644</start>
+				<end>1053653</end>
+				<ocl_global_work_size>131072</ocl_global_work_size>
+				<ocl_local_work_size>256</ocl_local_work_size>
+				<ocl_queued>1052020</ocl_queued>
+				<ocl_submit>1052024</ocl_submit>
+			</taskInstance>
+			<taskInstance>
+				<idTask>94066820687920</idTask><!-- task.name = computePointersKernel -->
+				<name>computePointersKernel</name>
+				<start>1053656</start>
+				<end>1053966</end>
+				<ocl_global_work_size>131072</ocl_global_work_size>
+				<ocl_local_work_size>256</ocl_local_work_size>
+				<ocl_queued>1052040</ocl_queued>
+				<ocl_submit>1052044</ocl_submit>
+			</taskInstance>
+			<taskInstance>
+				<idTask>94066820708800</idTask><!-- task.name = reduceKernel -->
+				<name>reduceKernel</name>
+				<start>1053968</start>
+				<end>1054958</end>
+				<ocl_global_work_size>131072</ocl_global_work_size>
+				<ocl_local_work_size>256</ocl_local_work_size>
+				<ocl_queued>1052059</ocl_queued>
+				<ocl_submit>1052062</ocl_submit>
+			</taskInstance>
+			<taskInstance>
+				<idTask>1</idTask><!-- task.name = Read Buffer -->
+				<name>Read Buffer</name>
+				<start>1054967</start>
+				<end>1054971</end>
+				<ocl_size>20</ocl_size>
+				<ocl_bandwidth>6</ocl_bandwidth>
+			</taskInstance>
+			<taskInstance>
+				<idTask>1</idTask><!-- task.name = Read Buffer -->
+				<name>Read Buffer</name>
+				<start>1055072</start>
+				<end>1056581</end>
+				<ocl_size>8388608</ocl_size>
+				<ocl_bandwidth>5557</ocl_bandwidth>
+			</taskInstance>
+			<taskInstance>
+				<idTask>2</idTask><!-- task.name = Write Buffer -->
+				<name>Write Buffer</name>
+				<start>1076579</start>
+				<end>1078062</end>
+				<ocl_size>8388608</ocl_size>
+				<ocl_bandwidth>5657</ocl_bandwidth>
+			</taskInstance>
+			<taskInstance>
+				<idTask>94066820431024</idTask><!-- task.name = clearKernel -->
+				<name>clearKernel</name>
+				<start>1078062</start>
+				<end>1078074</end>
+				<ocl_global_work_size>131072</ocl_global_work_size>
+				<ocl_local_work_size>256</ocl_local_work_size>
+				<ocl_queued>1076423</ocl_queued>
+				<ocl_submit>1076425</ocl_submit>
+			</taskInstance>
+			<taskInstance>
+				<idTask>94066820451904</idTask><!-- task.name = computeOffsetKernel -->
+				<name>computeOffsetKernel</name>
+				<start>1078078</start>
+				<end>1078088</end>
+				<ocl_global_work_size>131072</ocl_global_work_size>
+				<ocl_local_work_size>256</ocl_local_work_size>
+				<ocl_queued>1076448</ocl_queued>
+				<ocl_submit>1076450</ocl_submit>
+			</taskInstance>
+			<taskInstance>
+				<idTask>94066820687920</idTask><!-- task.name = computePointersKernel -->
+				<name>computePointersKernel</name>
+				<start>1078088</start>
+				<end>1078401</end>
+				<ocl_global_work_size>131072</ocl_global_work_size>
+				<ocl_local_work_size>256</ocl_local_work_size>
+				<ocl_queued>1076468</ocl_queued>
+				<ocl_submit>1076470</ocl_submit>
+			</taskInstance>
+			<taskInstance>
+				<idTask>94066820708800</idTask><!-- task.name = reduceKernel -->
+				<name>reduceKernel</name>
+				<start>1078404</start>
+				<end>1079391</end>
+				<ocl_global_work_size>131072</ocl_global_work_size>
+				<ocl_local_work_size>256</ocl_local_work_size>
+				<ocl_queued>1076485</ocl_queued>
+				<ocl_submit>1076488</ocl_submit>
+			</taskInstance>
+			<taskInstance>
+				<idTask>1</idTask><!-- task.name = Read Buffer -->
+				<name>Read Buffer</name>
+				<start>1079396</start>
+				<end>1079399</end>
+				<ocl_size>20</ocl_size>
+				<ocl_bandwidth>7</ocl_bandwidth>
+			</taskInstance>
+			<taskInstance>
+				<idTask>1</idTask><!-- task.name = Read Buffer -->
+				<name>Read Buffer</name>
+				<start>1079492</start>
+				<end>1081022</end>
+				<ocl_size>8388608</ocl_size>
+				<ocl_bandwidth>5483</ocl_bandwidth>
+			</taskInstance>
+			<taskInstance>
+				<idTask>2</idTask><!-- task.name = Write Buffer -->
+				<name>Write Buffer</name>
+				<start>1100942</start>
+				<end>1102431</end>
+				<ocl_size>8388608</ocl_size>
+				<ocl_bandwidth>5633</ocl_bandwidth>
+			</taskInstance>
+			<taskInstance>
+				<idTask>94066820431024</idTask><!-- task.name = clearKernel -->
+				<name>clearKernel</name>
+				<start>1102431</start>
+				<end>1102443</end>
+				<ocl_global_work_size>131072</ocl_global_work_size>
+				<ocl_local_work_size>256</ocl_local_work_size>
+				<ocl_queued>1100786</ocl_queued>
+				<ocl_submit>1100790</ocl_submit>
+			</taskInstance>
+			<taskInstance>
+				<idTask>94066820451904</idTask><!-- task.name = computeOffsetKernel -->
+				<name>computeOffsetKernel</name>
+				<start>1102447</start>
+				<end>1102458</end>
+				<ocl_global_work_size>131072</ocl_global_work_size>
+				<ocl_local_work_size>256</ocl_local_work_size>
+				<ocl_queued>1100810</ocl_queued>
+				<ocl_submit>1100813</ocl_submit>
+			</taskInstance>
+			<taskInstance>
+				<idTask>94066820687920</idTask><!-- task.name = computePointersKernel -->
+				<name>computePointersKernel</name>
+				<start>1102459</start>
+				<end>1102772</end>
+				<ocl_global_work_size>131072</ocl_global_work_size>
+				<ocl_local_work_size>256</ocl_local_work_size>
+				<ocl_queued>1100829</ocl_queued>
+				<ocl_submit>1100833</ocl_submit>
+			</taskInstance>
+			<taskInstance>
+				<idTask>94066820708800</idTask><!-- task.name = reduceKernel -->
+				<name>reduceKernel</name>
+				<start>1102773</start>
+				<end>1103752</end>
+				<ocl_global_work_size>131072</ocl_global_work_size>
+				<ocl_local_work_size>256</ocl_local_work_size>
+				<ocl_queued>1100848</ocl_queued>
+				<ocl_submit>1100851</ocl_submit>
+			</taskInstance>
+			<taskInstance>
+				<idTask>1</idTask><!-- task.name = Read Buffer -->
+				<name>Read Buffer</name>
+				<start>1103761</start>
+				<end>1103764</end>
+				<ocl_size>20</ocl_size>
+				<ocl_bandwidth>6</ocl_bandwidth>
+			</taskInstance>
+			<taskInstance>
+				<idTask>1</idTask><!-- task.name = Read Buffer -->
+				<name>Read Buffer</name>
+				<start>1103847</start>
+				<end>1105372</end>
+				<ocl_size>8388608</ocl_size>
+				<ocl_bandwidth>5502</ocl_bandwidth>
+			</taskInstance>
+			<taskInstance>
+				<idTask>2</idTask><!-- task.name = Write Buffer -->
+				<name>Write Buffer</name>
+				<start>1125341</start>
+				<end>1126826</end>
+				<ocl_size>8388608</ocl_size>
+				<ocl_bandwidth>5649</ocl_bandwidth>
+			</taskInstance>
+			<taskInstance>
+				<idTask>94066820431024</idTask><!-- task.name = clearKernel -->
+				<name>clearKernel</name>
+				<start>1126830</start>
+				<end>1126842</end>
+				<ocl_global_work_size>131072</ocl_global_work_size>
+				<ocl_local_work_size>256</ocl_local_work_size>
+				<ocl_queued>1125184</ocl_queued>
+				<ocl_submit>1125187</ocl_submit>
+			</taskInstance>
+			<taskInstance>
+				<idTask>94066820451904</idTask><!-- task.name = computeOffsetKernel -->
+				<name>computeOffsetKernel</name>
+				<start>1126845</start>
+				<end>1126857</end>
+				<ocl_global_work_size>131072</ocl_global_work_size>
+				<ocl_local_work_size>256</ocl_local_work_size>
+				<ocl_queued>1125206</ocl_queued>
+				<ocl_submit>1125208</ocl_submit>
+			</taskInstance>
+			<taskInstance>
+				<idTask>94066820687920</idTask><!-- task.name = computePointersKernel -->
+				<name>computePointersKernel</name>
+				<start>1126859</start>
+				<end>1127176</end>
+				<ocl_global_work_size>131072</ocl_global_work_size>
+				<ocl_local_work_size>256</ocl_local_work_size>
+				<ocl_queued>1125223</ocl_queued>
+				<ocl_submit>1125225</ocl_submit>
+			</taskInstance>
+			<taskInstance>
+				<idTask>94066820708800</idTask><!-- task.name = reduceKernel -->
+				<name>reduceKernel</name>
+				<start>1127177</start>
+				<end>1128158</end>
+				<ocl_global_work_size>131072</ocl_global_work_size>
+				<ocl_local_work_size>256</ocl_local_work_size>
+				<ocl_queued>1125238</ocl_queued>
+				<ocl_submit>1125240</ocl_submit>
+			</taskInstance>
+			<taskInstance>
+				<idTask>1</idTask><!-- task.name = Read Buffer -->
+				<name>Read Buffer</name>
+				<start>1128169</start>
+				<end>1128172</end>
+				<ocl_size>20</ocl_size>
+				<ocl_bandwidth>7</ocl_bandwidth>
+			</taskInstance>
+			<taskInstance>
+				<idTask>1</idTask><!-- task.name = Read Buffer -->
+				<name>Read Buffer</name>
+				<start>1128265</start>
+				<end>1129886</end>
+				<ocl_size>8388608</ocl_size>
+				<ocl_bandwidth>5177</ocl_bandwidth>
 			</taskInstance>
 		</stream>
 		<stream>
@@ -1990,386 +1926,386 @@ The major_version.minor_version value returned will be 1.0.</help>
 			<taskInstance>
 				<idTask>2</idTask><!-- task.name = Write Buffer -->
 				<name>Write Buffer</name>
-				<start>966825</start>
-				<end>968322</end>
+				<start>983235</start>
+				<end>984711</end>
 				<ocl_size>8388608</ocl_size>
-				<ocl_bandwidth>5604</ocl_bandwidth>
+				<ocl_bandwidth>5684</ocl_bandwidth>
 			</taskInstance>
 			<taskInstance>
-				<idTask>94488354692208</idTask><!-- task.name = clearKernel -->
+				<idTask>94066820435152</idTask><!-- task.name = clearKernel -->
 				<name>clearKernel</name>
-				<start>967992</start>
-				<end>968011</end>
+				<start>984371</start>
+				<end>984385</end>
 				<ocl_global_work_size>131072</ocl_global_work_size>
 				<ocl_local_work_size>256</ocl_local_work_size>
-				<ocl_queued>958136</ocl_queued>
-				<ocl_submit>958141</ocl_submit>
+				<ocl_queued>983222</ocl_queued>
+				<ocl_submit>983227</ocl_submit>
 			</taskInstance>
 			<taskInstance>
-				<idTask>94488354713184</idTask><!-- task.name = computeOffsetKernel -->
+				<idTask>94066820456128</idTask><!-- task.name = computeOffsetKernel -->
 				<name>computeOffsetKernel</name>
-				<start>968490</start>
-				<end>968509</end>
+				<start>984867</start>
+				<end>984877</end>
 				<ocl_global_work_size>131072</ocl_global_work_size>
 				<ocl_local_work_size>256</ocl_local_work_size>
-				<ocl_queued>958655</ocl_queued>
-				<ocl_submit>958659</ocl_submit>
+				<ocl_queued>983732</ocl_queued>
+				<ocl_submit>983734</ocl_submit>
 			</taskInstance>
 			<taskInstance>
-				<idTask>94488354949200</idTask><!-- task.name = computePointersKernel -->
+				<idTask>94066820692144</idTask><!-- task.name = computePointersKernel -->
 				<name>computePointersKernel</name>
-				<start>968498</start>
-				<end>969628</end>
+				<start>984880</start>
+				<end>985192</end>
 				<ocl_global_work_size>131072</ocl_global_work_size>
 				<ocl_local_work_size>256</ocl_local_work_size>
-				<ocl_queued>958679</ocl_queued>
-				<ocl_submit>958683</ocl_submit>
+				<ocl_queued>983758</ocl_queued>
+				<ocl_submit>983760</ocl_submit>
 			</taskInstance>
 			<taskInstance>
-				<idTask>94488354969984</idTask><!-- task.name = reduceKernel -->
+				<idTask>94066820712928</idTask><!-- task.name = reduceKernel -->
 				<name>reduceKernel</name>
-				<start>969646</start>
-				<end>973260</end>
+				<start>985193</start>
+				<end>986181</end>
 				<ocl_global_work_size>131072</ocl_global_work_size>
 				<ocl_local_work_size>256</ocl_local_work_size>
-				<ocl_queued>958717</ocl_queued>
-				<ocl_submit>958720</ocl_submit>
+				<ocl_queued>983779</ocl_queued>
+				<ocl_submit>983781</ocl_submit>
 			</taskInstance>
 			<taskInstance>
 				<idTask>1</idTask><!-- task.name = Read Buffer -->
 				<name>Read Buffer</name>
-				<start>976367</start>
-				<end>976369</end>
+				<start>986194</start>
+				<end>986195</end>
+				<ocl_size>20</ocl_size>
+				<ocl_bandwidth>11</ocl_bandwidth>
+			</taskInstance>
+			<taskInstance>
+				<idTask>1</idTask><!-- task.name = Read Buffer -->
+				<name>Read Buffer</name>
+				<start>986287</start>
+				<end>991505</end>
+				<ocl_size>8388608</ocl_size>
+				<ocl_bandwidth>1607</ocl_bandwidth>
+			</taskInstance>
+			<taskInstance>
+				<idTask>2</idTask><!-- task.name = Write Buffer -->
+				<name>Write Buffer</name>
+				<start>1032658</start>
+				<end>1034121</end>
+				<ocl_size>8388608</ocl_size>
+				<ocl_bandwidth>5731</ocl_bandwidth>
+			</taskInstance>
+			<taskInstance>
+				<idTask>94066820435152</idTask><!-- task.name = clearKernel -->
+				<name>clearKernel</name>
+				<start>1034121</start>
+				<end>1034133</end>
+				<ocl_global_work_size>131072</ocl_global_work_size>
+				<ocl_local_work_size>256</ocl_local_work_size>
+				<ocl_queued>1032504</ocl_queued>
+				<ocl_submit>1032507</ocl_submit>
+			</taskInstance>
+			<taskInstance>
+				<idTask>94066820456128</idTask><!-- task.name = computeOffsetKernel -->
+				<name>computeOffsetKernel</name>
+				<start>1034137</start>
+				<end>1034149</end>
+				<ocl_global_work_size>131072</ocl_global_work_size>
+				<ocl_local_work_size>256</ocl_local_work_size>
+				<ocl_queued>1032528</ocl_queued>
+				<ocl_submit>1032531</ocl_submit>
+			</taskInstance>
+			<taskInstance>
+				<idTask>94066820692144</idTask><!-- task.name = computePointersKernel -->
+				<name>computePointersKernel</name>
+				<start>1034150</start>
+				<end>1034460</end>
+				<ocl_global_work_size>131072</ocl_global_work_size>
+				<ocl_local_work_size>256</ocl_local_work_size>
+				<ocl_queued>1032545</ocl_queued>
+				<ocl_submit>1032547</ocl_submit>
+			</taskInstance>
+			<taskInstance>
+				<idTask>94066820712928</idTask><!-- task.name = reduceKernel -->
+				<name>reduceKernel</name>
+				<start>1034462</start>
+				<end>1035445</end>
+				<ocl_global_work_size>131072</ocl_global_work_size>
+				<ocl_local_work_size>256</ocl_local_work_size>
+				<ocl_queued>1032562</ocl_queued>
+				<ocl_submit>1032565</ocl_submit>
+			</taskInstance>
+			<taskInstance>
+				<idTask>1</idTask><!-- task.name = Read Buffer -->
+				<name>Read Buffer</name>
+				<start>1035457</start>
+				<end>1035460</end>
+				<ocl_size>20</ocl_size>
+				<ocl_bandwidth>6</ocl_bandwidth>
+			</taskInstance>
+			<taskInstance>
+				<idTask>1</idTask><!-- task.name = Read Buffer -->
+				<name>Read Buffer</name>
+				<start>1035575</start>
+				<end>1037096</end>
+				<ocl_size>8388608</ocl_size>
+				<ocl_bandwidth>5514</ocl_bandwidth>
+			</taskInstance>
+			<taskInstance>
+				<idTask>2</idTask><!-- task.name = Write Buffer -->
+				<name>Write Buffer</name>
+				<start>1057008</start>
+				<end>1058510</end>
+				<ocl_size>8388608</ocl_size>
+				<ocl_bandwidth>5587</ocl_bandwidth>
+			</taskInstance>
+			<taskInstance>
+				<idTask>94066820435152</idTask><!-- task.name = clearKernel -->
+				<name>clearKernel</name>
+				<start>1058509</start>
+				<end>1058521</end>
+				<ocl_global_work_size>131072</ocl_global_work_size>
+				<ocl_local_work_size>256</ocl_local_work_size>
+				<ocl_queued>1056858</ocl_queued>
+				<ocl_submit>1056861</ocl_submit>
+			</taskInstance>
+			<taskInstance>
+				<idTask>94066820456128</idTask><!-- task.name = computeOffsetKernel -->
+				<name>computeOffsetKernel</name>
+				<start>1058524</start>
+				<end>1058535</end>
+				<ocl_global_work_size>131072</ocl_global_work_size>
+				<ocl_local_work_size>256</ocl_local_work_size>
+				<ocl_queued>1056880</ocl_queued>
+				<ocl_submit>1056882</ocl_submit>
+			</taskInstance>
+			<taskInstance>
+				<idTask>94066820692144</idTask><!-- task.name = computePointersKernel -->
+				<name>computePointersKernel</name>
+				<start>1058538</start>
+				<end>1058850</end>
+				<ocl_global_work_size>131072</ocl_global_work_size>
+				<ocl_local_work_size>256</ocl_local_work_size>
+				<ocl_queued>1056897</ocl_queued>
+				<ocl_submit>1056900</ocl_submit>
+			</taskInstance>
+			<taskInstance>
+				<idTask>94066820712928</idTask><!-- task.name = reduceKernel -->
+				<name>reduceKernel</name>
+				<start>1058853</start>
+				<end>1059837</end>
+				<ocl_global_work_size>131072</ocl_global_work_size>
+				<ocl_local_work_size>256</ocl_local_work_size>
+				<ocl_queued>1056914</ocl_queued>
+				<ocl_submit>1056916</ocl_submit>
+			</taskInstance>
+			<taskInstance>
+				<idTask>1</idTask><!-- task.name = Read Buffer -->
+				<name>Read Buffer</name>
+				<start>1059848</start>
+				<end>1059851</end>
 				<ocl_size>20</ocl_size>
 				<ocl_bandwidth>7</ocl_bandwidth>
 			</taskInstance>
 			<taskInstance>
 				<idTask>1</idTask><!-- task.name = Read Buffer -->
 				<name>Read Buffer</name>
-				<start>977141</start>
-				<end>983693</end>
+				<start>1059935</start>
+				<end>1061448</end>
 				<ocl_size>8388608</ocl_size>
-				<ocl_bandwidth>1280</ocl_bandwidth>
+				<ocl_bandwidth>5543</ocl_bandwidth>
 			</taskInstance>
 			<taskInstance>
 				<idTask>2</idTask><!-- task.name = Write Buffer -->
 				<name>Write Buffer</name>
-				<start>1003518</start>
-				<end>1004988</end>
+				<start>1081458</start>
+				<end>1082943</end>
 				<ocl_size>8388608</ocl_size>
-				<ocl_bandwidth>5706</ocl_bandwidth>
+				<ocl_bandwidth>5650</ocl_bandwidth>
 			</taskInstance>
 			<taskInstance>
-				<idTask>94488354692208</idTask><!-- task.name = clearKernel -->
+				<idTask>94066820435152</idTask><!-- task.name = clearKernel -->
 				<name>clearKernel</name>
-				<start>1005006</start>
-				<end>1005031</end>
+				<start>1082942</start>
+				<end>1082954</end>
 				<ocl_global_work_size>131072</ocl_global_work_size>
 				<ocl_local_work_size>256</ocl_local_work_size>
-				<ocl_queued>1001637</ocl_queued>
-				<ocl_submit>1001640</ocl_submit>
+				<ocl_queued>1081301</ocl_queued>
+				<ocl_submit>1081304</ocl_submit>
 			</taskInstance>
 			<taskInstance>
-				<idTask>94488354713184</idTask><!-- task.name = computeOffsetKernel -->
+				<idTask>94066820456128</idTask><!-- task.name = computeOffsetKernel -->
 				<name>computeOffsetKernel</name>
-				<start>1005029</start>
-				<end>1005049</end>
+				<start>1082958</start>
+				<end>1082968</end>
 				<ocl_global_work_size>131072</ocl_global_work_size>
 				<ocl_local_work_size>256</ocl_local_work_size>
-				<ocl_queued>1001661</ocl_queued>
-				<ocl_submit>1001664</ocl_submit>
+				<ocl_queued>1081323</ocl_queued>
+				<ocl_submit>1081325</ocl_submit>
 			</taskInstance>
 			<taskInstance>
-				<idTask>94488354949200</idTask><!-- task.name = computePointersKernel -->
+				<idTask>94066820692144</idTask><!-- task.name = computePointersKernel -->
 				<name>computePointersKernel</name>
-				<start>1005056</start>
-				<end>1006197</end>
+				<start>1082969</start>
+				<end>1083282</end>
 				<ocl_global_work_size>131072</ocl_global_work_size>
 				<ocl_local_work_size>256</ocl_local_work_size>
-				<ocl_queued>1001685</ocl_queued>
-				<ocl_submit>1001687</ocl_submit>
+				<ocl_queued>1081340</ocl_queued>
+				<ocl_submit>1081342</ocl_submit>
 			</taskInstance>
 			<taskInstance>
-				<idTask>94488354969984</idTask><!-- task.name = reduceKernel -->
+				<idTask>94066820712928</idTask><!-- task.name = reduceKernel -->
 				<name>reduceKernel</name>
-				<start>1006198</start>
-				<end>1009623</end>
+				<start>1083285</start>
+				<end>1084270</end>
 				<ocl_global_work_size>131072</ocl_global_work_size>
 				<ocl_local_work_size>256</ocl_local_work_size>
-				<ocl_queued>1001705</ocl_queued>
-				<ocl_submit>1001707</ocl_submit>
+				<ocl_queued>1081357</ocl_queued>
+				<ocl_submit>1081359</ocl_submit>
 			</taskInstance>
 			<taskInstance>
 				<idTask>1</idTask><!-- task.name = Read Buffer -->
 				<name>Read Buffer</name>
-				<start>1020440</start>
-				<end>1020443</end>
-				<ocl_size>20</ocl_size>
-				<ocl_bandwidth>8</ocl_bandwidth>
-			</taskInstance>
-			<taskInstance>
-				<idTask>1</idTask><!-- task.name = Read Buffer -->
-				<name>Read Buffer</name>
-				<start>1021454</start>
-				<end>1027219</end>
-				<ocl_size>8388608</ocl_size>
-				<ocl_bandwidth>1454</ocl_bandwidth>
-			</taskInstance>
-			<taskInstance>
-				<idTask>2</idTask><!-- task.name = Write Buffer -->
-				<name>Write Buffer</name>
-				<start>1048752</start>
-				<end>1057594</end>
-				<ocl_size>8388608</ocl_size>
-				<ocl_bandwidth>948</ocl_bandwidth>
-			</taskInstance>
-			<taskInstance>
-				<idTask>94488354692208</idTask><!-- task.name = clearKernel -->
-				<name>clearKernel</name>
-				<start>1057594</start>
-				<end>1057608</end>
-				<ocl_global_work_size>131072</ocl_global_work_size>
-				<ocl_local_work_size>256</ocl_local_work_size>
-				<ocl_queued>1048534</ocl_queued>
-				<ocl_submit>1048542</ocl_submit>
-			</taskInstance>
-			<taskInstance>
-				<idTask>94488354713184</idTask><!-- task.name = computeOffsetKernel -->
-				<name>computeOffsetKernel</name>
-				<start>1057612</start>
-				<end>1057628</end>
-				<ocl_global_work_size>131072</ocl_global_work_size>
-				<ocl_local_work_size>256</ocl_local_work_size>
-				<ocl_queued>1048570</ocl_queued>
-				<ocl_submit>1048577</ocl_submit>
-			</taskInstance>
-			<taskInstance>
-				<idTask>94488354949200</idTask><!-- task.name = computePointersKernel -->
-				<name>computePointersKernel</name>
-				<start>1057631</start>
-				<end>1057952</end>
-				<ocl_global_work_size>131072</ocl_global_work_size>
-				<ocl_local_work_size>256</ocl_local_work_size>
-				<ocl_queued>1048597</ocl_queued>
-				<ocl_submit>1048601</ocl_submit>
-			</taskInstance>
-			<taskInstance>
-				<idTask>94488354969984</idTask><!-- task.name = reduceKernel -->
-				<name>reduceKernel</name>
-				<start>1057956</start>
-				<end>1058952</end>
-				<ocl_global_work_size>131072</ocl_global_work_size>
-				<ocl_local_work_size>256</ocl_local_work_size>
-				<ocl_queued>1048618</ocl_queued>
-				<ocl_submit>1048621</ocl_submit>
-			</taskInstance>
-			<taskInstance>
-				<idTask>1</idTask><!-- task.name = Read Buffer -->
-				<name>Read Buffer</name>
-				<start>1058974</start>
-				<end>1058977</end>
+				<start>1084282</start>
+				<end>1084285</end>
 				<ocl_size>20</ocl_size>
 				<ocl_bandwidth>7</ocl_bandwidth>
 			</taskInstance>
 			<taskInstance>
 				<idTask>1</idTask><!-- task.name = Read Buffer -->
 				<name>Read Buffer</name>
-				<start>1059153</start>
-				<end>1061035</end>
+				<start>1084389</start>
+				<end>1085939</end>
 				<ocl_size>8388608</ocl_size>
-				<ocl_bandwidth>4457</ocl_bandwidth>
+				<ocl_bandwidth>5409</ocl_bandwidth>
 			</taskInstance>
 			<taskInstance>
 				<idTask>2</idTask><!-- task.name = Write Buffer -->
 				<name>Write Buffer</name>
-				<start>1071898</start>
-				<end>1075325</end>
+				<start>1105799</start>
+				<end>1107299</end>
 				<ocl_size>8388608</ocl_size>
-				<ocl_bandwidth>2447</ocl_bandwidth>
+				<ocl_bandwidth>5591</ocl_bandwidth>
 			</taskInstance>
 			<taskInstance>
-				<idTask>94488354692208</idTask><!-- task.name = clearKernel -->
+				<idTask>94066820435152</idTask><!-- task.name = clearKernel -->
 				<name>clearKernel</name>
-				<start>1075326</start>
-				<end>1075342</end>
+				<start>1107299</start>
+				<end>1107310</end>
 				<ocl_global_work_size>131072</ocl_global_work_size>
 				<ocl_local_work_size>256</ocl_local_work_size>
-				<ocl_queued>1070314</ocl_queued>
-				<ocl_submit>1070317</ocl_submit>
+				<ocl_queued>1105649</ocl_queued>
+				<ocl_submit>1105652</ocl_submit>
 			</taskInstance>
 			<taskInstance>
-				<idTask>94488354713184</idTask><!-- task.name = computeOffsetKernel -->
+				<idTask>94066820456128</idTask><!-- task.name = computeOffsetKernel -->
 				<name>computeOffsetKernel</name>
-				<start>1075346</start>
-				<end>1075362</end>
+				<start>1107316</start>
+				<end>1107325</end>
 				<ocl_global_work_size>131072</ocl_global_work_size>
 				<ocl_local_work_size>256</ocl_local_work_size>
-				<ocl_queued>1070336</ocl_queued>
-				<ocl_submit>1070339</ocl_submit>
+				<ocl_queued>1105672</ocl_queued>
+				<ocl_submit>1105674</ocl_submit>
 			</taskInstance>
 			<taskInstance>
-				<idTask>94488354949200</idTask><!-- task.name = computePointersKernel -->
+				<idTask>94066820692144</idTask><!-- task.name = computePointersKernel -->
 				<name>computePointersKernel</name>
-				<start>1075364</start>
-				<end>1076482</end>
+				<start>1107327</start>
+				<end>1107639</end>
 				<ocl_global_work_size>131072</ocl_global_work_size>
 				<ocl_local_work_size>256</ocl_local_work_size>
-				<ocl_queued>1070354</ocl_queued>
-				<ocl_submit>1070356</ocl_submit>
+				<ocl_queued>1105688</ocl_queued>
+				<ocl_submit>1105690</ocl_submit>
 			</taskInstance>
 			<taskInstance>
-				<idTask>94488354969984</idTask><!-- task.name = reduceKernel -->
+				<idTask>94066820712928</idTask><!-- task.name = reduceKernel -->
 				<name>reduceKernel</name>
-				<start>1076484</start>
-				<end>1080310</end>
+				<start>1107641</start>
+				<end>1108623</end>
 				<ocl_global_work_size>131072</ocl_global_work_size>
 				<ocl_local_work_size>256</ocl_local_work_size>
-				<ocl_queued>1070371</ocl_queued>
-				<ocl_submit>1070373</ocl_submit>
+				<ocl_queued>1105704</ocl_queued>
+				<ocl_submit>1105706</ocl_submit>
 			</taskInstance>
 			<taskInstance>
 				<idTask>1</idTask><!-- task.name = Read Buffer -->
 				<name>Read Buffer</name>
-				<start>1080324</start>
-				<end>1080326</end>
+				<start>1108633</start>
+				<end>1108635</end>
 				<ocl_size>20</ocl_size>
-				<ocl_bandwidth>7</ocl_bandwidth>
+				<ocl_bandwidth>9</ocl_bandwidth>
 			</taskInstance>
 			<taskInstance>
 				<idTask>1</idTask><!-- task.name = Read Buffer -->
 				<name>Read Buffer</name>
-				<start>1080414</start>
-				<end>1081998</end>
+				<start>1108730</start>
+				<end>1110321</end>
 				<ocl_size>8388608</ocl_size>
-				<ocl_bandwidth>5298</ocl_bandwidth>
+				<ocl_bandwidth>5272</ocl_bandwidth>
 			</taskInstance>
 			<taskInstance>
 				<idTask>2</idTask><!-- task.name = Write Buffer -->
 				<name>Write Buffer</name>
-				<start>1089910</start>
-				<end>1091718</end>
+				<start>1130336</start>
+				<end>1131808</end>
 				<ocl_size>8388608</ocl_size>
-				<ocl_bandwidth>4638</ocl_bandwidth>
+				<ocl_bandwidth>5696</ocl_bandwidth>
 			</taskInstance>
 			<taskInstance>
-				<idTask>94488354692208</idTask><!-- task.name = clearKernel -->
+				<idTask>94066820435152</idTask><!-- task.name = clearKernel -->
 				<name>clearKernel</name>
-				<start>1091729</start>
-				<end>1091747</end>
+				<start>1131808</start>
+				<end>1131819</end>
 				<ocl_global_work_size>131072</ocl_global_work_size>
 				<ocl_local_work_size>256</ocl_local_work_size>
-				<ocl_queued>1087191</ocl_queued>
-				<ocl_submit>1087194</ocl_submit>
+				<ocl_queued>1130175</ocl_queued>
+				<ocl_submit>1130178</ocl_submit>
 			</taskInstance>
 			<taskInstance>
-				<idTask>94488354713184</idTask><!-- task.name = computeOffsetKernel -->
+				<idTask>94066820456128</idTask><!-- task.name = computeOffsetKernel -->
 				<name>computeOffsetKernel</name>
-				<start>1091750</start>
-				<end>1091769</end>
+				<start>1131826</start>
+				<end>1131837</end>
 				<ocl_global_work_size>131072</ocl_global_work_size>
 				<ocl_local_work_size>256</ocl_local_work_size>
-				<ocl_queued>1087214</ocl_queued>
-				<ocl_submit>1087216</ocl_submit>
+				<ocl_queued>1130201</ocl_queued>
+				<ocl_submit>1130205</ocl_submit>
 			</taskInstance>
 			<taskInstance>
-				<idTask>94488354949200</idTask><!-- task.name = computePointersKernel -->
+				<idTask>94066820692144</idTask><!-- task.name = computePointersKernel -->
 				<name>computePointersKernel</name>
-				<start>1091772</start>
-				<end>1092902</end>
+				<start>1131837</start>
+				<end>1132151</end>
 				<ocl_global_work_size>131072</ocl_global_work_size>
 				<ocl_local_work_size>256</ocl_local_work_size>
-				<ocl_queued>1087232</ocl_queued>
-				<ocl_submit>1087234</ocl_submit>
+				<ocl_queued>1130220</ocl_queued>
+				<ocl_submit>1130224</ocl_submit>
 			</taskInstance>
 			<taskInstance>
-				<idTask>94488354969984</idTask><!-- task.name = reduceKernel -->
+				<idTask>94066820712928</idTask><!-- task.name = reduceKernel -->
 				<name>reduceKernel</name>
-				<start>1092903</start>
-				<end>1096549</end>
+				<start>1132155</start>
+				<end>1133139</end>
 				<ocl_global_work_size>131072</ocl_global_work_size>
 				<ocl_local_work_size>256</ocl_local_work_size>
-				<ocl_queued>1087248</ocl_queued>
-				<ocl_submit>1087250</ocl_submit>
+				<ocl_queued>1130240</ocl_queued>
+				<ocl_submit>1130244</ocl_submit>
 			</taskInstance>
 			<taskInstance>
 				<idTask>1</idTask><!-- task.name = Read Buffer -->
 				<name>Read Buffer</name>
-				<start>1096564</start>
-				<end>1096567</end>
+				<start>1133148</start>
+				<end>1133151</end>
 				<ocl_size>20</ocl_size>
-				<ocl_bandwidth>8</ocl_bandwidth>
+				<ocl_bandwidth>6</ocl_bandwidth>
 			</taskInstance>
 			<taskInstance>
 				<idTask>1</idTask><!-- task.name = Read Buffer -->
 				<name>Read Buffer</name>
-				<start>1096600</start>
-				<end>1098509</end>
+				<start>1133244</start>
+				<end>1134746</end>
 				<ocl_size>8388608</ocl_size>
-				<ocl_bandwidth>4392</ocl_bandwidth>
-			</taskInstance>
-			<taskInstance>
-				<idTask>2</idTask><!-- task.name = Write Buffer -->
-				<name>Write Buffer</name>
-				<start>1105941</start>
-				<end>1107414</end>
-				<ocl_size>8388608</ocl_size>
-				<ocl_bandwidth>5695</ocl_bandwidth>
-			</taskInstance>
-			<taskInstance>
-				<idTask>94488354692208</idTask><!-- task.name = clearKernel -->
-				<name>clearKernel</name>
-				<start>1107421</start>
-				<end>1107442</end>
-				<ocl_global_work_size>131072</ocl_global_work_size>
-				<ocl_local_work_size>256</ocl_local_work_size>
-				<ocl_queued>1104270</ocl_queued>
-				<ocl_submit>1104273</ocl_submit>
-			</taskInstance>
-			<taskInstance>
-				<idTask>94488354713184</idTask><!-- task.name = computeOffsetKernel -->
-				<name>computeOffsetKernel</name>
-				<start>1107446</start>
-				<end>1107466</end>
-				<ocl_global_work_size>131072</ocl_global_work_size>
-				<ocl_local_work_size>256</ocl_local_work_size>
-				<ocl_queued>1104294</ocl_queued>
-				<ocl_submit>1104296</ocl_submit>
-			</taskInstance>
-			<taskInstance>
-				<idTask>94488354949200</idTask><!-- task.name = computePointersKernel -->
-				<name>computePointersKernel</name>
-				<start>1107468</start>
-				<end>1108627</end>
-				<ocl_global_work_size>131072</ocl_global_work_size>
-				<ocl_local_work_size>256</ocl_local_work_size>
-				<ocl_queued>1104312</ocl_queued>
-				<ocl_submit>1104314</ocl_submit>
-			</taskInstance>
-			<taskInstance>
-				<idTask>94488354969984</idTask><!-- task.name = reduceKernel -->
-				<name>reduceKernel</name>
-				<start>1108627</start>
-				<end>1112018</end>
-				<ocl_global_work_size>131072</ocl_global_work_size>
-				<ocl_local_work_size>256</ocl_local_work_size>
-				<ocl_queued>1104328</ocl_queued>
-				<ocl_submit>1104330</ocl_submit>
-			</taskInstance>
-			<taskInstance>
-				<idTask>1</idTask><!-- task.name = Read Buffer -->
-				<name>Read Buffer</name>
-				<start>1113220</start>
-				<end>1113223</end>
-				<ocl_size>20</ocl_size>
-				<ocl_bandwidth>7</ocl_bandwidth>
-			</taskInstance>
-			<taskInstance>
-				<idTask>1</idTask><!-- task.name = Read Buffer -->
-				<name>Read Buffer</name>
-				<start>1113593</start>
-				<end>1115468</end>
-				<ocl_size>8388608</ocl_size>
-				<ocl_bandwidth>4475</ocl_bandwidth>
+				<ocl_bandwidth>5585</ocl_bandwidth>
 			</taskInstance>
 		</stream>
 	</device>
