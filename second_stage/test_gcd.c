@@ -167,17 +167,30 @@ void run_processing_gpu(
                 /* Start the actual monitoring */
                 monitor_init(manager, scheduler, query1->operator_num, dispatchers);
 
-                int b=0;
-                while (1) {
-                    usleep(DISPATCHER_INSERT_TIMEOUT);
+                if (work_load == 1) {
+                    int b=0;
+                    while (1) {
+                        usleep(DISPATCHER_INSERT_TIMEOUT);
 
-                    dispatcher_insert(dispatchers[0], buffers[b], buffer_size, event_get_mtime());
+                        dispatcher_insert(dispatchers[0], buffers[b], buffer_size, event_get_mtime());
 
-                    b = (b+1) % buffer_num;
+                        b = (b+1) % buffer_num;
+                    }
+                } else {
+                    int b=0;
+                    for (int i=0; i<work_load; i++) {
+                        usleep(DISPATCHER_INSERT_TIMEOUT);
 
-                    // if (b == 0) {
-                    //     renew_timestamp(buffer_num, buffers, batch_size);
-                    // }
+                        dispatcher_insert(dispatchers[0], buffers[b], buffer_size, event_get_mtime());
+
+                        b = (b+1) % buffer_num;
+                    }
+
+                    while (scheduler->queue_size != 0) {
+                        sched_yield();
+                    }
+
+                    exit(1);
                 }
 
             }
@@ -436,7 +449,7 @@ int main(int argc, char * argv[]) {
     /* Arguments */
     bool is_merging = false;
     bool is_debug = false;
-    int work_load = 64; // default to be 64MB
+    int work_load = -1; // default to be 64MB
     int batch_size = 32; // default to be 32MB per batch
     int buffer_num = 1;
     int pipeline_depth = 2;
@@ -446,6 +459,10 @@ int main(int argc, char * argv[]) {
     parse_arguments(argc, argv, 
         &mode, &work_load, &batch_size, &buffer_num, &pipeline_depth,
         &is_merging, &is_debug);
+
+    if (work_load == -1) {
+        work_load = batch_size;
+    }
 
     if (work_load < batch_size) {
         printf("Reset batch size to be %d\n", work_load);
