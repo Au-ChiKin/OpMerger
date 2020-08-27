@@ -1,8 +1,11 @@
 #include "monitor.h"
 
+#define _GNU_SOURCE
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <unistd.h>
+#include <sched.h>
 
 static pthread_t thr = NULL;
 
@@ -10,6 +13,17 @@ static void print_data(monitor_p p);
 
 static void * monitor(void * args) {
 	monitor_p p = (monitor_p) args;
+
+#ifndef __APPLE__
+	/* Pin this thread to a particular core: 0 is the dispatcher, 1 is the GPU */
+	int core = 3;
+	cpu_set_t set;
+	CPU_ZERO (&set);
+	CPU_SET (core, &set);
+	sched_setaffinity (0, sizeof(set), &set);
+	fprintf(stdout, "[DBG] result handler attached to core 2\n");
+	fflush (stdout);
+#endif
 
 	/* Unblocks the thread waiting for this thread to start */
 	p->start = 1;

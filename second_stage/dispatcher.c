@@ -1,5 +1,7 @@
 #include "dispatcher.h"
 
+#define _GNU_SOURCE
+
 #include <sched.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -12,6 +14,17 @@ static void send_one_task(dispatcher_p p, task_p t);
 
 static void * dispatcher(void * args) {
 	dispatcher_p p = (dispatcher_p) args;
+
+#ifndef __APPLE__
+	/* Pin this thread to a particular core: 0 is the dispatcher, 1 is the GPU */
+	int core = 0;
+	cpu_set_t set;
+	CPU_ZERO (&set);
+	CPU_SET (core, &set);
+	sched_setaffinity (0, sizeof(set), &set);
+	fprintf(stdout, "[DBG] result handler attached to core 2\n");
+	fflush (stdout);
+#endif
 
 	/* Unblocks the thread (which runs result_handler_init) waiting for this thread to start*/
 	p->start = 1;

@@ -1,9 +1,12 @@
 #include "result_handler.h"
 
+#define _GNU_SOURCE
+
 #include <sched.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <sched.h>
 
 #include "dispatcher.h"
 
@@ -14,6 +17,17 @@ static u_int8_t * fill_buffer(result_handler_p p, batch_p data, long * time);
 
 static void * result_handler(void * args) {
 	result_handler_p p = (result_handler_p) args;
+
+#ifndef __APPLE__
+	/* Pin this thread to a particular core: 0 is the dispatcher, 1 is the GPU */
+	int core = 2;
+	cpu_set_t set;
+	CPU_ZERO (&set);
+	CPU_SET (core, &set);
+	sched_setaffinity (0, sizeof(set), &set);
+	fprintf(stdout, "[DBG] result handler attached to core 2\n");
+	fflush (stdout);
+#endif
 
 	/* Unblocks the thread (which runs result_handler_init) waiting for this thread to start */
 	p->start = 1;
@@ -185,7 +199,7 @@ static void process_one_task (result_handler_p p, task_p t) {
 
 		/* Assuming only tumbling windows*/
 		if (p->previous) {
-			// long current_offset = 0;
+			long current_offset = 0;
 
 			if (t->output->closing_windows > 0) {
 				/* Output opening windows of the previous with the closing windows */
@@ -199,14 +213,15 @@ static void process_one_task (result_handler_p p, task_p t) {
 			if (t->output->complete_windows > 0) {
 				/* Output */
 				u_int8_t * buffer_start = t->output->buffer + t->output->start;
-				int tuple_size = t->output->tuple_size;
+
+				int tuple_size = (* t->query->callbacks[t->oid]->get_output_schema_size) (t->query->operators[t->oid]);
 				int complete_windows = t->output->complete_windows;
 
-				// if (complete_windows > t->batch->size) {
-				// 	// fprintf(stderr, "error: complete windows is %d\n", complete_windows);
-				// 	// exit(1);
-				// } else
-				// memcpy(p->output_stream->buffer, buffer_start + current_offset, complete_windows * tuple_size);
+				if (complete_windows > t->batch->size) {
+					// fprintf(stderr, "error: complete windows is %d\n", complete_windows);
+					// exit(1);
+				} else
+					memcpy(p->output_stream->buffer, buffer_start + current_offset, complete_windows * tuple_size);
 			}
 
 			if (!t->output->closing_windows && !t->output->pending_windows 
@@ -218,7 +233,7 @@ static void process_one_task (result_handler_p p, task_p t) {
 				long offset = (p->previous->output->closing_windows + p->previous->output->pending_windows)
 					* tuple_size;
 
-				// memcpy(p->output_stream->buffer, buffer_start + offset, opening_windows * tuple_size);
+				memcpy(p->output_stream->buffer, buffer_start + offset, opening_windows * tuple_size);
 			}
 
 			/* Log the end */
