@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <time.h>
+#include <sched.h>
 
 #include "dispatcher.h"
 
