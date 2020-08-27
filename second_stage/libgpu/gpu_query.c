@@ -280,7 +280,8 @@ static int gpu_query_exec_2 (
 	gpu_query_p query, 
 	size_t *threads, size_t *threadsPerGroup, 
 	query_operator_p operator, 
-	void ** input_batches, void ** output_batches, size_t addr_size,
+	void ** input_batches, 
+	void ** output_batches, size_t addr_size,
 	query_event_p event) {
 	
 	/* The current config might still running, get another config */
@@ -297,7 +298,7 @@ static int gpu_query_exec_2 (
 	if (out_config) {
 
 		/* Wait for the finish of the previous query in the out_config */
-		gpu_config_finish(out_config);
+		// gpu_config_finish(out_config);
 		
 #ifdef GPU_PROFILE
 		gpu_config_profileQuery (out_config);
@@ -311,6 +312,10 @@ static int gpu_query_exec_2 (
 		// 	/* Read output */
 		// 	gpu_config_readOutput (out_config, operator->readOutput, query->qid);
 		// }
+
+		gpu_config_moveOutputBuffers (out_config, output_batches, addr_size);
+
+		gpu_config_flush (out_config);
 
 		if (event) { // With event, i.e. the last operator
 			gpu_config_notifyEnd(config, operator->notifyEnd, event);
@@ -330,14 +335,14 @@ static int gpu_query_exec_2 (
 	
 	gpu_config_submitKernel (config, threads, threadsPerGroup);
 	
-	gpu_config_moveOutputBuffers (config, output_batches, addr_size);
+	// gpu_config_moveOutputBuffers (config, output_batches, addr_size);
 	
 	gpu_config_flush (config);
 	
-	/* Wait until read output from other query context has finished */
-	// if (out_config && q->handler) {
-	// 	result_handler_waitForReadEvent (q->handler);
-	// }
+	/* Wait until read output from the swapped out query config has finished */
+	if (out_config) {
+		gpu_config_finish(out_config);
+	}
 
 	return 0;
 }

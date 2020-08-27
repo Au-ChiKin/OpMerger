@@ -28,7 +28,7 @@ task_p task(query_p query, int oid, batch_p batch, void * dispatcher, event_mana
     return task;
 }
 
-void task_run(task_p t) {
+void task_run(task_p t, task_p processed) {
 
     query_p query = t->query;
     int tuple_size = 64;
@@ -54,7 +54,16 @@ void task_run(task_p t) {
     u_int8_t * buffer = (u_int8_t *) malloc(1.1 * query->batch_size * tuple_size);
     t->output = batch(1.1 * query->batch_size, 0, buffer, 1.1 * query->batch_size, tuple_size);
 
-    query_process(t->query, t->oid, t->batch, t->output);
+    if (processed) {
+        u_int8_t ** outputs = query_get_output_buffer(processed->query, processed->oid, processed->output);
+
+        query_process(t->query, t->oid, t->batch, outputs);
+        
+        free(outputs);
+    } else {
+        query_process(t->query, t->oid, t->batch, NULL);
+    }
+
 }
 
 void task_end(task_p t) {

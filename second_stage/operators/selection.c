@@ -74,6 +74,7 @@ selection_p selection(
         p->operator->reset = selection_reset;
         p->operator->generate_patch = selection_generate_patch;
         p->operator->get_output_schema_size = selection_get_output_schema_size;
+        p->operator->get_output_buffer = selection_get_output_buffer;
 
         p->operator->type = OPERATOR_SELECT;
 
@@ -376,7 +377,7 @@ void selection_reset(void * select_ptr, int new_batch_size) {
     }
 }
 
-void selection_process(void * select_ptr, batch_p input, window_p window, batch_p output, query_event_p event) {
+void selection_process(void * select_ptr, batch_p input, window_p window, u_int8_t ** processed_outputs, query_event_p event) {
     selection_p select = (selection_p) select_ptr;
 
     int batch_size = input->size;
@@ -386,23 +387,34 @@ void selection_process(void * select_ptr, batch_p input, window_p window, batch_
     /* Set input buffer addresses and entries */
     u_int8_t * inputs [1] = {input->buffer + input->start};
 
-    /* Set output buffer addresses and entries */
-    u_int8_t * outputs [3] = {
-        output->buffer + output->start + select->output_entries[0],  /* flags */
-        output->buffer + output->start + select->output_entries[1],  /* partitions */
-        output->buffer + output->start + select->output_entries[2]}; /* output */
+    /* Execute */
+    gpu_execute(select->qid, 
+        select->threads, select->threads_per_group,
+        (void *) inputs, (void **) processed_outputs, sizeof(u_int8_t),
+        event);
+}
+
+u_int8_t ** selection_get_output_buffer(void * select_ptr, batch_p output) {
+    selection_p select = (selection_p) select_ptr;
+
+    u_int8_t ** outputs = (u_int8_t **) malloc(3 * sizeof(u_int8_t *));
 
     /* Validate whether the given output buffer is big enough */
+    int batch_size = select->batch_size;
+    int tuple_size = select->input_schema->size;
+    int work_group_num = select->threads[0] / select->threads_per_group[0];
+
     if ((output->end - output->start) < (long) (4 * batch_size + 4 * work_group_num + batch_size * tuple_size)) {
         fprintf(stderr, "error: Expected output size has exceeded the given output buffer size (%s)\n", __FUNCTION__);
         exit(1);
     }
 
-    /* Execute */
-    gpu_execute(select->qid, 
-        select->threads, select->threads_per_group,
-        (void *) inputs, (void *) outputs, sizeof(u_int8_t),
-        event);
+    /* Set output buffer addresses and entries */
+    for (int i=0; i<3; i++) {
+        outputs[i] = output->buffer + output->start + select->output_entries[i]; /* output */
+    }
+
+    return outputs;
 }
 
 void selection_print_output(selection_p select, batch_p outputs) {

@@ -92,7 +92,8 @@ void query_setup(query_p query) {
     query->has_setup = true;
 }
 
-void query_process(query_p query, int oid, batch_p input, batch_p output) {
+void query_process(query_p query, int oid, batch_p input, u_int8_t ** processed_outputs) {
+
     if (!query->has_setup) {
 
         fprintf(stderr, "error: This query has not been setup (%s)\n", __FUNCTION__);
@@ -111,8 +112,12 @@ void query_process(query_p query, int oid, batch_p input, batch_p output) {
     (* query->callbacks[oid]->process) (query->operators[oid], 
         input,
         query->window,
-        output,
+        processed_outputs,
         NULL); // No passing event
+}
+
+u_int8_t ** query_get_output_buffer(query_p query, int oid, batch_p output) {
+    return (* query->callbacks[oid]->get_output_buffer) (query->operators[oid], output);
 }
 
 void query_process_output(query_p query, int oid, batch_p output) {

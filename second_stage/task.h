@@ -27,7 +27,7 @@ typedef struct task {
 
 task_p task(query_p query, int oid, batch_p batch, void * dispatcher, event_manager_p manager);
 
-void task_run(task_p t);
+void task_run(task_p t, task_p processed);
 
 void task_end(task_p t);
 

@@ -107,12 +107,12 @@ static task_p scheduler_collect_task(scheduler_p p, task_p task) {
 }
 
 static void process_one_task (scheduler_p p, task_p t) {
-    /* Run the head task */
-	task_run(t);
-
     /* Handle task popping out from the pipeline */
 	task_p processed = scheduler_collect_task(p, t);
-	
+
+	/* Run the head task */
+	task_run(t, processed);
+
 	/* Transfer ownership of the task */
     if (processed != NULL) {
 		result_handler_p handler = dispatcher_get_handler((dispatcher_p) processed->dispatcher);

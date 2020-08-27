@@ -31,7 +31,9 @@ void query_add_operator(query_p query, void * new_operator, operator_p operator_
 
 void query_setup(query_p query);
 
-void query_process(query_p query, int oid, batch_p input, batch_p output);
+void query_process(query_p query, int oid, batch_p input, u_int8_t ** processed_outputs);
+
+u_int8_t ** query_get_output_buffer(query_p query, int oid, batch_p output);
 
 void query_free(query_p query);
 

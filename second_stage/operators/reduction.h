@@ -41,7 +41,9 @@ void reduction_setup(void * reduce_ptr, int batch_size, window_p window, char co
 
 void reduction_reset(void * reduce_ptr, int new_batch_size);
 
-void reduction_process(void * reduce_ptr, batch_p batch, window_p window, batch_p output, query_event_p event);
+void reduction_process(void * reduce_ptr, batch_p batch, window_p window, u_int8_t ** processed_output, query_event_p event);
+
+u_int8_t ** reduction_get_output_buffer(void * reduce_ptr, batch_p output);
 
 void reduction_process_output(void * reduce_ptr, batch_p outputs);
 

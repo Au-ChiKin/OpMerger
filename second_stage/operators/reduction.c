@@ -41,6 +41,7 @@ reduction_p reduction(schema_p input_schema,
         p->operator->process = (void *) reduction_process;
         p->operator->process_output = (void *) reduction_process_output;
         p->operator->get_output_schema_size = (void *) reduction_get_output_schema_size;
+        p->operator->get_output_buffer = (void *) reduction_get_output_buffer;
 
         p->operator->type = OPERATOR_REDUCE;
 
@@ -414,7 +415,7 @@ void reduction_setup(void * reduce_ptr, int batch_size, window_p window, char co
     gpu_set_kernel_reduce(qid, args1, args2);
 }
 
-void reduction_process(void * reduce_ptr, batch_p batch, window_p window, batch_p output, query_event_p event) {
+void reduction_process(void * reduce_ptr, batch_p batch, window_p window, u_int8_t ** processed_output, query_event_p event) {
     reduction_p reduce = (reduction_p) reduce_ptr;
     
     long args2[2];
@@ -444,18 +445,26 @@ void reduction_process(void * reduce_ptr, batch_p batch, window_p window, batch_
     u_int8_t * inputs [1] = {
         batch->buffer + batch->start};
 
-    u_int8_t * outputs [2] = {
-        output->buffer + output->start + reduce->output_entries[0], 
-        output->buffer + output->start + reduce->output_entries[1]};
-
     /* Execute */
     gpu_execute_reduce(
         reduce->qid,
         reduce->threads, reduce->threads_per_group,
         args2,
-        (void **) (inputs), (void **) (outputs), sizeof(u_int8_t),
+        (void **) (inputs), (void **) (processed_output), sizeof(u_int8_t),
         event);
         // passing the batch without deserialisation
+}
+
+u_int8_t ** reduction_get_output_buffer(void * reduce_ptr, batch_p output) {
+    reduction_p reduce = (reduction_p) reduce_ptr;
+
+    u_int8_t ** outputs = (u_int8_t **) malloc(2 * sizeof(u_int8_t *)); 
+    
+    for (int i = 0; i<2; i++) {
+        outputs[i] = output->buffer + output->start + reduce->output_entries[i];
+    }
+
+    return outputs;
 }
 
 void reduction_print_output(batch_p outputs, int batch_size, int tuple_size) {
