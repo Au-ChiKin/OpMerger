@@ -7,9 +7,9 @@
 #define MAX_INPUTS     6
 #define MAX_OUTPUTS   10
 
-#define MAX_DEPTH      4 /* 5-stage pipeline */
+#define MAX_DEPTH      2 /* 5-stage pipeline */
 
-#define NCONTEXTS      5 /* one query runs on one device */
+#define NCONTEXTS      3 /* one query runs on one device */
 
 // #undef GPU_HANDLER
 #define GPU_HANDLER
