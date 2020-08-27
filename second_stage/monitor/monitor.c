@@ -1,6 +1,6 @@
-#include "monitor.h"
-
 #define _GNU_SOURCE
+
+#include "monitor.h"
 
 #include <stdlib.h>
 #include <stdio.h>

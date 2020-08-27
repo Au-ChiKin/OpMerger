@@ -1,6 +1,6 @@
-#include "dispatcher.h"
-
 #define _GNU_SOURCE
+
+#include "dispatcher.h"
 
 #include <sched.h>
 #include <stdlib.h>

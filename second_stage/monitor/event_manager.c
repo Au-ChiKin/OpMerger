@@ -1,6 +1,6 @@
-#include "event_manager.h"
-
 #define _GNU_SOURCE
+
+#include "event_manager.h"
 
 #include <stdlib.h>
 #include <stdio.h>

@@ -9,7 +9,7 @@ COMPILE.c = $(CC) $(DEPFLAGS) $(CFLAGS) $(TARGET_ARCH) -c
 LINK.o    = $(CC) $(CFLAGS) $(LDLIBS)
 UNAME := $(shell uname -s)
 ifeq ($(UNAME),Linux)
-	CFLAGS += -I/usr/local/cuda/include
+	CFLAGS += -I/usr/local/cuda/include -D_GNU_SOURCE
 	LDLIBS += -lOpenCL
 else
 ifeq ($(UNAME),Darwin)

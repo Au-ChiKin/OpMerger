@@ -1,3 +1,5 @@
+#define _GNU_SOURCE
+
 #include "scheduler.h"
 
 #include <stdlib.h>

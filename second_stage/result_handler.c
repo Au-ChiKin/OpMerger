@@ -1,6 +1,6 @@
-#include "result_handler.h"
-
 #define _GNU_SOURCE
+
+#include "result_handler.h"
 
 #include <sched.h>
 #include <stdlib.h>
