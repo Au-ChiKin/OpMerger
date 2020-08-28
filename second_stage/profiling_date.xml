@@ -158,15 +158,7 @@
 		<name>clearKernel</name>
 	</task>
 	<task>
-		<id>94114027825616</id>
-		<name>clearKernel</name>
-	</task>
-	<task>
 		<id>94114027827664</id>
-		<name>computeOffsetKernel</name>
-	</task>
-	<task>
-		<id>94114027829744</id>
 		<name>computeOffsetKernel</name>
 	</task>
 	<task>
@@ -174,15 +166,7 @@
 		<name>computeOffsetKernel</name>
 	</task>
 	<task>
-		<id>94114027833968</id>
-		<name>computeOffsetKernel</name>
-	</task>
-	<task>
 		<id>94114027836064</id>
-		<name>computeOffsetKernel</name>
-	</task>
-	<task>
-		<id>94114027838192</id>
 		<name>computeOffsetKernel</name>
 	</task>
 	<task>
@@ -190,15 +174,7 @@
 		<name>computeOffsetKernel</name>
 	</task>
 	<task>
-		<id>94114027842416</id>
-		<name>computeOffsetKernel</name>
-	</task>
-	<task>
 		<id>94114027844512</id>
-		<name>computeOffsetKernel</name>
-	</task>
-	<task>
-		<id>94114027846640</id>
 		<name>computeOffsetKernel</name>
 	</task>
 	<task>
@@ -206,15 +182,7 @@
 		<name>computePointersKernel</name>
 	</task>
 	<task>
-		<id>94114028028368</id>
-		<name>computePointersKernel</name>
-	</task>
-	<task>
 		<id>94114028030464</id>
-		<name>computePointersKernel</name>
-	</task>
-	<task>
-		<id>94114028032592</id>
 		<name>computePointersKernel</name>
 	</task>
 	<task>
@@ -222,15 +190,7 @@
 		<name>computePointersKernel</name>
 	</task>
 	<task>
-		<id>94114028036816</id>
-		<name>computePointersKernel</name>
-	</task>
-	<task>
 		<id>94114028038912</id>
-		<name>computePointersKernel</name>
-	</task>
-	<task>
-		<id>94114028041040</id>
 		<name>computePointersKernel</name>
 	</task>
 	<task>
@@ -238,15 +198,7 @@
 		<name>computePointersKernel</name>
 	</task>
 	<task>
-		<id>94114028045264</id>
-		<name>computePointersKernel</name>
-	</task>
-	<task>
 		<id>94114028047360</id>
-		<name>reduceKernel</name>
-	</task>
-	<task>
-		<id>94114028049488</id>
 		<name>reduceKernel</name>
 	</task>
 	<task>
@@ -254,15 +206,7 @@
 		<name>reduceKernel</name>
 	</task>
 	<task>
-		<id>94114028053616</id>
-		<name>reduceKernel</name>
-	</task>
-	<task>
 		<id>94114028055664</id>
-		<name>reduceKernel</name>
-	</task>
-	<task>
-		<id>94114028057744</id>
 		<name>reduceKernel</name>
 	</task>
 	<task>
@@ -270,15 +214,7 @@
 		<name>reduceKernel</name>
 	</task>
 	<task>
-		<id>94114028061872</id>
-		<name>reduceKernel</name>
-	</task>
-	<task>
 		<id>94114028063920</id>
-		<name>reduceKernel</name>
-	</task>
-	<task>
-		<id>94114028066000</id>
 		<name>reduceKernel</name>
 	</task>
 
