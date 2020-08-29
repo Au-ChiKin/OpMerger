@@ -1,0 +1,12 @@
+[MONITOR] (0) t:   826.000 MB/s  l: 144151.031 us   (1) t:   750.000 MB/s  l: 7742572544.000 us   sch queue: 124   d0 queue: 64   r0 queue: 0   d1 queue: 10   r1 queue: 0
+[MONITOR] (0) t:   753.000 MB/s  l: 173113.750 us   (1) t:   742.000 MB/s  l: 111356.031 us   sch queue: 123   d0 queue: 64   r0 queue: 0   d1 queue: 22   r1 queue: 0
+[MONITOR] (0) t:   856.000 MB/s  l: 151892.484 us   (1) t:   841.000 MB/s  l: 113093.156 us   sch queue: 124   d0 queue: 64   r0 queue: 0   d1 queue: 37   r1 queue: 0
+[MONITOR] (0) t:   843.000 MB/s  l: 153797.453 us   (1) t:   831.000 MB/s  l: 130199.492 us   sch queue: 124   d0 queue: 64   r0 queue: 0   d1 queue: 49   r1 queue: 0
+[MONITOR] (0) t:   812.000 MB/s  l: 158677.625 us   (1) t:   800.000 MB/s  l: 150366.219 us   sch queue: 124   d0 queue: 64   r0 queue: 0   d1 queue: 61   r1 queue: 0
+[MONITOR] (0) t:   834.000 MB/s  l: 156975.641 us   (1) t:   830.000 MB/s  l: 159909.672 us   sch queue: 124   d0 queue: 63   r0 queue: 0   d1 queue: 64   r1 queue: 0
+[MONITOR] (0) t:   848.000 MB/s  l: 153339.125 us   (1) t:   848.000 MB/s  l: 157068.297 us   sch queue: 123   d0 queue: 64   r0 queue: 1   d1 queue: 64   r1 queue: 0
+[MONITOR] (0) t:   842.000 MB/s  l: 153863.531 us   (1) t:   843.000 MB/s  l: 157596.406 us   sch queue: 123   d0 queue: 64   r0 queue: 0   d1 queue: 64   r1 queue: 0
+[MONITOR] (0) t:   841.000 MB/s  l: 154484.578 us   (1) t:   841.000 MB/s  l: 158239.719 us   sch queue: 123   d0 queue: 64   r0 queue: 0   d1 queue: 64   r1 queue: 0
+[MONITOR] (0) t:   792.000 MB/s  l: 165141.312 us   (1) t:   791.000 MB/s  l: 169176.734 us   sch queue: 123   d0 queue: 64   r0 queue: 1   d1 queue: 64   r1 queue: 0
+[MONITOR] (0) t:   918.000 MB/s  l: 141592.281 us   (1) t:   919.000 MB/s  l: 145050.344 us   sch queue: 123   d0 queue: 64   r0 queue: 0   d1 queue: 64   r1 queue: 0
+[MONITOR] (0) t:   921.000 MB/s  l: 140971.203 us   (1) t:   920.000 MB/s  l: 144410.297 us   sch queue: 123   d0 queue: 64   r0 queue: 1   d1 queue: 64   r1 queue: 0
