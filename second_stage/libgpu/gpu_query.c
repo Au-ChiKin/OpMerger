@@ -300,10 +300,6 @@ static int gpu_query_exec_2 (
 		/* Wait for the finish of the previous query in the out_config */
 		// gpu_config_finish(out_config);
 		
-#ifdef GPU_PROFILE
-		gpu_config_profileQuery (out_config);
-#endif
-
 		/* Handle results */
 		// if (query->handler) {
 		// 	/* Configure and notify output result handler */
@@ -328,6 +324,7 @@ static int gpu_query_exec_2 (
 	/* Begin to use this config to process data */
 
 	gpu_config_moveInputBuffers (config, input_batches, addr_size);
+	gpu_config_flush (config);
 	
 	if (operator->configure != NULL) {
 		gpu_config_configureKernel (config, operator->configure, operator->args1, operator->args2);
@@ -342,6 +339,10 @@ static int gpu_query_exec_2 (
 	/* Wait until read output from the swapped out query config has finished */
 	if (out_config) {
 		gpu_config_finish(out_config);
+
+#ifdef GPU_PROFILE
+		gpu_config_profileQuery (out_config);
+#endif
 	}
 
 	return 0;
