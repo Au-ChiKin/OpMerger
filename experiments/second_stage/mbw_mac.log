@@ -1,0 +1,42 @@
+zijian@ZijiandeMacBook-Pro:~/Code/mbw$ ./mbw -t0 8
+Long uses 8 bytes. Allocating 2*1048576 elements = 16777216 bytes of memory.
+Getting down to business... Doing 10 runs per test.
+0	Method: MEMCPY	Elapsed: 0.00095	MiB: 8.00000	Copy: 8438.819 MiB/s
+1	Method: MEMCPY	Elapsed: 0.00072	MiB: 8.00000	Copy: 11080.332 MiB/s
+2	Method: MEMCPY	Elapsed: 0.00084	MiB: 8.00000	Copy: 9512.485 MiB/s
+3	Method: MEMCPY	Elapsed: 0.00068	MiB: 8.00000	Copy: 11695.906 MiB/s
+4	Method: MEMCPY	Elapsed: 0.00067	MiB: 8.00000	Copy: 11976.048 MiB/s
+5	Method: MEMCPY	Elapsed: 0.00066	MiB: 8.00000	Copy: 12139.605 MiB/s
+6	Method: MEMCPY	Elapsed: 0.00067	MiB: 8.00000	Copy: 12012.012 MiB/s
+7	Method: MEMCPY	Elapsed: 0.00066	MiB: 8.00000	Copy: 12066.365 MiB/s
+8	Method: MEMCPY	Elapsed: 0.00067	MiB: 8.00000	Copy: 11976.048 MiB/s
+9	Method: MEMCPY	Elapsed: 0.00068	MiB: 8.00000	Copy: 11782.032 MiB/s
+AVG	Method: MEMCPY	Elapsed: 0.00072	MiB: 8.00000	Copy: 11114.198 MiB/s
+ zijian@ZijiandeMacBook-Pro:~/Code/mbw$ ./mbw -t0 16
+Long uses 8 bytes. Allocating 2*2097152 elements = 33554432 bytes of memory.
+Getting down to business... Doing 10 runs per test.
+0	Method: MEMCPY	Elapsed: 0.00211	MiB: 16.00000	Copy: 7586.534 MiB/s
+1	Method: MEMCPY	Elapsed: 0.00144	MiB: 16.00000	Copy: 11134.308 MiB/s
+2	Method: MEMCPY	Elapsed: 0.00144	MiB: 16.00000	Copy: 11142.061 MiB/s
+3	Method: MEMCPY	Elapsed: 0.00143	MiB: 16.00000	Copy: 11165.387 MiB/s
+4	Method: MEMCPY	Elapsed: 0.00144	MiB: 16.00000	Copy: 11118.833 MiB/s
+5	Method: MEMCPY	Elapsed: 0.00162	MiB: 16.00000	Copy: 9870.450 MiB/s
+6	Method: MEMCPY	Elapsed: 0.00162	MiB: 16.00000	Copy: 9858.287 MiB/s
+7	Method: MEMCPY	Elapsed: 0.00168	MiB: 16.00000	Copy: 9535.161 MiB/s
+8	Method: MEMCPY	Elapsed: 0.00150	MiB: 16.00000	Copy: 10702.341 MiB/s
+9	Method: MEMCPY	Elapsed: 0.00155	MiB: 16.00000	Copy: 10296.010 MiB/s
+AVG	Method: MEMCPY	Elapsed: 0.00158	MiB: 16.00000	Copy: 10110.585 MiB/s
+ zijian@ZijiandeMacBook-Pro:~/Code/mbw$ ./mbw -t0 32
+Long uses 8 bytes. Allocating 2*4194304 elements = 67108864 bytes of memory.
+Getting down to business... Doing 10 runs per test.
+0	Method: MEMCPY	Elapsed: 0.00434	MiB: 32.00000	Copy: 7364.787 MiB/s
+1	Method: MEMCPY	Elapsed: 0.00281	MiB: 32.00000	Copy: 11387.900 MiB/s
+2	Method: MEMCPY	Elapsed: 0.00282	MiB: 32.00000	Copy: 11339.476 MiB/s
+3	Method: MEMCPY	Elapsed: 0.00298	MiB: 32.00000	Copy: 10741.860 MiB/s
+4	Method: MEMCPY	Elapsed: 0.00304	MiB: 32.00000	Copy: 10540.184 MiB/s
+5	Method: MEMCPY	Elapsed: 0.00302	MiB: 32.00000	Copy: 10589.014 MiB/s
+6	Method: MEMCPY	Elapsed: 0.00326	MiB: 32.00000	Copy: 9821.977 MiB/s
+7	Method: MEMCPY	Elapsed: 0.00312	MiB: 32.00000	Copy: 10246.558 MiB/s
+8	Method: MEMCPY	Elapsed: 0.00316	MiB: 32.00000	Copy: 10139.417 MiB/s
+9	Method: MEMCPY	Elapsed: 0.00331	MiB: 32.00000	Copy: 9658.919 MiB/s
+AVG	Method: MEMCPY	Elapsed: 0.00319	MiB: 32.00000	Copy: 10042.681 MiB/s

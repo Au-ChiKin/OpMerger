@@ -1,0 +1,42 @@
+zou19@platypus1:~$ mbw -t0 8
+Long uses 8 bytes. Allocating 2*1048576 elements = 16777216 bytes of memory.
+Getting down to business... Doing 10 runs per test.
+0	Method: MEMCPY	Elapsed: 0.00110	MiB: 8.00000	Copy: 7272.727 MiB/s
+1	Method: MEMCPY	Elapsed: 0.00089	MiB: 8.00000	Copy: 8948.546 MiB/s
+2	Method: MEMCPY	Elapsed: 0.00088	MiB: 8.00000	Copy: 9090.909 MiB/s
+3	Method: MEMCPY	Elapsed: 0.00088	MiB: 8.00000	Copy: 9142.857 MiB/s
+4	Method: MEMCPY	Elapsed: 0.00090	MiB: 8.00000	Copy: 8928.571 MiB/s
+5	Method: MEMCPY	Elapsed: 0.00087	MiB: 8.00000	Copy: 9153.318 MiB/s
+6	Method: MEMCPY	Elapsed: 0.00087	MiB: 8.00000	Copy: 9153.318 MiB/s
+7	Method: MEMCPY	Elapsed: 0.00087	MiB: 8.00000	Copy: 9195.402 MiB/s
+8	Method: MEMCPY	Elapsed: 0.00087	MiB: 8.00000	Copy: 9205.984 MiB/s
+9	Method: MEMCPY	Elapsed: 0.00090	MiB: 8.00000	Copy: 8898.776 MiB/s
+AVG	Method: MEMCPY	Elapsed: 0.00090	MiB: 8.00000	Copy: 8858.377 MiB/s
+zou19@platypus1:~$ mbw -t0 16
+Long uses 8 bytes. Allocating 2*2097152 elements = 33554432 bytes of memory.
+Getting down to business... Doing 10 runs per test.
+0	Method: MEMCPY	Elapsed: 0.00299	MiB: 16.00000	Copy: 5351.171 MiB/s
+1	Method: MEMCPY	Elapsed: 0.00307	MiB: 16.00000	Copy: 5216.824 MiB/s
+2	Method: MEMCPY	Elapsed: 0.00305	MiB: 16.00000	Copy: 5247.622 MiB/s
+3	Method: MEMCPY	Elapsed: 0.00308	MiB: 16.00000	Copy: 5188.067 MiB/s
+4	Method: MEMCPY	Elapsed: 0.00308	MiB: 16.00000	Copy: 5196.492 MiB/s
+5	Method: MEMCPY	Elapsed: 0.00307	MiB: 16.00000	Copy: 5220.228 MiB/s
+6	Method: MEMCPY	Elapsed: 0.00305	MiB: 16.00000	Copy: 5239.031 MiB/s
+7	Method: MEMCPY	Elapsed: 0.00304	MiB: 16.00000	Copy: 5266.623 MiB/s
+8	Method: MEMCPY	Elapsed: 0.00306	MiB: 16.00000	Copy: 5223.637 MiB/s
+9	Method: MEMCPY	Elapsed: 0.00307	MiB: 16.00000	Copy: 5210.029 MiB/s
+AVG	Method: MEMCPY	Elapsed: 0.00306	MiB: 16.00000	Copy: 5235.602 MiB/s
+zou19@platypus1:~$ mbw -t0 32
+Long uses 8 bytes. Allocating 2*4194304 elements = 67108864 bytes of memory.
+Getting down to business... Doing 10 runs per test.
+0	Method: MEMCPY	Elapsed: 0.00634	MiB: 32.00000	Copy: 5044.931 MiB/s
+1	Method: MEMCPY	Elapsed: 0.00630	MiB: 32.00000	Copy: 5077.753 MiB/s
+2	Method: MEMCPY	Elapsed: 0.00627	MiB: 32.00000	Copy: 5101.227 MiB/s
+3	Method: MEMCPY	Elapsed: 0.00630	MiB: 32.00000	Copy: 5083.400 MiB/s
+4	Method: MEMCPY	Elapsed: 0.00628	MiB: 32.00000	Copy: 5092.298 MiB/s
+5	Method: MEMCPY	Elapsed: 0.00631	MiB: 32.00000	Copy: 5070.512 MiB/s
+6	Method: MEMCPY	Elapsed: 0.00628	MiB: 32.00000	Copy: 5097.977 MiB/s
+7	Method: MEMCPY	Elapsed: 0.00628	MiB: 32.00000	Copy: 5094.730 MiB/s
+8	Method: MEMCPY	Elapsed: 0.00631	MiB: 32.00000	Copy: 5072.923 MiB/s
+9	Method: MEMCPY	Elapsed: 0.00628	MiB: 32.00000	Copy: 5098.789 MiB/s
+AVG	Method: MEMCPY	Elapsed: 0.00629	MiB: 32.00000	Copy: 5083.400 MiB/s
