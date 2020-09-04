@@ -7,7 +7,7 @@
 #include "window.h"
 #include "monitor/event_manager.h"
 
-#define OPERATOR_CODE_FILENAME_LENGTH 256
+#define OPERATOR_CODE_FILENAME_LENGTH 1024
 
 enum operator_types {
     OPERATOR_SELECT,
