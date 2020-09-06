@@ -4,7 +4,7 @@
 #include <pthread.h>
 
 #include "event_manager.h"
-#include "../dispatcher.h"
+#include "dispatcher/dispatcher.h"
 #include "scheduler/scheduler.h"
 
 #define THROUGHPUT_MONITOR_INTERVAL 1.0 // second

@@ -7,7 +7,7 @@
 #include <time.h>
 #include <sched.h>
 
-#include "dispatcher.h"
+#include "dispatcher/dispatcher.h"
 
 static pthread_t thr = NULL;
 

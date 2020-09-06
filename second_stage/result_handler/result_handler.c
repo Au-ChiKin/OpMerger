@@ -8,7 +8,7 @@
 #include <string.h>
 #include <sched.h>
 
-#include "dispatcher.h"
+#include "dispatcher/dispatcher.h"
 
 static task_p take_one_task(result_handler_p p);
 static void process_one_task (result_handler_p p, task_p t);

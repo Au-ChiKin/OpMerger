@@ -13,11 +13,11 @@
 
 #include "config.h"
 #include "batch.h"
-#include "dispatcher.h"
 #include "window.h"
 #include "query.h"
 #include "task.h"
 #include "cirbuf/circular_buffer.h"
+#include "dispatcher/dispatcher.h"
 #include "operators/selection.h"
 #include "operators/reduction.h"
 #include "operators/aggregation.h"
