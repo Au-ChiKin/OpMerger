@@ -24,7 +24,7 @@ LIBDIR  :=
 
 # Targets
 PROGS   = test_gcd
-SRCS = test_gcd.c config.c helpers.c schema.c query.c batch.c window.c generators.c task.c dispatcher.c result_handler.c
+SRCS = test_gcd.c config.c helpers.c schema.c query.c batch.c window.c generators.c task.c dispatcher.c
 
 # Scripts
 $(DEPDIR): ; mkdir -p $@
@@ -36,6 +36,7 @@ include ./libgpu/libgpu.mk
 include ./operators/operators.mk
 include ./monitor/monitor.mk
 include ./scheduler/scheduler.mk
+include ./result_handler/result_handler.mk
 
 OBJECTS = $(patsubst %.c,%.o,$(SRCS))
 

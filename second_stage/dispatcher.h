@@ -5,7 +5,7 @@
 
 #include "task.h"
 #include "scheduler/scheduler.h"
-#include "result_handler.h"
+#include "result_handler/result_handler.h"
 
 #define DISPATCHER_CONCURRENT_TASK 64
 #define DISPATCHER_QUEUE_LIMIT 64
