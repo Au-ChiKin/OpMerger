@@ -297,7 +297,7 @@ static char * generate_source(aggregation_p aggregate, window_p window, char con
 
     /* Inline functions */
     char * initf = generate_initf(aggregate);
-    char * aggregatef = generate_aggregatef(aggregate, patch);
+    // char * aggregatef = generate_aggregatef(aggregate, patch);
     char * cachef = generate_cachef(aggregate);
     char * mergef = generate_mergef(aggregate);
     char * copyf = generate_copyf(aggregate, vector);
@@ -318,7 +318,7 @@ static char * generate_source(aggregation_p aggregate, window_p window, char con
     strcat(source, windows);
     
     strcat(source, initf);
-    strcat(source, aggregatef);
+    // strcat(source, aggregatef);
     strcat(source, cachef);
     strcat(source, mergef);
     strcat(source, copyf);
@@ -338,7 +338,7 @@ static char * generate_source(aggregation_p aggregate, window_p window, char con
     free(windows);
 
     free(initf);
-    free(aggregatef);
+    // free(aggregatef);
     free(cachef);
     free(mergef);
     free(copyf);
