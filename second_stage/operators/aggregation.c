@@ -26,6 +26,7 @@ aggregation_p aggregation(
         p->operator->process = (void *) aggregation_process;
         p->operator->process_output = (void *) aggregation_process_output;
         p->operator->get_output_buffer = (void *) aggregation_get_output_buffer;
+        p->operator->get_output_schema_size = (void *) aggregation_get_output_schema_size;
 
         p->operator->type = OPERATOR_AGGREGATE;
 
@@ -325,6 +326,12 @@ Opening Windows: %d    Mark:%d\n",
             output[t] += 1;
         }
     }
+}
+
+int aggregation_get_output_schema_size(void * aggregate_ptr) {
+    aggregation_p aggregate = (aggregation_p) aggregate_ptr;
+
+    return aggregate->output_schema->size;
 }
 
 void aggregation_reset(void * aggregate_ptr, int new_batch_size) {

@@ -64,4 +64,6 @@ void aggregation_print_output(batch_p outputs, int batch_size, int tuple_size);
 
 u_int8_t ** aggregation_get_output_buffer(void * aggregate_ptr, batch_p output);
 
+int aggregation_get_output_schema_size(void * aggregate_ptr);
+
 #endif
