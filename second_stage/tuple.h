@@ -23,7 +23,7 @@ typedef struct tuple {
 
 typedef union {
     tuple_t tuple;
-    uint8_t vectors[TUPLE_SIZE]; // 64 bytes
+    u_int8_t vectors[TUPLE_SIZE]; // 64 bytes
 } input_t;
 
 

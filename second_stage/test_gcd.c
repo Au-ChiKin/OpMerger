@@ -1,8 +1,6 @@
 /* 
  * The main logic to run the experiment of merged operators
  */
-#include "libgpu/gpu_agg.h"
-#include "tuple.h"
 
 #include <limits.h>
 #include <stdio.h>
@@ -11,17 +9,15 @@
 #include <unistd.h>
 #include <string.h>
 
+#include "application.h"
 #include "config.h"
-#include "batch.h"
 #include "window.h"
 #include "query.h"
-#include "task.h"
+#include "tuple.h"
 #include "cirbuf/circular_buffer.h"
-#include "dispatcher/dispatcher.h"
 #include "operators/selection.h"
 #include "operators/reduction.h"
 #include "operators/aggregation.h"
-#include "scheduler/scheduler.h"
 
 #define GCD_LINE_NUM 144370688 // maximum lines for input txts
 
@@ -50,12 +46,6 @@ void run_processing_gpu(
     u_int8_t * result, 
     enum test_cases mode, int work_load, int pipeline_depth, bool is_merging, bool is_debug) {
     
-    /* Used as an output stream */
-    batch_p output = batch(6 * buffer_size, 0, result, 6 * buffer_size, TUPLE_SIZE);
-
-    int const operator_num = 2;
-    gpu_init(operator_num, pipeline_depth, NULL);
-
     /* Construct schemas */
     schema_p schema1 = schema();
     schema_add_attr(schema1, TYPE_LONG);  /* time_stamp */
@@ -144,55 +134,12 @@ void run_processing_gpu(
                 query_add_operator(query1, (void *) select1, select1->operator);
                 query_add_operator(query1, (void *) reduce1, reduce1->operator);
 
-                query_setup(query1);
-
-                /* Start scheduler */
-                scheduler_p scheduler  = scheduler_init(pipeline_depth);
-
-                /* Start throughput monitoring */
-                event_manager_p manager = event_manager_init(query1->operator_num);
-
-
-                /* Create tasks and add them to the task queue */
-                dispatcher_p dispatchers[2];
-                
-                for (int i=0; i<query1->operator_num; i++) {
-                    dispatchers[i] = dispatcher_init(scheduler, query1, i, manager);
-                    if (i>0) {
-                        dispatcher_set_downstream(dispatchers[i-1], dispatchers[i]);
-                    }
-                }
-                dispatcher_set_output_stream(dispatchers[query1->operator_num-1], output);
-
-                /* Start the actual monitoring */
-                monitor_init(manager, scheduler, query1->operator_num, dispatchers);
-
-                if (work_load == 1) {
-                    int b=0;
-                    while (1) {
-                        usleep(DISPATCHER_INSERT_TIMEOUT);
-
-                        dispatcher_insert(dispatchers[0], buffers[b], buffer_size, event_get_mtime());
-
-                        b = (b+1) % buffer_num;
-                    }
-                } else {
-                    int b=0;
-                    for (int i=0; i<work_load; i++) {
-                        usleep(DISPATCHER_INSERT_TIMEOUT);
-
-                        dispatcher_insert(dispatchers[0], buffers[b], buffer_size, event_get_mtime());
-
-                        b = (b+1) % buffer_num;
-                    }
-
-                    while (scheduler->queue_size != 0) {
-                        sched_yield();
-                    }
-
-                    exit(1);
-                }
-
+                application_p app = application(
+                    pipeline_depth, 
+                    query1,
+                    buffers, buffer_size, buffer_num,
+                    result);
+                application_run(app, work_load);
             }
             break;
         case QUERY2:
@@ -256,53 +203,11 @@ void run_processing_gpu(
 
                 query_add_operator(query1, (void *) aggregate1, aggregate1->operator);
                 query_add_operator(query1, (void *) select1, select1->operator);
-
-                query_setup(query1);
-
-                /* Start scheduler */
-                scheduler_p scheduler  = scheduler_init(pipeline_depth);
-
-                /* Start throughput monitoring */
-                event_manager_p manager = event_manager_init(query1->operator_num);
-
-                /* Create tasks and add them to the task queue */
-                dispatcher_p dispatchers[2];
-                
-                for (int i=0; i<query1->operator_num; i++) {
-                    dispatchers[i] = dispatcher_init(scheduler, query1, i, manager);
-                    if (i>0) {
-                        dispatcher_set_downstream(dispatchers[i-1], dispatchers[i]);
-                    }
-                }
-                dispatcher_set_output_stream(dispatchers[query1->operator_num-1], output);
-
-                /* Start the actual monitoring */
-                monitor_init(manager, scheduler, query1->operator_num, dispatchers);
-
-                int b=0;
-                while (1) {
-                    dispatcher_insert(dispatchers[0], buffers[b], buffer_size, event_get_mtime());
-
-                    b = (b+1) % buffer_num;
-
-                    if (b == 0) {
-                        renew_timestamp(buffer_num, buffers, batch_size);
-                    }
-                }
-
             }
         default:
             fprintf(stderr, "error: wrong test case name, runs an no-op query\n");
             break;
     }
-
-    /* Wait for worker threads */
-    pthread_join(scheduler_get_thread(), NULL);
-
-    free(output);
-
-    gpu_free();
-
 }
 
 void print_tuples(cbuf_handle_t cbufs [], int n) {
