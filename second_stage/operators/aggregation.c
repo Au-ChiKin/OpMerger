@@ -11,11 +11,14 @@
 
 static int free_id = 0;
 
-aggregation_p aggregation(schema_p input_schema, 
-    int ref_num, int const columns[], enum aggregation_types const expressions[],
+aggregation_p aggregation(
+    schema_p input_schema, 
+    int ref_num, int const refs[], enum aggregation_types const expressions[],
     int group_num, int const groups[]) {
 
     aggregation_p p = (aggregation_p) malloc(sizeof(aggregation_t));
+
+    /* Set up operator */
     p->operator = (operator_p) malloc(sizeof (operator_t));
     {
         p->operator->setup = (void *) aggregation_setup;
@@ -29,6 +32,8 @@ aggregation_p aggregation(schema_p input_schema,
 
     p->id = free_id++;
 
+    p->input_schema = input_schema;
+
     p->ref_num = ref_num;
     if (ref_num > AGGREGATION_MAX_REFERENCE) {
         fprintf(stderr, "error: the number of reference has exceeded the limit (%d)\n", 
@@ -36,11 +41,9 @@ aggregation_p aggregation(schema_p input_schema,
         exit(1);
     }
     for (int i=0; i<ref_num; i++) {
-        p->refs[i] = columns[i];
+        p->refs[i] = refs[i];
         p->expressions[i] = expressions[i];
     }
-
-    p->input_schema = input_schema;
 
     /* Generate output schema */
     int key_length = 0;

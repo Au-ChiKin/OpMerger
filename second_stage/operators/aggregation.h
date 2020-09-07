@@ -48,7 +48,7 @@ typedef struct aggregation {
 
 aggregation_p aggregation(
     schema_p input_schema, 
-    int ref_num, int const columns[], enum aggregation_types const expressions[],
+    int ref_num, int const refs[], enum aggregation_types const expressions[],
     int group_num, int const groups[]);
 
 void aggregation_setup(void * reduce_ptr, int batch_size, window_p window, char const * patch);
