@@ -24,6 +24,7 @@ aggregation_p aggregation(
         p->operator->setup = (void *) aggregation_setup;
         // p->operator->reset = (void *) aggregation_reset;
         p->operator->process = (void *) aggregation_process;
+        p->operator->get_output_buffer = (void *) aggregation_get_output_buffer;
 
         p->operator->type = OPERATOR_AGGREGATE;
 
@@ -74,6 +75,7 @@ void aggregation_setup(void * aggregate_ptr, int batch_size, window_p window, ch
     aggregation_p aggregate = (aggregation_p) aggregate_ptr;
 
     /* Operator setup */
+    aggregate->batch_size = batch_size;
     for (int i=0; i<AGGREGATION_KERNEL_NUM; i++) {
         aggregate->threads[i] = batch_size;
 
@@ -148,7 +150,7 @@ void aggregation_setup(void * aggregate_ptr, int batch_size, window_p window, ch
     gpu_set_kernel_aggregate(qid, args1, args2);
 }
 
-void aggregation_process(void * aggregate_ptr, batch_p batch, window_p window, batch_p output, query_event_p event) {
+void aggregation_process(void * aggregate_ptr, batch_p batch, window_p window, u_int8_t ** processed_outputs, query_event_p event) {
     aggregation_p aggregate = (aggregation_p) aggregate_ptr;
     
     long args2[2];
@@ -178,19 +180,36 @@ void aggregation_process(void * aggregate_ptr, batch_p batch, window_p window, b
     u_int8_t * inputs [1] = {
         batch->buffer + batch->start};
 
-    u_int8_t * outputs [5];
-    for (int i=0; i<5; i++) {
-        outputs[i] = output->buffer + output->start + aggregate->output_entries[i];
-    }
-
     /* Execute */
     gpu_execute_aggregate(
         aggregate->qid,
         aggregate->threads, aggregate->threads_per_group,
         args2,
-        (void **) (inputs), (void **) (outputs), sizeof(u_int8_t),
+        (void **) (inputs), (void **) (processed_outputs), sizeof(u_int8_t),
         event);
         // passing the batch without deserialisation
+}
+
+u_int8_t ** aggregation_get_output_buffer(void * aggregate_ptr, batch_p output) {
+    aggregation_p aggregate = (aggregation_p) aggregate_ptr;
+
+    u_int8_t ** outputs = (u_int8_t **) malloc(5 * sizeof(u_int8_t *));
+
+    /* Validate whether the given output buffer is big enough */
+    int batch_size = aggregate->batch_size;
+    int tuple_size = aggregate->input_schema->size;
+
+    if ((output->end - output->start) < (long) (20 + 4 * batch_size * tuple_size)) {
+        fprintf(stderr, "error: Expected output size has exceeded the given output buffer size (%s)\n", __FUNCTION__);
+        exit(1);
+    }
+
+    /* Set output buffer addresses and entries */
+    for (int i=0; i<5; i++) {
+        outputs[i] = output->buffer + output->start + aggregate->output_entries[i];
+    }
+
+    return outputs;
 }
 
 void aggregation_print_output(batch_p outputs, int batch_size, int tuple_size) {
