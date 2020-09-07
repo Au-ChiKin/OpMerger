@@ -6,7 +6,7 @@
 
 #pragma OPENCL EXTENSION cl_khr_byte_addressable_store: enable
 
-#include "../clib/templates/byteorder.h"
+#include "cl/templates/byteorder.h"
 #define INPUT_VECTOR_SIZE 4
 #define OUTPUT_VECTOR_SIZE 1
 
