@@ -10,15 +10,15 @@
 #include <unistd.h>
 #include <string.h>
 
+#include "application.h"
 #include "config.h"
-#include "batch.h"
-#include "dispatcher.h"
 #include "window.h"
 #include "query.h"
-#include "task.h"
+#include "tuple.h"
 #include "cirbuf/circular_buffer.h"
+#include "operators/selection.h"
+#include "operators/reduction.h"
 #include "operators/aggregation.h"
-#include "scheduler/scheduler.h"
 
 #define GCD_LINE_NUM 144370688 // maximum lines for input txts
 
@@ -32,28 +32,13 @@ void print_tuples(cbuf_handle_t cbufs [], int n);
 void run_processing_gpu(
     u_int8_t * buffers [], int buffer_size, int buffer_num,
     u_int8_t * result, 
-    enum test_cases mode, int work_load, int pipeline_num, bool is_merging, bool is_debug) {
+    enum test_cases mode, int work_load, int pipeline_depth, bool is_merging, bool is_debug) {
     
-    /* TODO extend the batch struct into a real memoery manager that could create a batch 
-    according to the start and end pointer */
-    /* Pre-assembled batches */
-    batch_p input [8812];
-    for (int b=0; b<buffer_num; b++) {
-        input[b] = batch(buffer_size, 0, buffers[b], buffer_size, TUPLE_SIZE);
-    }
-
     /* Used as an output stream */
     batch_p output = batch(6 * buffer_size, 0, result, 6 * buffer_size, TUPLE_SIZE);
 
-
-    /* Start throughput monitoring */
-    event_manager_p manager = event_manager_init();
-
-    /* Start scheduler */
-    scheduler_p scheduler  = scheduler_init(pipeline_num, manager);
-
-    int const query_num = 2;
-    gpu_init(query_num, pipeline_num, manager);
+    int const operator_num = 2;
+    gpu_init(operator_num, pipeline_depth, NULL);
 
     /* Construct schemas */
     schema_p schema1 = schema();
@@ -69,9 +54,6 @@ void run_processing_gpu(
     schema_add_attr(schema1, TYPE_FLOAT); /* ram */
     schema_add_attr(schema1, TYPE_FLOAT); /* disk */
     schema_add_attr(schema1, TYPE_INT);   /* constraints */
-
-    /* Start the actual monitoring */
-    monitor_p monitor = monitor_init(manager);
 
     /* simplified query creation */
     switch (mode) {
@@ -124,15 +106,12 @@ void run_processing_gpu(
 
                 query_add_operator(query1, (void *) aggregate1, aggregate1->operator);
 
-                query_setup(query1);
-
-                dispatcher_p dispatcher = dispatcher_init(scheduler, query1, 0, input, buffer_num);
-                pthread_join(dispatcher_get_thread(dispatcher), NULL);                         
-
-                /* For debugging */
-                if (is_debug) {
-                    aggregation_print_output(output, input[0]->size, schema1->size);
-                }
+                application_p app = application(
+                    pipeline_depth, 
+                    query1,
+                    buffers, buffer_size, buffer_num,
+                    result);
+                application_run(app, work_load);
             }
             break;
         default:
@@ -144,10 +123,6 @@ void run_processing_gpu(
     pthread_join(scheduler_get_thread(), NULL);
 
     free(output);
-
-    for (int b=0; b<buffer_num; b++) {
-        free(input[b]);
-    }
 
     gpu_free();
 
@@ -297,16 +272,20 @@ int main(int argc, char * argv[]) {
     /* Arguments */
     bool is_merging = false;
     bool is_debug = false;
-    int work_load = 32; // default to be 32MB
+    int work_load = -1; // default to be 64MB
     int batch_size = 32; // default to be 32MB per batch
     int buffer_num = 1;
-    int pipeline_num = 1;
+    int pipeline_depth = 2;
     int tuple_per_insert = batch_size * ((1024 * 1024) / TUPLE_SIZE);
     enum test_cases mode = QUERY1;
 
     parse_arguments(argc, argv, 
-        &mode, &work_load, &batch_size, &buffer_num, &pipeline_num,
+        &mode, &work_load, &batch_size, &buffer_num, &pipeline_depth,
         &is_merging, &is_debug);
+
+    if (work_load == -1) {
+        work_load = batch_size;
+    }
 
     if (work_load < batch_size) {
         printf("Reset batch size to be %d\n", work_load);
@@ -327,6 +306,7 @@ int main(int argc, char * argv[]) {
     static int max_buffer_num = GCD_LINE_NUM / ((1024 * 1024) / TUPLE_SIZE); // about 8812
     u_int8_t * buffers [max_buffer_num];
     cbuf_handle_t cbufs [max_buffer_num];
+    max_buffer_num /= batch_size / ((1024 * 1024) / TUPLE_SIZE);
     /* TODO: Add a dispatcher allow dispatch tuples of size different to bath size */
     tuple_per_insert = batch_size;
 
@@ -338,7 +318,7 @@ int main(int argc, char * argv[]) {
         buffers[i] = (u_int8_t *) malloc(tuple_per_insert * TUPLE_SIZE * sizeof(u_int8_t)); // creates 8812 ByteBuffers
         cbufs[i] = circular_buf_init(buffers[i], tuple_per_insert * TUPLE_SIZE);
     }
-    read_input_buffers(cbufs, 1, tuple_per_insert);
+    read_input_buffers(cbufs, buffer_num, tuple_per_insert);
 
     print_tuples(cbufs, 32);
 
@@ -349,7 +329,7 @@ int main(int argc, char * argv[]) {
     run_processing_gpu(
         buffers, batch_size, buffer_num, /* input */
         result, /* output */
-        mode, work_load, pipeline_num, is_merging, is_debug);  /* configs */
+        mode, work_load, pipeline_depth, is_merging, is_debug);  /* configs */
 
     /* Clear up */
     /* Temperory using 1 buffer */
