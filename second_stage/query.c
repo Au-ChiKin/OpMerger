@@ -107,8 +107,6 @@ void query_process(query_p query, int oid, batch_p input, u_int8_t ** processed_
     }
 
     /* Execute */
-    (* query->callbacks[oid]->reset) (query->operators[oid], input->size);
-
     (* query->callbacks[oid]->process) (query->operators[oid], 
         input,
         query->window,
