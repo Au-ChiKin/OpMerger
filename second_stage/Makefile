@@ -24,7 +24,6 @@ LIBDIR  :=
 
 # Targets
 PROGS = test_gcd
-PROGS_AGG = test_aggregation
 SRCS = test_gcd.c config.c helpers.c schema.c query.c batch.c window.c generators.c task.c application.c
 
 # Scripts
@@ -52,16 +51,12 @@ include $(wildcard $(DEPFILES))
 
 # Compile the main program
 OBJPROG = $(addprefix $(OBJDIR)/, $(PROGS))
-OBJPROG_AGG = $(addprefix $(OBJDIR)/, $(PROGS_AGG))
 
 all: CFLAGS += $(REFLAGS)
 all: $(OBJPROG)
 
 debug: CFLAGS += $(DBFLAGS)
 debug: $(OBJPROG)
-
-aggregation: CFLAGS += $(REFLAGS)
-aggregation: $(OBJPROG_AGG)
 
 $(OBJPROG): $(addprefix $(OBJDIR)/, $(OBJECTS)) 
 		$(LINK.o) $^ $(LDLIBS) -o $@
