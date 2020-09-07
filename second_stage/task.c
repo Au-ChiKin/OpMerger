@@ -49,10 +49,10 @@ void task_run(task_p t, task_p processed) {
     /* Log start time and create the event */
     event_set_start(t->event, event_get_mtime());
 
-    // int output_tuple_size = (* t->query->callbacks[t->oid]->get_output_schema_size) (t->query->operators[t->oid]);
+    int output_tuple_size = (* t->query->callbacks[t->oid]->get_output_schema_size) (t->query->operators[t->oid]);
 
-    u_int8_t * buffer = (u_int8_t *) malloc(5 * query->batch_size * tuple_size);
-    t->output = batch(5 * query->batch_size, 0, buffer, 5 * query->batch_size, tuple_size);
+    u_int8_t * buffer = (u_int8_t *) malloc(1.5 * query->batch_size * tuple_size);
+    t->output = batch(1.5 * query->batch_size, 0, buffer, 1.5 * query->batch_size, tuple_size);
 
     if (processed) {
         u_int8_t ** outputs = query_get_output_buffer(processed->query, processed->oid, processed->output);

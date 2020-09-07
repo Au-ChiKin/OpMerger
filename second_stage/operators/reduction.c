@@ -372,8 +372,8 @@ void reduction_setup(void * reduce_ptr, int batch_size, window_p window, char co
     free(source);
     
     /* GPU inputs and outputs setup */
-    int tuple_size = reduce->input_schema->size;
-    gpu_set_input(qid, 0, batch_size * tuple_size);
+    int in_tuple_size = reduce->input_schema->size;
+    gpu_set_input(qid, 0, batch_size * in_tuple_size);
     
     int window_pointers_size = 4 * PARTIAL_WINDOWS;
     gpu_set_output(qid, 0, window_pointers_size, 0, 1, 0, 0, 1);
@@ -385,13 +385,14 @@ void reduction_setup(void * reduce_ptr, int batch_size, window_p window, char co
     int window_counts_size = 20; /* 4 integers, +1 that is the mark */
     gpu_set_output(qid, 3, window_counts_size, 0, 0, 1, 0, 1);
     
-    int outputSize = batch_size * tuple_size; /* SystemConf.UNBOUNDED_BUFFER_SIZE */
+    int out_tuple_size = reduce->output_schema->size;
+    int outputSize = batch_size * out_tuple_size; /* SystemConf.UNBOUNDED_BUFFER_SIZE */
     gpu_set_output(qid, 4, outputSize, 1, 0, 0, 1, 0);
     
     /* GPU kernels setup */
     int args1 [4];
     args1[0] = batch_size; /* tuples */
-    args1[1] = batch_size * tuple_size; /* input size */
+    args1[1] = batch_size * in_tuple_size; /* input size */
     args1[2] = PARTIAL_WINDOWS; 
     args1[3] = 32 * MAX_THREADS_PER_GROUP; /* local cache size */
 
@@ -494,10 +495,10 @@ void reduction_print_output(batch_p outputs, int batch_size, int tuple_size) {
 }
 
 void reduction_process_output(void * reduce_ptr, batch_p outputs) {
-    reduction_p reduce = (reduction_p) reduce_ptr;
+    // reduction_p reduce = (reduction_p) reduce_ptr;
 
     int current_offset = 0;
-    int tuple_size = reduce->output_schema->size;
+    // int out_tuple_size = reduce->output_schema->size;
     int batch_size = outputs->size;
 
     /* Deserialise output buffer */

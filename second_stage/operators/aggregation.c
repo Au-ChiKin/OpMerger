@@ -123,7 +123,8 @@ void aggregation_setup(void * aggregate_ptr, int batch_size, window_p window, ch
     gpu_set_output(qid, 4, window_counts_size, 0, 0, 1, 0, 1);
     
     /* Set partial window results */
-    int output_size = batch_size * tuple_size; /* SystemConf.UNBOUNDED_BUFFER_SIZE */
+    int out_tuple_size = aggregate->output_schema->size;
+    int output_size = batch_size * out_tuple_size; /* SystemConf.UNBOUNDED_BUFFER_SIZE */
     gpu_set_output(qid, 5, output_size, 1, 0, 0, 1, 1);
     gpu_set_output(qid, 6, output_size, 1, 0, 0, 1, 1);
     gpu_set_output(qid, 7, output_size, 1, 0, 0, 1, 1);
@@ -193,10 +194,10 @@ void aggregation_process(void * aggregate_ptr, batch_p batch, window_p window, u
 }
 
 void aggregation_process_output(void * aggregate_ptr, batch_p outputs) {
-    aggregation_p aggregate = (aggregation_p) aggregate_ptr;
+    // aggregation_p aggregate = (aggregation_p) aggregate_ptr;
 
     int current_offset = 0;
-    int tuple_size = aggregate->output_schema->size;
+    // int tuple_size = aggregate->output_schema->size;
     int batch_size = outputs->size;
 
     /* Deserialise output buffer */
@@ -266,7 +267,7 @@ u_int8_t ** aggregation_get_output_buffer(void * aggregate_ptr, batch_p output) 
 
     /* Validate whether the given output buffer is big enough */
     int batch_size = aggregate->batch_size;
-    int tuple_size = aggregate->input_schema->size;
+    int tuple_size = aggregate->output_schema->size;
 
     if ((output->end - output->start) < (long) (20 + 4 * batch_size * tuple_size)) {
         fprintf(stderr, "error: Expected output size has exceeded the given output buffer size (%s)\n", __FUNCTION__);
