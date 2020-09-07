@@ -1,3 +1,81 @@
+inline int gatherInt (__local uchar *data, int index) {
+	int i = data [index] & 0xFF;
+	i |= (data[++index] & 0xFF) << 8;
+	i |= (data[++index] & 0xFF) << 16;
+	i |= (data[++index] << 24);
+	return i;
+}
+
+inline int gatherPartialInt (__local uchar *data, int index, int available) {
+	int i = data[index] & 0xFF;
+	if (available > 1) {
+		i |= (data[++index] & 0xFF) << 8;
+		if (available > 2) {
+			i |= (data[++index] & 0xFF) << 16;
+		}
+	}
+	return i;
+}
+
+#define rotateInt(x,k) (((x)>>(k)) | ((x)<<(32-(k))))
+
+#define mix(a,b,c) \
+{ \
+a -= c;  a ^= rotateInt(c, 4);  c += b; \
+b -= a;  b ^= rotateInt(a, 6);  a += c; \
+c -= b;  c ^= rotateInt(b, 8);  b += a; \
+a -= c;  a ^= rotateInt(c,16);  c += b; \
+b -= a;  b ^= rotateInt(a,19);  a += c; \
+c -= b;  c ^= rotateInt(b, 4);  b += a; \
+}
+
+#define final(a,b,c) \
+{ \
+c ^= b; c -= rotateInt(b,14); \
+a ^= c; a -= rotateInt(c,11); \
+b ^= a; b -= rotateInt(a,25); \
+c ^= b; c -= rotateInt(b,16); \
+a ^= c; a -= rotateInt(c, 4); \
+b ^= a; b -= rotateInt(a,14); \
+c ^= b; c -= rotateInt(b,24); \
+}
+
+inline int jenkinsHash (__local uchar *key, int length, int initValue) {
+	int a, b, c;
+	a = b = c = (0xdeadbeef + (length << 2) + initValue);
+	int L = length;
+	__local int *k = (__local int *) key;
+	int i = 0;
+	while (L >= 12) {
+		a += k[0];
+		b += k[1];
+		c += k[2];
+		mix(a, b, c);
+		L -= 12;
+		k +=  3;
+		i += 12;
+	}
+	/* Handle the last few bytes */
+	c += L;
+	if (L > 0) {
+		if (L >= 4) {
+			a += gatherInt(key, i);
+			if (L >= 8) {
+				b += gatherInt(key, i + 4);
+				if (L > 8) {
+					c += (gatherPartialInt(key, i + 8, L - 8) << 8);
+				}
+			} else if (L > 4) {
+				b += gatherPartialInt(key, i + 4, L - 4);
+			}
+		} else {
+			a += gatherPartialInt(key, i, L);
+		}
+	}
+	final(a,b,c);
+	return c;
+}
+
 /* based on the value in window_ptrs_(start ptr) and _window_ptrs(end ptr), count the number of open, close, pending 
  * and complete window
  */
@@ -13,7 +91,7 @@ __kernel void countWindowsKernel (
 	__global int* window_ptrs_,
 	__global int* _window_ptrs,
 	__global int *failed,
-	__global int *attempts,
+	// __global int *attempts,
 	__global long *offset, /* Temp. variable holding the window pointer offset and window counts */
 	__global int *windowCounts,
 	__global uchar* closingContents,
@@ -87,7 +165,7 @@ __kernel void aggregateClosingWindowsKernel (
 	__global int* window_ptrs_,
 	__global int* _window_ptrs,
 	__global int *failed,
-	__global int *attempts,
+	// __global int *attempts,
 	__global long *offset, /* Temp. variable holding the window pointer offset and window counts */
 	__global int *windowCounts,
 	__global uchar* closingContents,
@@ -209,7 +287,7 @@ __kernel void aggregateCompleteWindowsKernel (
 	__global int* window_ptrs_,
 	__global int* _window_ptrs,
 	__global int *failed,
-	__global int *attempts,
+	// __global int *attempts,
 	__global long *offset, /* Temp. variable holding the window pointer offset and window counts */
 	__global int *windowCounts,
 	__global uchar* closingContents,
@@ -346,7 +424,7 @@ __kernel void aggregateOpeningWindowsKernel (
 	__global int* window_ptrs_,
 	__global int* _window_ptrs,
 	__global int *failed,
-	__global int *attempts,
+	// __global int *attempts,
 	__global long *offset, /* Temp. variable holding the window pointer offset and window counts */
 	__global int *windowCounts,
 	__global uchar* closingContents,
@@ -478,7 +556,7 @@ __kernel void aggregatePendingWindowsKernel (
 	__global int* window_ptrs_,
 	__global int* _window_ptrs,
 	__global int *failed,
-	__global int *attempts,
+	// __global int *attempts,
 	__global long *offset, /* Temp. variable holding the window pointer offset and window counts */
 	__global int *windowCounts,
 	__global uchar* closingContents,
@@ -586,7 +664,7 @@ __kernel void clearKernel (
 	__global int* window_ptrs_,
 	__global int* _window_ptrs,
 	__global int *failed,
-	__global int *attempts,
+	// __global int *attempts,
 	__global long *offset, /* Temp. variable holding the window pointer offset and window counts */
 	__global int *windowCounts,
 	__global uchar* closingContents,
@@ -631,7 +709,7 @@ __kernel void clearKernel (
 		}
 
 		failed  [tid] = 0;
-		attempts[tid] = 0;
+		// attempts[tid] = 0;
 
 		if (tid < 5) {
 
@@ -662,7 +740,7 @@ __kernel void computeOffsetKernel (
 		__global int* window_ptrs_,
 		__global int* _window_ptrs,
 		__global int *failed,
-		__global int *attempts,
+		// __global int *attempts,
 		__global long *offset, /* Temp. variable holding the window pointer offset and window counts */
 		__global int *windowCounts,
 		__global uchar* closingContents,
@@ -687,14 +765,14 @@ __kernel void computeOffsetKernel (
 	/* Every thread is assigned a tuple */
 #ifdef RANGE_BASED
 	__global input_t *curr = (__global input_t *) &input[tid * sizeof(input_t)];
-	currPaneId = __bswap64(curr->tuple.t) / PANE_SIZE;
+	currPaneId = curr->tuple.t / PANE_SIZE;
 #else
 	currPaneId = ((batchOffset + (tid * sizeof(input_t))) / sizeof(input_t)) / PANE_SIZE;
 #endif
 	if (tid > 0) {
 #ifdef RANGE_BASED
 		__global input_t *prev = (__global input_t *) &input[(tid - 1) * sizeof(input_t)];
-		prevPaneId = __bswap64(prev->tuple.t) / PANE_SIZE;
+		prevPaneId = prev->tuple.t / PANE_SIZE;
 #else
 		prevPaneId = ((batchOffset + ((tid - 1) * sizeof(input_t))) / sizeof(input_t)) / PANE_SIZE;
 #endif
@@ -743,7 +821,7 @@ __kernel void computePointersKernel (
 	__global int* window_ptrs_,
 	__global int* _window_ptrs,
 	__global int *failed,
-	__global int *attempts,
+	// __global int *attempts,
 	__global long *offset, /* Temp. variable holding the window pointer offset and window counts */
 	                       /* offset[0] first window so default INT_MAX, offset[1] last window so default 0 */
 	__global int *windowCounts,
@@ -767,7 +845,7 @@ __kernel void computePointersKernel (
 #ifdef RANGE_BASED // Coresponding to range-based is row-based window, my guess is row-based counts how 
                    // many rows, while number of tuples in a window is not fixed for range-based window
 	__global input_t *curr = (__global input_t *) &input[tid * sizeof(input_t)];
-	currPaneId = __bswap64(curr->tuple.t) / PANE_SIZE;
+	currPaneId = curr->tuple.t / PANE_SIZE;
 #else
 	// location (which 2 bytes) of the first tuple of the batch + offset of the tuple belonging to this thread
 	// dividing input_t size gives tuples number
@@ -778,7 +856,7 @@ __kernel void computePointersKernel (
 	if (tid > 0) {
 #ifdef RANGE_BASED
 		__global input_t *prev = (__global input_t *) &input[(tid - 1) * sizeof(input_t)];
-		prevPaneId = __bswap64(prev->tuple.t) / PANE_SIZE;
+		prevPaneId = prev->tuple.t / PANE_SIZE;
 #else
 		prevPaneId = ((batchOffset + ((tid - 1) * sizeof(input_t))) / sizeof(input_t)) / PANE_SIZE;
 #endif
@@ -838,7 +916,7 @@ __kernel void packKernel (
 	__global int* window_ptrs_,
 	__global int* _window_ptrs,
 	__global int *failed,
-	__global int *attempts,
+	// __global int *attempts,
 	__global long *offset, /* Temp. variable holding the window pointer offset and window counts */
 	__global int *windowCounts,
 	__global uchar* closingContents,
