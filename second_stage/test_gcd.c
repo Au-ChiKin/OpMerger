@@ -204,6 +204,63 @@ void run_processing_gpu(
                 query_add_operator(query1, (void *) aggregate1, aggregate1->operator);
                 query_add_operator(query1, (void *) select1, select1->operator);
             }
+        case AGGREGATION:
+            /**
+             * Query 2:
+             * 
+             * input: TaskEvents
+             *     long  time_stamp;
+             *     long  job_id;
+             *     long  task_id;
+             *     long  machine_id;
+             *     int   user_id;
+             *     int   event_type;
+             *     int   category;
+             *     int   priority;
+             *     float cpu;
+             *     float ram;
+             *     float disk;
+             *     int constraints;
+             * 
+             * output: CPUusagePerCategory 
+             *     long timestamp 
+             *     int category
+             *     float totalCpu
+             * 
+             * query:
+             *     select timestamp, category, sum(cpu) as totalCpu
+             *     from TaskEvents [range 60 slide 1]
+             *     group by category
+             * 
+             **/
+            fprintf(stdout, "========== Running aggregation of google cluster dataset ===========\n");
+            {
+                /* Construct an aggregation: sum cpu, group by column 6 (category) */
+                int ref_num = 1;
+                int cols [1] = {8};
+                enum aggregation_types exps [1] = {SUM};
+
+                int group_num = 1;
+                int groups[1] = {6};
+
+                aggregation_p aggregate1 = aggregation(schema1, ref_num, cols, exps, group_num, groups);
+
+                /* Create a query */
+                window_p window1 = window(1024, 1024, RANGE_BASE);
+
+                int batch_size = buffer_size;
+                query_p query1 = query(0, batch_size, window1, is_merging);
+
+                query_add_operator(query1, (void *) aggregate1, aggregate1->operator);
+
+                application_p app = application(
+                    pipeline_depth, 
+                    query1,
+                    buffers, buffer_size, buffer_num,
+                    result);
+                application_run(app, work_load);
+            }
+            break;
         default:
             fprintf(stderr, "error: wrong test case name, runs an no-op query\n");
             break;
