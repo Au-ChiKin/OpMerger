@@ -2,7 +2,7 @@
 
 #include <stdio.h>
 
-#include "../clib/debug.h"
+#include "libgpu/debug.h"
 
 #define MAX_SOURCE_SIZE (0x100000)
 char * read_source(char * filename) {

@@ -9,19 +9,6 @@
 #include "libgpu/gpu_agg.h"
 #include "generators.h"
 
-#define MAX_LINE_LENGTH 256
-#define _sprintf(format, ...) \
-{\
-    sprintf(s, format, __VA_ARGS__);\
-    strcat(ret, s);\
-}
-
-#define _sprint(format) \
-{\
-    sprintf(s, format);\
-    strcat(ret, s);\
-}
-
 static int free_id = 0;
 
 int reduction_get_output_schema_size(void * reduce_ptr) {

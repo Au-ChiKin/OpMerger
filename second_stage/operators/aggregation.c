@@ -9,13 +9,6 @@
 #include "libgpu/gpu_agg.h"
 #include "schema.h"
 
-#define MAX_LINE_LENGTH 256
-#define _sprintf(format, __VA_ARGS__...) \
-{\
-    sprintf(s, format, __VA_ARGS__);\
-    strcat(ret, s);\
-}
-
 static int free_id = 0;
 
 aggregation_p aggregation(schema_p input_schema, 

@@ -10,18 +10,6 @@
 #include "generators.h"
 #include "helpers.h"
 
-#define _sprintf(format, ...) \
-{\
-    sprintf(s, format, __VA_ARGS__);\
-    strcat(ret, s);\
-}
-
-#define _sprint(format) \
-{\
-    sprintf(s, format);\
-    strcat(ret, s);\
-}
-
 static int free_id = 0;
 
 ref_value_p ref_value() {

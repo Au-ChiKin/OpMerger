@@ -9,6 +9,19 @@
 
 #define OPERATOR_CODE_FILENAME_LENGTH 256
 
+#define MAX_LINE_LENGTH 256
+#define _sprintf(format, ...) \
+{\
+    sprintf(s, format, __VA_ARGS__);\
+    strcat(ret, s);\
+}
+
+#define _sprint(format) \
+{\
+    sprintf(s, format);\
+    strcat(ret, s);\
+}
+
 enum operator_types {
     OPERATOR_SELECT,
     OPERATOR_REDUCE,
