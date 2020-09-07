@@ -58,6 +58,8 @@ void aggregation_reset(void * reduce_ptr, int new_batch_size);
 
 void aggregation_process(void * reduce_ptr, batch_p batch, window_p window, u_int8_t ** processed_outputs, query_event_p event);
 
+void aggregation_process_output(void * aggregate_ptr, batch_p outputs);
+
 void aggregation_print_output(batch_p outputs, int batch_size, int tuple_size);
 
 u_int8_t ** aggregation_get_output_buffer(void * aggregate_ptr, batch_p output);

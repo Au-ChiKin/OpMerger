@@ -24,6 +24,7 @@ aggregation_p aggregation(
         p->operator->setup = (void *) aggregation_setup;
         // p->operator->reset = (void *) aggregation_reset;
         p->operator->process = (void *) aggregation_process;
+        p->operator->process_output = (void *) aggregation_process_output;
         p->operator->get_output_buffer = (void *) aggregation_get_output_buffer;
 
         p->operator->type = OPERATOR_AGGREGATE;
@@ -190,6 +191,73 @@ void aggregation_process(void * aggregate_ptr, batch_p batch, window_p window, u
         // passing the batch without deserialisation
 }
 
+void aggregation_process_output(void * aggregate_ptr, batch_p outputs) {
+    aggregation_p aggregate = (aggregation_p) aggregate_ptr;
+
+    int current_offset = 0;
+    int tuple_size = aggregate->output_schema->size;
+    int batch_size = outputs->size;
+
+    /* Deserialise output buffer */
+    int window_counts_size = 20; /* 4 integers, +1 that is the mark */
+    int * window_counts = (int *) (outputs->buffer + current_offset);
+    current_offset += window_counts_size;
+    
+    outputs->closing_windows = window_counts[0];
+    outputs->pending_windows = window_counts[1];
+    outputs->complete_windows = window_counts[2];
+    outputs->opening_windows = window_counts[3];
+
+    /* Keep only the windows */
+    outputs->start += current_offset;
+
+    // typedef struct {
+    //     long t; /* timestamp */
+    //     float _1; /* sum */
+    //     int _2; /* count */
+    // } output_tuple_t;
+
+    // int output_size = batch_size * tuple_size; /* SystemConf.UNBOUNDED_BUFFER_SIZE */
+    // output_tuple_t * output = (output_tuple_t *) (outputs->buffer + current_offset);
+    // current_offset += output_size;
+
+    // outputs->closing_windows = (u_int8_t *) malloc(window_counts[0] * tuple_size * sizeof(u_int8_t));
+    // memcpy(outputs->closing_windows, output, window_counts[0] * tuple_size);
+    // output += window_counts[0] * tuple_size;
+
+    // outputs->pending_windows = (u_int8_t *) malloc(window_counts[1] * tuple_size * sizeof(u_int8_t));
+    // memcpy(outputs->pending_windows, output, window_counts[1] * tuple_size);
+    // output += window_counts[1] * tuple_size;
+
+    // outputs->complete_windows = (u_int8_t *) malloc(window_counts[2] * tuple_size * sizeof(u_int8_t));
+    // memcpy(outputs->complete_windows, output, window_counts[2] * tuple_size);
+    // output += window_counts[2] * tuple_size;
+
+    // outputs->opening_windows = (u_int8_t *) malloc(window_counts[3] * tuple_size * sizeof(u_int8_t));
+    // memcpy(outputs->opening_windows, output, window_counts[3] * tuple_size);
+    // output += window_counts[3] * tuple_size;
+
+    /* Print for debug */
+    // printf("[Results] Required Output buffer size is %d\n", current_offset);
+
+    // printf("[Results] Closing Windows: %d    ", window_counts[0]);
+    // printf(          "Pending Windows: %d    ", window_counts[1]);
+    // printf(         "Complete Windows: %d    ", window_counts[2]);
+    // printf(          "Opening Windows: %d    ", window_counts[3]);
+    // printf(     "Output Buffer Position: %d\n", window_counts[4]);
+
+    // {
+    //     int out_num = 100;
+    //     if (out_num > window_counts[4] / 16) {
+    //         out_num = window_counts[4] / 16;
+    //     }
+    //     for (int i=0; i<out_num; i++) {
+    //         printf("[Results] %-8d %-12ld %09.5f  %d\n", i, output->t, output->_1, output->_2);
+    //         output += 1;
+    //     }
+    // }
+}
+
 u_int8_t ** aggregation_get_output_buffer(void * aggregate_ptr, batch_p output) {
     aggregation_p aggregate = (aggregation_p) aggregate_ptr;
 
@@ -257,10 +325,6 @@ Opening Windows: %d    Mark:%d\n",
             output[t] += 1;
         }
     }
-}
-
-void aggregation_process_output(void * aggregate_ptr, batch_p outputs) {
-    /* Stud, reduction is a pipeline breaker so it does not need to pass any output to another operator in this attempt */
 }
 
 void aggregation_reset(void * aggregate_ptr, int new_batch_size) {
