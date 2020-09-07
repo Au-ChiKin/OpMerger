@@ -6,8 +6,8 @@
 #include "schema.h"
 
 #define AGGREGATION_KERNEL_NUM 9
-#define AGGREGATION_CODE_FILENAME "cl/reduce"
-#define AGGREGATION_CODE_TEMPLATE "cl/templates/reduce_template.cl"
+#define AGGREGATION_CODE_FILENAME "cl/aggregate"
+#define AGGREGATION_CODE_TEMPLATE "cl/templates/aggregate_template.cl"
 #define AGGREGATION_MAX_REFERENCE 2
 #define AGGREGATION_MAX_GROUP 1
 #define AGGREGATION_OUTPUT_NUM 5

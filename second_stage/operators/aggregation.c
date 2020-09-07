@@ -73,6 +73,282 @@ aggregation_p aggregation(
     return p;    
 }
 
+static char * generate_initf(aggregation_p aggregate) {
+    char * ret = (char *) malloc(512 * sizeof(char)); *ret = '\0';
+    char s [MAX_LINE_LENGTH] = "";
+
+    /* TODO support aggregation types and multiple of them */
+    int aggregation_num = aggregate->ref_num;
+
+    /* initf */
+    _sprint("inline void initf (output_t *p) {\n");
+    
+    /* Set timestamp */
+    _sprint("    p->tuple.t = 0;\n");
+
+    int i;
+    for (i = 0; i < aggregation_num; ++i) {
+        
+        switch (aggregate->expressions[i]) {
+        case CNT:
+        case SUM:
+        case AVG: _sprintf("    p->tuple._%d = %s;\n", (i + 1), "0"); break;
+        case MIN: _sprintf("    p->tuple._%d = %s;\n", (i + 1), "FLT_MAX"); break;
+        case MAX: _sprintf("    p->tuple._%d = %s;\n", (i + 1), "FLT_MIN"); break;
+        default:
+            // throw new IllegalArgumentException("error: invalid aggregation type");
+            break;
+        }
+    }
+    /* Set count to zero */
+    _sprintf("    p->tuple._%d = 0;\n", (i + 1));
+    _sprint("}\n");
+    
+    _sprint("\n");
+
+    return ret;
+}
+
+static char * generate_updatef (aggregation_p aggregate, char const * patch) {
+    char * ret = (char *) malloc(512 * sizeof(char)); *ret = '\0';
+    char s [MAX_LINE_LENGTH] = "";
+    int i;
+
+    /* TODO support aggregation types and multiple of them */
+    int aggregation_num = aggregate->ref_num;
+
+    /* aggregatef */
+    _sprint("inline void aggregatef (output_t *out, __global input_t *in) {\n");
+    
+    /* Reserve for select */
+    _sprint("    int flag = 1;\n\n");
+
+    /* Insert patch */
+    if (patch) {
+        _sprintf("%s", patch);
+    }
+
+    /* Set timestamp */
+    _sprint("    out->tuple.t = (!flag || (flag && (out->tuple.t > in->tuple.t))) ? out->tuple.t : in->tuple.t;\n");
+
+    /* Aggregation */
+    for (i = 0; i < aggregation_num; ++i) {
+        
+        int column = aggregate->refs[i];
+        
+        switch (aggregate->expressions[i]) {
+        case CNT: 
+            _sprintf("    out->tuple._%d += 1 * flag;\n", (i + 1)); 
+            break;
+        case SUM:
+        case AVG: 
+            _sprintf("    out->tuple._%d += in->tuple._%d * flag;\n", (i + 1), column); 
+            break;
+        case MIN:
+            _sprintf("    out->tuple._%d = (flag && (out->tuple._%d > in->tuple._%d)) ? in->tuple._%d : out->tuple._%d;\n",
+                    (i + 1), (i + 1), column, column, (i + 1));
+            break;
+        case MAX:
+            _sprintf("    out->tuple._%d = (flag && (out->tuple._%d < in->tuple._%d)) ? in->tuple._%d : out->tuple._%d;\n",
+                    (i + 1), (i + 1), column, column, (i + 1));
+            break;
+        default:
+            fprintf(stderr, "error: invalid aggregation type\n");
+            break;
+        }
+    }
+
+    /* Increase counter */
+    _sprintf("    out->tuple._%d += 1 * flag;\n", (i + 1));
+    _sprint("}\n");
+    
+    _sprint("\n");
+
+    return ret;
+}
+
+static char * generate_cachef(aggregation_p aggregate) {
+    char * ret = (char *) malloc(512 * sizeof(char)); *ret = '\0';
+    char s [MAX_LINE_LENGTH] = "";
+
+    /* TODO */
+    int numberOfVectors = 1;
+
+    /* cachef */
+    _sprint("inline void cachef (output_t * tuple, __local output_t * cache) {\n");
+    
+    for (int i = 0; i < numberOfVectors; i++) {
+        _sprintf("    cache->vectors[%d] = tuple->vectors[%d];\n", i, i);
+    }
+    
+    _sprint("}\n");
+    
+    _sprint("\n");
+
+    return ret;
+}
+
+static char * generate_mergef(aggregation_p aggregate) {
+    char * ret = (char *) malloc(512 * sizeof(char)); *ret = '\0';
+    char s [MAX_LINE_LENGTH] = "";
+
+    /* TODO */
+    int aggregation_num = aggregate->ref_num;
+
+    /* mergef */
+    _sprint("inline void mergef (__local output_t * mine, __local output_t * other) {\n");
+
+    /* Always pick the largest timestamp as the new timestamp */
+    _sprint("   if (mine->tuple.t < other->tuple.t) {\n");
+    _sprint("        mine->tuple.t = other->tuple.t;\n");
+    _sprint("    }\n");
+    
+    int i;
+    for (i = 0; i < aggregation_num; ++i) {
+        
+        switch (aggregate->expressions[i]) {
+        case CNT:
+        case SUM:
+        case AVG:
+            _sprintf("    mine->tuple._%d += other->tuple._%d;\n", (i + 1), (i + 1));
+            break;
+        case MIN:
+            _sprintf("    mine->tuple._%d = (mine->tuple._%d > other->tuple._%d) ? other->tuple._%d : mine->tuple._%d;\n", 
+                    (i + 1), (i + 1), (i + 1), (i + 1), (i + 1));
+            break;
+        case MAX:
+            _sprintf("    mine->tuple._%d = (mine->tuple._%d < other->tuple._%d) ? other->tuple._%d : mine->tuple._%d;\n", 
+                    (i + 1), (i + 1), (i + 1), (i + 1), (i + 1));
+            break;
+        default:
+        //     throw new IllegalArgumentException("error: invalid aggregation type");
+            break;
+        }
+    }
+    _sprintf("    mine->tuple._%d += other->tuple._%d;\n", (i + 1), (i + 1));
+    _sprint("}\n");
+    
+    _sprint("\n");
+
+    return ret;
+}
+
+static char * generate_copyf(aggregation_p aggregate, int vector) {
+    char * ret = (char *) malloc(512 * sizeof(char)); *ret = '\0';
+    char s [MAX_LINE_LENGTH] = "";
+
+    /* TODO */
+    int aggregation_num = aggregate->ref_num;
+    int numberOfVectors = (aggregate->output_schema->size + schema_get_pad(aggregate->output_schema, vector)) / vector;
+
+    /* copyf */
+    _sprint("inline void copyf (__local output_t *p, __global output_t *q) {\n");
+    
+    /* Compute average */
+    bool containsAverage = false;
+    for (int i = 0; i < aggregation_num; ++i) {
+        if (aggregate->expressions[i] == AVG) {
+            containsAverage = true;
+        }
+    }
+    
+    if (containsAverage) {
+        
+        int countAttribute = aggregation_num + 1;
+        _sprintf("    int count = p->tuple._%d;\n", countAttribute);
+        
+        for (int i = 0; i < aggregation_num; ++i)
+            if (aggregate->expressions[i] == AVG) {
+                _sprintf("    p->tuple._%d = p->tuple._%d / (float) count;\n", (i + 1), (i + 1));
+            }
+    }
+    
+    for (int i = 0; i < numberOfVectors; i++) {
+        _sprintf("    q->vectors[%d] = p->vectors[%d];\n", i, i);
+    }
+    
+    _sprint("}\n");
+    
+    _sprint("\n");
+
+    return ret;
+}
+
+
+static char * generate_source(aggregation_p aggregate, window_p window, char const * patch) {
+    int vector = 16;
+
+    char * source = (char *) malloc(MAX_SOURCE_LENGTH * sizeof(char)); *source = '\0';
+
+    char * extensions = read_file("cl/templates/extensions.cl");
+
+    char * headers = read_file("cl/templates/headers.cl");
+
+    /* Input and output vector sizes */
+    char * tuple_size = generate_tuple_size(aggregate->input_schema, aggregate->output_schema, vector);
+
+    /* Input and output tuple struct */
+    char * input_tuple = generate_input_tuple(aggregate->input_schema, NULL, vector);
+
+    char * output_tuple = generate_output_tuple(aggregate->output_schema, NULL, vector);
+
+    /* Window sizes */
+    char * windows = generate_window_definition(window);
+
+    /* Inline functions */
+    char * initf = generate_initf(aggregate);
+    char * aggregatef = generate_aggregatef(aggregate, patch);
+    char * cachef = generate_cachef(aggregate);
+    char * mergef = generate_mergef(aggregate);
+    char * copyf = generate_copyf(aggregate, vector);
+
+    /* Template funcitons */
+    char * template = read_file(AGGREGATION_CODE_TEMPLATE);
+
+    /* Assembling */
+    strcat(source, extensions);
+
+    strcat(source, headers);
+    
+    strcat(source, tuple_size);
+    
+    strcat(source, input_tuple);
+    strcat(source, output_tuple);
+    
+    strcat(source, windows);
+    
+    strcat(source, initf);
+    strcat(source, aggregatef);
+    strcat(source, cachef);
+    strcat(source, mergef);
+    strcat(source, copyf);
+    
+    strcat(source, template);
+
+    /* Free inputed/generated source */
+    free(extensions);
+
+    free(headers);
+
+    free(tuple_size);
+
+    free(output_tuple);
+    free(input_tuple);
+
+    free(windows);
+
+    free(initf);
+    free(aggregatef);
+    free(cachef);
+    free(mergef);
+    free(copyf);
+    
+    free(template);
+
+    return source;
+}
+
+
 void aggregation_setup(void * aggregate_ptr, int batch_size, window_p window, char const * patch) {
     aggregation_p aggregate = (aggregation_p) aggregate_ptr;
 
