@@ -89,7 +89,6 @@ void selection_generate_patch(void * select_ptr, char * patch) {
     char * ret = patch; // Reuse the marcro funciton
     char s [128] = "";
 
-    /* TODO: support multiple predicates */
     int const predicate_num = 1;
 
     for (int i = 0; i < predicate_num; i++) {
@@ -157,14 +156,12 @@ void selection_generate_patch(void * select_ptr, char * patch) {
     }
 
     _sprint("\n");
-    
 }
 
 static char * generate_selectf(selection_p select, char const * patch) {
     char * ret = (char *) malloc(1024 * sizeof(char)); *ret = '\0';
     char s [128] = "";
 
-    /* TODO: support multiple predicates */
     int const predicate_num = 1;
 
     _sprint("inline int selectf (__global input_t *in) {\n");
