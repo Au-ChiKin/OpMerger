@@ -185,13 +185,13 @@ void run_processing_gpu(
                 
                 selection_p select1 = selection(schema1, col1, val1, com1);
 
-                /* Construct an aggregation: sum cpu, group by column 6 (category) */
+                /* Construct an aggregation: sum column 8 (cpu), group by column 1 (job_id) */
                 int ref_num = 1;
                 int cols [1] = {8};
-                enum aggregation_types exps [1] = {SUM};
+                enum aggregation_types exps [1] = {AVG};
 
                 int group_num = 1;
-                int groups[1] = {6};
+                int groups[1] = {1};
 
                 aggregation_p aggregate1 = aggregation(schema1, ref_num, cols, exps, group_num, groups);
 
@@ -201,9 +201,17 @@ void run_processing_gpu(
                 int batch_size = buffer_size;
                 query_p query1 = query(0, batch_size, window1, is_merging);
 
-                query_add_operator(query1, (void *) aggregate1, aggregate1->operator);
                 query_add_operator(query1, (void *) select1, select1->operator);
+                query_add_operator(query1, (void *) aggregate1, aggregate1->operator);
+
+                application_p app = application(
+                    pipeline_depth, 
+                    query1,
+                    buffers, buffer_size, buffer_num,
+                    result);
+                application_run(app, work_load);
             }
+            break;
         case AGGREGATION:
             /**
              * Query 2:

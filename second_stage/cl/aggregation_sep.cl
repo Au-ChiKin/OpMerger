@@ -46,17 +46,21 @@ typedef union {
 
 #define PANES_PER_WINDOW 1L
 #define PANES_PER_SLIDE  1L
-#define PANE_SIZE        1024L
+#define PANE_SIZE        60L
 
-// What is this?
+// Input tuples are first converted into intermediate tuples
+// and then to be aggregated
 typedef struct {
 	int mark;
-	int pad0;
-	long t;
+	int pad0; // 8 bytes
+
+	long t; // 8 bytes
+
 	int key_1;
 	float value1;
-	int count;
-	uchar pad[4];
+	int count; // 12 bytes
+
+	uchar pad[4]; // 4 bytes
 } intermediate_tuple_t __attribute__((aligned(1)));
 
 typedef union {
@@ -75,23 +79,23 @@ inline void clearf (__global intermediate_t *p) {
 }
 
 inline void pack_key (__local key_t *q, __global input_t *p) {
-	q->key_1 = p->tuple._6;
+	q->key_1 = p->tuple._1; // job_id
 }
 inline void storef (__global intermediate_t *q, __global input_t *p) {
 	q->tuple.t = p->tuple.t;
-	q->tuple.key_1 = p->tuple._6;
-	q->tuple.value1 = p->tuple._8;
+	q->tuple.key_1 = p->tuple._1; // job_id
+	q->tuple.value1 = p->tuple._8; // cpu
 	q->tuple.count = 1;
 }
 
 inline int comparef (__local key_t *q, __global input_t *p) {
 	int value = 1;
-	value = value & (q->key_1 == p->tuple._6);
+	value = value & (q->key_1 == p->tuple._1); // job_id
 	return value;
 }
 
 inline void updatef (__global intermediate_t *out, __global input_t *p) {
-	atomic_add ((global int *) &(out->tuple.value1), convert_int_rtp(p->tuple._8));
+	atomic_add ((global int *) &(out->tuple.value1), convert_int_rtp(p->tuple._8)); // cpu
 	atomic_inc ((global int *) &(out->tuple.count));
 }
 

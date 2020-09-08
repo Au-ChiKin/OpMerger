@@ -376,7 +376,12 @@ void aggregation_setup(void * aggregate_ptr, int batch_size, window_p window, ch
 #endif
     
     /* Build opencl program */
-    char * source = read_source("cl/aggregation_gen.cl");
+    char * source;
+    if (patch == NULL) {
+        source = read_source("cl/aggregation_sep.cl");
+    } else {
+        source = read_source("cl/aggregation_meg.cl");
+    }
     int qid = gpu_get_query(source, 9, 1, 9);
     aggregate->qid = qid;
     free(source);
