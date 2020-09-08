@@ -94,7 +94,7 @@ inline int comparef (__local key_t *q, __global input_t *p) {
 }
 
 inline void updatef (__global intermediate_t *out, __global input_t *p) {
-	atomic_add ((global int *) &(out->tuple.value1), convert_int_rtp(p->tuple._8)); // cpu
+	atomic_add ((global int *) &(out->tuple.value1), convert_long_rtp(p->tuple._8)); // cpu
 	atomic_inc ((global int *) &(out->tuple.count));
 }
 
