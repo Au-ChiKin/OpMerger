@@ -58,9 +58,7 @@ typedef struct {
 
 	long key_1;
 	float value1;
-	int count; // 12 bytes
-
-	uchar pad[4]; // 4 bytes
+	int count; // 16 bytes
 } intermediate_tuple_t __attribute__((aligned(1)));
 
 typedef union {
@@ -82,8 +80,8 @@ inline void pack_key (__local key_t *q, __global input_t *p) {
 }
 inline void storef (__global intermediate_t *q, __global input_t *p) {
 	q->tuple.t = p->tuple.t;
-	q->tuple.key_1 = p->tuple._1; // job_id
-	q->tuple.value1 = p->tuple._8; // cpu
+	q->tuple.key_1 = p->tuple._1; // long job_id
+	q->tuple.value1 = p->tuple._8; // float cpu
 	q->tuple.count = 1;
 }
 
@@ -94,7 +92,7 @@ inline int comparef (__local key_t *q, __global input_t *p) {
 }
 
 inline void updatef (__global intermediate_t *out, __global input_t *p) {
-	out->tuple.value1 += p->tuple._8; // cpu
+	atomic_add ((global int *) &(out->tuple.value1), convert_int_rtp(p->tuple._8)); // cpu
 	atomic_inc ((global int *) &(out->tuple.count));
 }
 
