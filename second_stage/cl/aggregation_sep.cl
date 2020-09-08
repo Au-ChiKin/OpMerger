@@ -46,7 +46,7 @@ typedef union {
 
 #define PANES_PER_WINDOW 1L
 #define PANES_PER_SLIDE  1L
-#define PANE_SIZE        60L
+#define PANE_SIZE        1024L
 
 // Input tuples are first converted into intermediate tuples
 // and then to be aggregated
