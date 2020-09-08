@@ -56,7 +56,7 @@ typedef struct {
 
 	long t; // 8 bytes
 
-	int key_1;
+	long key_1;
 	float value1;
 	int count; // 12 bytes
 
@@ -68,9 +68,8 @@ typedef union {
 	uchar16 vectors[2];
 } intermediate_t;
 
-// What?
 typedef struct {
-	int key_1;
+	long key_1;
 } key_t __attribute__((aligned(1)));
 
 inline void clearf (__global intermediate_t *p) {
